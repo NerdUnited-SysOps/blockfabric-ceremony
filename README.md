@@ -1,4 +1,4 @@
-Blockchain Genesis Ceremony – Technical script 
+# Blockchain Genesis Ceremony – Technical script 
 
  
 
@@ -91,25 +91,25 @@ Somehow we need to show that the OS that is booted is “publicly” available f
 Laptop will boot a linux distro to a simple window manager (xfce) with a single terminal (fullscreen). ISO should be linked here.
 
 Crypto Operator issues the following Linux command to ensure “Fitness of Purpose” 
-
+```
 uname -a 
-
+```
 timedatectl (shows local time and ntp status) 
-
+```
 fdisk -l (shows connected storage devices) 
-
+```
 ping 1.1.1.1 (verify connectivity) 
-
+```
 dig Brand website domain name (i.e. galvan.health) 
-
+```
 Ask room for consensus on “fitness of purpose” of equipment 
 
 Crypto Operator issues the following Linux commands 
-
+```
 git clone repo… (this repo should be “publicly” available (VP of engineering of brand should inspect prior to ceremony, repo should be available X number of days before ceremony) 
 
 cd local repo directory 
-
+```
 execute script 1 (creates and copies keys to validator nodes) 
 
 execute script 2 (copies keys to HOT locations), AWS SM 

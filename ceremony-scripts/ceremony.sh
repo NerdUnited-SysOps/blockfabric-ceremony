@@ -9,6 +9,24 @@ usage() {
   echo "  -i : String of space separated IP addresses for Validator nodes."
 }
 
+# Helper function to download files from AWS Secrets Manager
+# We'll have an SSH key inside AWS Secrets Manager to be used by Ansible
+# Example call: download_file_from_aws "my-secret-aws-key" "../privatekey.pem"
+# Use `aws secretsmanager create-secret --name $SECRET_ID --secret-binary fileb://../test_secret_file.txt` to create a test file.
+download_file_from_aws () {
+    SECRET_ID=$1
+    LOCAL_FILE=$2
+    
+    aws secretsmanager get-secret-value --secret-id $SECRET_ID --query SecretBinary --output text | base64 --decode > $LOCAL_FILE
+
+    if [ -f "$LOCAL_FILE" ]; then
+        echo "$LOCAL_FILE exists."
+    else 
+        echo "$LOCAL_FILE does not exist."
+        exit 1
+    fi
+}
+
 install_dependencies () {
     sudo apt-get install awscli
     sudo apt-get install pwgen
@@ -94,6 +112,8 @@ create_distribution_owner_wallet () {
     echo -n "$(cat ${WORKING_DIR}/ks | jq -r ".address" | tr -d '\n')" > ${WORKING_DIR}/address
 }
 
+
+
 while getopts 'c:d:i:h' option; do
   case "$option" in
     d)
@@ -113,8 +133,13 @@ while getopts 'c:d:i:h' option; do
   esac
 done
 
+# For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
+AWS_SSH_KEY_SECRET_ID="ssh-key-secret"
+SSH_KEY_DOWNLOAD_PATH="../privatekey.pem"
+
 # validate required params
-if [ ! "$DESTINATION_DIR" ] || [ ! "$IP_ADDRESS_LIST" ]
+if [ ! "$DESTINATION_DIR" ] || [ ! "$IP_ADDRESS_LIST" ] \
+    || [ ! "$AWS_SSH_KEY_SECRET_ID" ] || [ ! "$SSH_KEY_DOWNLOAD_PATH" ]
 then
     echo "Required params missing" 
     usage
@@ -123,6 +148,7 @@ fi
 
 # All required params present, run the script.
 echo "Starting key ceremony"
+download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
 install_dependencies
 setup_validator_nodes
 create_lockup_owner_wallet

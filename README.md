@@ -11,41 +11,32 @@ Room will be prepared with audio/video recording equipment and large TV display 
 
 Room 
 
-Not controlled by NU (i.e., hotel suite / conference room) 
+* Not controlled by NU (i.e., hotel suite / conference room) 
 
-Access based on pre-defined list of attendees 
+* Access based on pre-defined list of attendees 
 
-Individual outside to check attendee list and grant admission 
+* Individual outside to check attendee list and grant admission 
 
-Sign in/out sheet 
+* Sign in/out sheet 
 
-ID checks 
+* ID checks 
 
 (Un)Authorized devices 
-
-Sign on door 
-
-No cell phones 
-
-No tablets 
-
-No “smart” devices 
+* Mobile Devices 
+* tablets 
+* “smart” devices 
 
  
 
-Assumptions 
+## Assumptions 
 
 Nerd will provide an independent auditor (Casey spoke with Tom about this today, Tom will arrange for a CPA to attend and observe). 
 
 The brand may ask for Nerd Provided participants to submit to a background check but time must be allowed to perform the background check, this will be at the brand’s discretion and expense. 
 
- 
 
- 
 
- 
-
-Script 
+## Technical Script 
 
 System Administrator verifies that recording equipment is functioning properly and recording the ceremony. 
 
@@ -92,26 +83,34 @@ Somehow we need to show that the OS that is booted is “publicly” available f
 Laptop will boot a linux distro to a simple window manager (xfce) with a single terminal (fullscreen). ISO should be linked here.
 
 Crypto Operator issues the following Linux command to ensure “Fitness of Purpose” 
-```
+
+1. Verify the linux kernel version
+
+```sh
 uname -a 
 ```
-```
+2. Verfiy the time and date
+```sh
 timedatectl (shows local time and ntp status) 
 ```
-```
+3. 
+```sh
 fdisk -l (shows connected storage devices) 
 ```
-```
+4. 
+```sh
 ping 1.1.1.1 (verify connectivity) 
 ```
-```
+5. 
+```sh
 dig Brand website domain name (i.e. galvan.health) 
 ```
-```
+
 Ask room for consensus on “fitness of purpose” of equipment 
 
 Crypto Operator issues the following Linux commands 
-```
+
+```sh
 git clone repo… (this repo should be “publicly” available (VP of engineering of brand should inspect prior to ceremony, repo should be available X number of days before ceremony) 
 ```
 cd local repo directory 

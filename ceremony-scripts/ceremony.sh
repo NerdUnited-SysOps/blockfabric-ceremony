@@ -128,3 +128,4 @@ setup_validator_nodes
 create_lockup_owner_wallet
 create_distribution_owner_wallet
 echo "Key ceremony complete"
+

@@ -1,12 +1,13 @@
 # Blockchain Genesis Ceremony – Technical script 
 
- 
 
 Room will be prepared with audio/video recording equipment and large TV display for everyone in the room to follow along with every command typed on the laptop. 3 laptops will be connected to an ethernet switch with access to the Internet and each computer will be connected to a video switcher allowing for display and recording. Laptops will be numbered 1-3. Laptops are from different suppliers and have internal storage removed. 5 dice on table in plain view. Tamper Evident materials. Apricorn Aegis Secure Keys in original packaging (tamper evident) (how many?). A brand may choose to provide their own laptop to generate the keys. If the brand chooses this option, the machine needs to meet some minimum system requirements provided upon request. 
 
  
 
-Physical Security 
+
+
+## Physical Security 
 
 Room 
 
@@ -94,24 +95,29 @@ Crypto Operator issues the following Linux command to ensure “Fitness of Purpo
 ```
 uname -a 
 ```
+```
 timedatectl (shows local time and ntp status) 
+```
 ```
 fdisk -l (shows connected storage devices) 
 ```
+```
 ping 1.1.1.1 (verify connectivity) 
 ```
+```
 dig Brand website domain name (i.e. galvan.health) 
+```
 ```
 Ask room for consensus on “fitness of purpose” of equipment 
 
 Crypto Operator issues the following Linux commands 
 ```
 git clone repo… (this repo should be “publicly” available (VP of engineering of brand should inspect prior to ceremony, repo should be available X number of days before ceremony) 
-
+```
 cd local repo directory 
 ```
 execute script 1 (creates and copies keys to validator nodes) 
-
+```
 execute script 2 (copies keys to HOT locations), AWS SM 
 
 execute script n (no keys should be shown on screen during creation), keys can be stored locally on filesystem as it is ephemeral  

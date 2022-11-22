@@ -52,7 +52,8 @@ Description of environment and controls
 
 Physical space description 
 
-A note on the Aegis Secure Key, this device is FIPS 140-2 Level 3 certified. FIPS 140-2 is a U.S. government computer security standard used to approve cryptographic modules. The device has an internal rechargeable battery with a smart-charging circuit. The manufacturer indicates that the battery should last 3 years in storage. If the battery becomes depleted, the information contained on the device is not compromised, requiring recharging by USB before attempting to unlock it. The device implements a “Brute Force” defense mechanism. After 3 unsuccessful attempts the device implements a time delay, after 10 attempts the device locks itself, after 20 unsuccessful attempts to unlock all data is cryptographically wiped and rendered unretrievable.  In other words, do not lose your PIN. If you have concerns about this device once you have taken custody of the secrets you may move the information to a device of your choosing. 
+## Aegis Secure Key
+The Aegis Secure Key is FIPS 140-2 Level 3 certified USB storage device. FIPS 140-2 is a U.S. government computer security standard used to approve cryptographic modules. The device has an internal rechargeable battery with a smart-charging circuit. The manufacturer indicates that the battery should last 3 years in storage. If the battery becomes depleted, the information contained on the device is not compromised, the device requires recharging by USB before attempting to unlock it. The device implements a “Brute Force” defense mechanism. After 3 unsuccessful attempts the device implements a time delay, after 10 attempts the device locks itself, after 20 unsuccessful attempts to unlock all data is cryptographically wiped and rendered unretrievable.  In other words, do not lose your PIN. If you have concerns about this device once you have taken custody of the secrets you may move the information to a device of your choosing. 
 
 Physical controls 
 
@@ -84,6 +85,8 @@ Laptop will boot a linux distro to a simple window manager (xfce) with a single 
 
 Crypto Operator issues the following Linux command to ensure “Fitness of Purpose” 
 
+<summary><b>Instructions</b></summary>
+
 1. Verify the linux kernel version
 
 ```sh
@@ -110,6 +113,7 @@ Ask room for consensus on “fitness of purpose” of equipment
 
 Crypto Operator issues the following Linux commands 
 
+
 ```sh
 git clone repo… (this repo should be “publicly” available (VP of engineering of brand should inspect prior to ceremony, repo should be available X number of days before ceremony) 
 ```
@@ -129,7 +133,7 @@ execute script n (no keys should be shown on screen during creation), keys can b
 
 Keys are copied “Trust” 
 
-Now might be a good time to talk about the Secure Keys. They do have a rechargeable power source, manufacturer says that the battery should last 3 years in storage, if the battery is depleted the data contained on the key is not lost or compromised, the battery must be charged before the key can be unlocked and accessed (1-3 minutes of charge before the data is available). Its also probably time reenforce that if the PIN code is lost or forgotten the data is not accessible (never ever, full stop), we can supply a sticky note and pen if they choose to right it down, they won’t have their phone or other electronic device at this time) thoughts here??? 
+Its probably time reenforce that if the PIN code is lost or forgotten the data is not accessible (never ever, full stop), we can supply a sticky note and pen if they choose to right it down, they won’t have their phone or other electronic device at this time) thoughts here??? 
 
 “Trust” rep breaks seal on new Aegis Secure Key 
 

@@ -7,6 +7,8 @@ usage() {
   echo "  -d : Data directory on external volume"
   echo "  -h : Help"
   echo "  -i : String of space separated IP addresses for Validator nodes."
+  echo ""
+  echo "Example: "
 }
 
 # Helper function to download files from AWS Secrets Manager
@@ -34,6 +36,8 @@ install_dependencies () {
     sudo apt-get install jq
     sudo apt-get install golang
     go install github.com/ethereum/go-ethereum/cmd/ethkey@latest
+    go install github.com/ethereum/go-ethereum/cmd/geth@latest
+    path+=("${HOME}/go/bin")
 
     aws configure
 }
@@ -51,14 +55,14 @@ setup_validator_nodes () {
         PASSWORD_FILE=${WORKING_DIR}/pw
 
         # Setup node wallet
-        /usr/bin/geth account new --password <(echo -n "$password") --keystore ${DESTINATION_DIR}
+        geth account new --password <(echo -n "$password") --keystore ${DESTINATION_DIR}
         mv ${DESTINATION_DIR}/UTC* ${WORKING_DIR}/nodekey_ks
 
         node_key_address=$(cat "${WORKING_DIR}"/nodekey_ks | jq -r ".address" | tr -d '\n')
         aws secretsmanager create-secret --name "$node_key_address" --description "Encryption pw for 0x$node_key_address." --secret-string "$password"
 
         # Setup account wallet
-        /usr/bin/geth account new --password <(echo -n "$password") --keystore ${DESTINATION_DIR}
+        geth account new --password <(echo -n "$password") --keystore ${DESTINATION_DIR}
         mv ${DESTINATION_DIR}/UTC* ${WORKING_DIR}/account_ks
         account_address=$(cat "${WORKING_DIR}"/account_ks | jq -r ".address" | tr -d '\n')
         aws secretsmanager create-secret --name "$account_address" --description "Encryption pw for 0x$account_address." --secret-string "$password"
@@ -86,7 +90,7 @@ create_lockup_owner_wallet () {
 
     password=$(pwgen -c 25 -n 1)
 
-    /usr/bin/geth account new --password <(echo -n "$password") --keystore ${DESTINATION_DIR}
+    geth account new --password <(echo -n "$password") --keystore ${DESTINATION_DIR}
     mv ${DESTINATION_DIR}/UTC* ${WORKING_DIR}/ks
     address=$(cat ${WORKING_DIR}/ks | jq -r ".address" | tr -d '\n')
     echo -n "Node key address: $address"
@@ -102,7 +106,7 @@ create_distribution_owner_wallet () {
 
     password=$(pwgen -c 25 -n 1)
 
-    /usr/bin/geth account new --password <(echo -n "$password") --keystore ${DESTINATION_DIR}
+    geth account new --password <(echo -n "$password") --keystore ${DESTINATION_DIR}
     mv ${DESTINATION_DIR}/UTC* ${WORKING_DIR}/ks
     address=$(cat ${WORKING_DIR}/ks | jq -r ".address" | tr -d '\n')
     echo -n "Node key address: $address"

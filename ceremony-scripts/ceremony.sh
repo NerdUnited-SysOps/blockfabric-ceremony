@@ -35,8 +35,8 @@ install_dependencies () {
     sudo apt-get install ethereum
     sudo apt-get install jq
     sudo apt-get install golang
-    go install github.com/ethereum/go-ethereum/cmd/ethkey@latest
-    go install github.com/ethereum/go-ethereum/cmd/geth@latest
+    go install github.com/ethereum/go-ethereum/cmd/ethkey@v1.10.26
+    go install github.com/ethereum/go-ethereum/cmd/geth@v1.10.26
     export PATH="${HOME}/go/bin:${PATH}"
 
     aws configure

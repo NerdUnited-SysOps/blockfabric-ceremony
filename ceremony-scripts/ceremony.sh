@@ -37,7 +37,7 @@ install_dependencies () {
     sudo apt-get install golang
     go install github.com/ethereum/go-ethereum/cmd/ethkey@latest
     go install github.com/ethereum/go-ethereum/cmd/geth@latest
-    path+=("${HOME}/go/bin")
+    export PATH="${HOME}/go/bin:${PATH}"
 
     aws configure
 }

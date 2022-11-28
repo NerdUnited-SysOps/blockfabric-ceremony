@@ -31,11 +31,7 @@ download_file_from_aws () {
 
 install_dependencies () {
     sudo apt-get update # Probably put a specific version on all of these
-    sudo apt-get install awscli
-    sudo apt-get install pwgen
-    sudo apt-get install ethereum
-    sudo apt-get install jq
-    sudo apt-get install golang
+    sudo apt-get install -y awscli pwgen jq golang
     go install github.com/ethereum/go-ethereum/cmd/ethkey@v1.10.26
     go install github.com/ethereum/go-ethereum/cmd/geth@v1.10.26
     export PATH="${HOME}/go/bin:${PATH}"

@@ -135,9 +135,7 @@ create_distribution_owner_wallet () {
     echo -n "$(cat ${WORKING_DIR}/ks | jq -r ".address" | tr -d '\n')" > ${WORKING_DIR}/address
 }
 
-
-
-while getopts 'c:d:i:h' option; do
+while getopts 'd:i:h' option; do
   case "$option" in
     d)
         DESTINATION_DIR="${OPTARG}"
@@ -157,8 +155,8 @@ while getopts 'c:d:i:h' option; do
 done
 
 # For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
-AWS_SSH_KEY_SECRET_ID="ssh-key-secret"
-SSH_KEY_DOWNLOAD_PATH="../privatekey.pem"
+AWS_SSH_KEY_SECRET_ID="conductor-key-test"
+SSH_KEY_DOWNLOAD_PATH="../id_rsa"
 
 # validate required params
 if [ ! "$DESTINATION_DIR" ] || [ ! "$IP_ADDRESS_LIST" ] \

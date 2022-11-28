@@ -6,10 +6,13 @@ usage() {
   echo "Usage: $0 (options) ..."
   echo "  -d : Data directory on external volume"
   echo "  -h : Help"
-  echo "  -i : String of space separated IP addresses for Validator nodes."
   echo ""
   echo "Example: "
 }
+
+# For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
+AWS_SSH_KEY_SECRET_ID="conductor-key-test"
+SSH_KEY_DOWNLOAD_PATH="../id_rsa"
 
 # Helper function to download files from AWS Secrets Manager
 # We'll have an SSH key inside AWS Secrets Manager to be used by Ansible
@@ -23,6 +26,7 @@ download_file_from_aws () {
 
     if [ -f "$LOCAL_FILE" ]; then
         echo "$LOCAL_FILE exists."
+	chmod 0600 $SSH_KEY_DOWNLOAD_PATH
     else 
         echo "$LOCAL_FILE does not exist."
         exit 1
@@ -39,10 +43,9 @@ download_inventory_file () {
     user=$1
     host=$2
     file=$3
-    local_file_dir=$4
-    scp -i ../id_rsa.pem "$user"@"$host":"$file" "$local_file_dir"
+    local_file=$4
+    scp -i $SSH_KEY_DOWNLOAD_PATH "$user"@"$host":"$file" "$local_file"
 
-    local_file=$local_file_dir/$file
     if [ -f "$local_file" ]; then
         echo "$local_file exists."
     else 
@@ -51,17 +54,25 @@ download_inventory_file () {
     fi
 }
 
+get_list_of_ips () {
+    ansible all_quorum --list-hosts -i ./inventory | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
+}
+
 install_dependencies () {
     sudo apt-get update # Probably put a specific version on all of these
     sudo apt-get install -y awscli pwgen jq golang
     go install github.com/ethereum/go-ethereum/cmd/ethkey@v1.10.26
     go install github.com/ethereum/go-ethereum/cmd/geth@v1.10.26
+    python3 -m pip install --user ansible
     export PATH="${HOME}/go/bin:${PATH}"
+    export PATH="${HOME}/.local/bin:${PATH}"
 
     aws configure
 }
 
 setup_validator_nodes () {
+    IP_ADDRESS_LIST=$1
+    echo "IP_ADDRESS_LIST"
     for ip in ${IP_ADDRESS_LIST}
     do
         echo "Setting up validator node for ip: ${ip}"
@@ -135,13 +146,10 @@ create_distribution_owner_wallet () {
     echo -n "$(cat ${WORKING_DIR}/ks | jq -r ".address" | tr -d '\n')" > ${WORKING_DIR}/address
 }
 
-while getopts 'd:i:h' option; do
+while getopts 'd:h' option; do
   case "$option" in
     d)
         DESTINATION_DIR="${OPTARG}"
-        ;;
-    i)
-        IP_ADDRESS_LIST="${OPTARG}"
         ;;
     h)
       usage
@@ -154,12 +162,9 @@ while getopts 'd:i:h' option; do
   esac
 done
 
-# For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
-AWS_SSH_KEY_SECRET_ID="conductor-key-test"
-SSH_KEY_DOWNLOAD_PATH="../id_rsa"
 
 # validate required params
-if [ ! "$DESTINATION_DIR" ] || [ ! "$IP_ADDRESS_LIST" ] \
+if [ ! "$DESTINATION_DIR" ] \
     || [ ! "$AWS_SSH_KEY_SECRET_ID" ] || [ ! "$SSH_KEY_DOWNLOAD_PATH" ]
 then
     echo "Required params missing" 
@@ -171,11 +176,9 @@ fi
 echo "Starting key ceremony"
 install_dependencies
 download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
-download_inventory_file admin conductor.mainnet.nerd.blockfabric.net ~/inventory ./inventory
-# TODO
-# grab the inventory file
-# make the list of nodes an input into the rest of the script
-setup_validator_nodes
+download_inventory_file vagrant conductor.mainnet.nerd.blockfabric.net /opt/blockfabric/inventory ./inventory
+IP_LIST=$(get_list_of_ips)
+setup_validator_nodes "$IP_LIST"
 create_lockup_owner_wallet
 create_distribution_owner_wallet
 echo "Key ceremony complete"

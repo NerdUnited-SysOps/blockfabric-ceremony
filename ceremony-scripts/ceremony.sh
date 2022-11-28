@@ -30,6 +30,7 @@ download_file_from_aws () {
 }
 
 install_dependencies () {
+    sudo apt-get update # Probably put a specific version on all of these
     sudo apt-get install awscli
     sudo apt-get install pwgen
     sudo apt-get install ethereum

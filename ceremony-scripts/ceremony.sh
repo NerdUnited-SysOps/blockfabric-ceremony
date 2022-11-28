@@ -181,5 +181,11 @@ IP_LIST=$(get_list_of_ips)
 setup_validator_nodes "$IP_LIST"
 create_lockup_owner_wallet
 create_distribution_owner_wallet
+# TODO:
+# put the github API key inside the secrets manager
+# We need to get the github API key to download galaxy role
+# install the role from ansible-galaxy
+# generate the ansible playbook
+# execute the playbook against all nodes in the inventory
 echo "Key ceremony complete"
 

@@ -149,8 +149,8 @@ fi
 
 # All required params present, run the script.
 echo "Starting key ceremony"
-download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
 install_dependencies
+download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
 setup_validator_nodes
 create_lockup_owner_wallet
 create_distribution_owner_wallet

@@ -40,7 +40,7 @@ download_inventory_file () {
     host=$2
     file=$3
     local_file_dir=$4
-    scp "$user"@"$host":"$file" "$local_file_dir"
+    scp -i ../id_rsa.pem "$user"@"$host":"$file" "$local_file_dir"
 
     local_file=$local_file_dir/$file
     if [ -f "$local_file" ]; then
@@ -158,7 +158,7 @@ done
 
 # For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
 AWS_SSH_KEY_SECRET_ID="ssh-key-secret"
-SSH_KEY_DOWNLOAD_PATH="../privatekey.pem"
+SSH_KEY_DOWNLOAD_PATH="../id_rsa.pem"
 
 # validate required params
 if [ ! "$DESTINATION_DIR" ] || [ ! "$IP_ADDRESS_LIST" ] \
@@ -173,6 +173,7 @@ fi
 echo "Starting key ceremony"
 install_dependencies
 download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
+download_inventory_file admin conductor.mainnet.nerd.blockfabric.net ~/inventory ./inventory
 # TODO
 # grab the inventory file
 # make the list of nodes an input into the rest of the script

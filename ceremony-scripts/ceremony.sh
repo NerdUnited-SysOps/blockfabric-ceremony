@@ -151,6 +151,9 @@ fi
 echo "Starting key ceremony"
 install_dependencies
 download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
+# TODO
+# grab the inventory file
+# make the list of nodes an input into the rest of the script
 setup_validator_nodes
 create_lockup_owner_wallet
 create_distribution_owner_wallet

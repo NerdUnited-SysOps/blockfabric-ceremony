@@ -3,37 +3,55 @@
 # This script REQUIRES various environment variables to be set.
 # For some of them, try to calculate them from other environment variables.
 
-if [ -z "${RPC_IPS}" ]; then
-  if [ -n "${RPC_IPS_FILE}" ]; then
-    RPC_IPS=$(cat ${AWS_RPC_IPS_FILE} | tr "\n" " ")
-  elif [ -n "${AWS_RPC_IPS}" ] && [ -n "${AZURE_RPC_IPS}" ] && [ -n "${GCP_RPC_IPS}" ]; then
-    RPC_IPS="${AWS_RPC_IPS} ${AZURE_RPC_IPS} ${GCP_RPC_IPS}"
-  elif [ -n "${AWS_RPC_IPS_FILE}" ] && [ -n "${AZURE_RPC_IPS_FILE}" ] && [ -n "${GCP_RPC_IPS_FILE}" ]; then
-    RPC_IPS=$(cat ${AWS_RPC_IPS_FILE} ${AZURE_RPC_IPS_FILE} ${GCP_RPC_IPS_FILE} | tr "\n" " ")
-  else
-    echo "ERROR: Reguired envrionment variable(s) missing"
-    exit 1
-  fi  
-fi
+# Environment Vars
+ENV_NETWORK=testnet
+ENV_NETWORK_ID="2666328"
+ENV_NETWORK_NAME=WinTestnet
 
-if [ -z "${VALIDATOR_IPS}" ]; then
-  if [ -n "${VALIDATOR_IPS_FILE}" ]; then
-    VALIDATOR_IPS=$(cat ${AWS_VALIDATOR_IPS_FILE} | tr "\n" " ")
-  elif [ -n "${AWS_VALIDATOR_IPS}" ] && [ -n "${AZURE_VALIDATOR_IPS}" ] && [ -n "${GCP_VALIDATOR_IPS}" ]; then
-    VALIDATOR_IPS="${AWS_VALIDATOR_IPS} ${AZURE_VALIDATOR_IPS} ${GCP_VALIDATOR_IPS}"
-  elif [ -n "${AWS_VALIDATOR_IPS_FILE}" ] && [ -n "${AZURE_VALIDATOR_IPS_FILE}" ] && [ -n "${GCP_VALIDATOR_IPS_FILE}" ]; then
-    VALIDATOR_IPS=$(cat ${AWS_VALIDATOR_IPS_FILE} ${AZURE_VALIDATOR_IPS_FILE} ${GCP_VALIDATOR_IPS_FILE} | tr "\n" " ")
-  else
-    echo "ERROR: Reguired envrionment variable(s) missing"
-    exit 1
-  fi  
-fi
+NETWORK_LAUNCH_DATE="221001"
+NETWORK_DAILY_LIMIT_WEI_HEX_NOPREFIX=18556a6b879e00
+NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX="0x4563918244f40000"
+NETWORK_ISSUER_GAS_SEED_WEI_HEX="0x5d21dba00"
+ANSIBLE_ROLE_LACE_VERSION=1.0.0.5-test
+
+LOCKUP_SC_BALANCE=$(($NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX-${NETWORK_ISSUER_GAS_SEED_WEI_HEX}))
+ISSUER_GAS_SEED_WEI=$(printf '%d\n' ${NETWORK_ISSUER_GAS_SEED_WEI_HEX})
+NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
+
+#REMOVE
+PUBLIC_IPS=1
+
+#if [ -z "${RPC_IPS}" ]; then
+#  if [ -n "${RPC_IPS_FILE}" ]; then
+#    RPC_IPS=$(cat ${AWS_RPC_IPS_FILE} | tr "\n" " ")
+#  elif [ -n "${AWS_RPC_IPS}" ] && [ -n "${AZURE_RPC_IPS}" ] && [ -n "${GCP_RPC_IPS}" ]; then
+#    RPC_IPS="${AWS_RPC_IPS} ${AZURE_RPC_IPS} ${GCP_RPC_IPS}"
+#  elif [ -n "${AWS_RPC_IPS_FILE}" ] && [ -n "${AZURE_RPC_IPS_FILE}" ] && [ -n "${GCP_RPC_IPS_FILE}" ]; then
+#    RPC_IPS=$(cat ${AWS_RPC_IPS_FILE} ${AZURE_RPC_IPS_FILE} ${GCP_RPC_IPS_FILE} | tr "\n" " ")
+#  else
+#    echo "ERROR: Reguired envrionment variable(s) missing"
+#    exit 1
+#  fi
+#fi
+#
+#if [ -z "${VALIDATOR_IPS}" ]; then
+#  if [ -n "${VALIDATOR_IPS_FILE}" ]; then
+#    VALIDATOR_IPS=$(cat ${AWS_VALIDATOR_IPS_FILE} | tr "\n" " ")
+#  elif [ -n "${AWS_VALIDATOR_IPS}" ] && [ -n "${AZURE_VALIDATOR_IPS}" ] && [ -n "${GCP_VALIDATOR_IPS}" ]; then
+#    VALIDATOR_IPS="${AWS_VALIDATOR_IPS} ${AZURE_VALIDATOR_IPS} ${GCP_VALIDATOR_IPS}"
+#  elif [ -n "${AWS_VALIDATOR_IPS_FILE}" ] && [ -n "${AZURE_VALIDATOR_IPS_FILE}" ] && [ -n "${GCP_VALIDATOR_IPS_FILE}" ]; then
+#    VALIDATOR_IPS=$(cat ${AWS_VALIDATOR_IPS_FILE} ${AZURE_VALIDATOR_IPS_FILE} ${GCP_VALIDATOR_IPS_FILE} | tr "\n" " ")
+#  else
+#    echo "ERROR: Required envrionment variable(s) missing"
+#    exit 1
+#  fi
+#fi
 
 [ -z "${PUBLIC_IPS}" ] && PUBLIC_IPS="${RPC_IPS} ${VALIDATOR_IPS}"
 
-if [ -z "${NETWORK_ENVIRONMENT}" ] || [ -z "${NETWORK_ID}" ] || [ -z "${NETWORK_NAME}" ] || [ -z "${PUBLIC_IPS}" ]
+if [ -z "${ENV_NETWORK}" ] || [ -z "${ENV_NETWORK_ID}" ] || [ -z "${ENV_NETWORK_NAME}" ] || [ -z "${PUBLIC_IPS}" ]
 then
-    echo "ERROR: Reguired envrionment variable(s) missing"
+    echo "ERROR: Required envrionment variable(s) missing"
     exit 1
 fi
 
@@ -48,6 +66,7 @@ fi
 [ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="ansible/keys/lockupOwner/address"
 [ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="ansible/contracts/sc_lockup/Lockup.bin-runtime"
 [ -z "${LOCKUP_STORAGE_FILE}" ] && LOCKUP_STORAGE_FILE="ansible/contracts/sc_lockup/Lockup.txt"
+[ -z "${ANSIBLE_INSTALL_SCRIPT}" ] && ANSIBLE_INSTALL_SCRIPT="ansible/install"
 
 
 # If the INVENTORY_FILE contains a '/', then create the parent directory if it doesn't exists
@@ -60,6 +79,13 @@ fi
 BASE_KEYS_DIR='ansible/keys'
 NOW=$(date +%s)
 NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
+
+generate_ansible_galaxy_install_script() {
+    if [ ! -f "$ANSIBLE_INSTALL_SCRIPT" ]; then
+        echo "#!/usr/bin/env bash" > $ANSIBLE_INSTALL_SCRIPT
+        echo "ansible-galaxy install git+https://github.com/NerdUnited-Nerd/ansible-role-lace,$1 --force" >> $ANSIBLE_INSTALL_SCRIPT
+    fi
+}
 
 is_rpc_ip() {
   [ -z "${RPC_IPS##*$1*}" ]
@@ -114,6 +140,7 @@ playbook_section() {
     IP_ADDRESS=$1
     NODE_TYPE=$(node_type_for_ip ${IP_ADDRESS})
     NODE_CMD_LINE_FLAGS=$(node_command_line_flags ${IP_ADDRESS})
+
     cat << EOF
 - name: Quorum install
   hosts: ${IP_ADDRESS}
@@ -122,161 +149,46 @@ playbook_section() {
   roles:
     - role: ansible-role-lace
       vars:
-        custom_net_env: ${NETWORK_ENVIRONMENT}
-        custom_net_name: ${NETWORK_NAME}
-        custom_net_id: ${NETWORK_ID}
-
         # The following cmd line flags are set when custom_node_type is ${NODE_TYPE}:
         #   ${NODE_CMD_LINE_FLAGS}
-        custom_node_type: "${NODE_TYPE}"
+        goquorum_node_type: "${NODE_TYPE}"
+        goquorum_network_id: "${ENV_NETWORK_ID}"
+        goquorum_identity: "${ENV_NETWORK_NAME}_${NETWORK_ENV}_${ip}" # Unique identity per brand
 
 $(node_validator_pubs 8)
+        # GoQuorum version to install
+        goquorum_version: v22.7.2
 
-        # Custom networking config params
-        custom_p2p_port: 40111
+        # Genesis params
+        goquorum_init_database: "true"
+        goquorum_genesis_timestamp: ${NOW_IN_HEX}
 
-        custom_host_ip: "${IP_ADDRESS}"
+        ## CLI args
+        # --nat extip:{{ goquorum_host_ip }}
+        goquorum_host_ip: "${IP_ADDRESS}"
 
         goquorum_enode_list: [
 $(goquorum_enode_list 12)
         ]
 
-        # Custom genesis params
-        custom_genesis_gaslimit: 0xB71B00
-        custom_genesis_gastarget: 0
-        custom_genesis_blockperiodseconds: 12
-        custom_genesis_trans_emptyblockperiodseconds_block: 20
-        custom_genesis_trans_emptyblockperiodseconds: 60
-        custom_genesis_filename: "genesis.json"
-        custom_gasprice: 2
-
-        #custom_metrics_host: "0.0.0.0" 
-        #custom_metrics_port: 9669
-
-        # Secure custom config params
-        secure_custom_nodekey_keydir: "$(nodekey_keydir ${IP_ADDRESS})"
-        secure_custom_nodekey_filename: "nodekey"
-        secure_custom_nodekey_file_src: "{{ secure_custom_nodekey_keydir }}/{{ secure_custom_nodekey_filename }}"
-
-        goquorum_nodekey_file_src: "{{ secure_custom_nodekey_file_src }}"
-        goquorum_nodekey_file: "{{ goquorum_geth_dir }}/{{ secure_custom_nodekey_filename }}"
-
-        # Genesis params
-        goquorum_genesis_timestamp: ${NOW_IN_HEX}
-
-        goquorum_genesis_gaslimit: "{{ custom_genesis_gaslimit }}"
-        goquorum_genesis_blockperiodiseconds: "{{ custom_genesis_blockperiodseconds }}"
-
-        goquorum_genesis_trans_emptyblockperiodseconds_block: "{{ custom_genesis_trans_emptyblockperiodseconds_block }}"
-        goquorum_genesis_trans_emptyblockperiodseconds: "{{ custom_genesis_trans_emptyblockperiodseconds }}"
-
-        # User and group
-        goquorum_user: service
-        goquorum_group: "nogroup"
-        goquorum_architecture: "linux"
-        goquorum_env_opts: []
-        # default to use the private ip in cloud, set this to true to use the public ip
-        goquorum_discovery_public_ip: "false"
-        # internal state to maintain idempotency
-        goquorum_state_updates: []
-
-        # Version to install
-        goquorum_version: v22.7.2
-        goquorum_download_url: "https://artifacts.consensys.net/public/go-quorum/raw/versions/{{ goquorum_version }}/geth_{{ goquorum_version }}_{{ goquorum_architecture }}_amd64.tar.gz"
-
-        # Directory paths
-        goquorum_base_dir: "/var/.lace"
-        goquorum_install_dir: "{{ goquorum_base_dir }}/goquorum-{{ goquorum_version }}"
-        goquorum_current_dir: "{{ goquorum_base_dir }}/current"
-        goquorum_node_private_key_file: "" # JS: I don't think we need this
-        goquorum_data_dir: "{{ goquorum_base_dir }}/data"
-        goquorum_geth_dir: "{{ goquorum_data_dir }}/geth"
-        goquorum_keystore_dir: "{{ goquorum_data_dir }}/keystore"
-        goquorum_log_dir: "/var/log/.lace"
-        goquorum_ipc_file: "{{ goquorum_base_dir }}/geth.ipc"
-        goquorum_profile_file: "/etc/profile.d/goquorum-path.sh"
-        goquorum_genesis_file: "{{ custom_genesis_filename }}"
-        goquorum_genesis_path: "{{ goquorum_data_dir }}/{{ goquorum_genesis_file }}"
-
-        goquorum_static_nodes_file: "static-nodes.json"
-
-        # Managed service config
-        goquorum_managed_service: true
-        goquorum_systemd_state: restarted
-        goquorum_systemd_file: "goquorum.service"
-        goquorum_systemd_dir: "/etc/systemd/system"
-        goquorum_init_database: "true"
-
-        # Secure files...
+      # Secure files
         goquorum_import_private_key: "$(goquorum_import_private_key ${IP_ADDRESS})"
+        secure_custom_nodekey_keydir: "$(nodekey_keydir ${IP_ADDRESS})"
 
-        # goquorum config file args
-        goquorum_network_id: "{{ custom_net_id }}"
-        goquorum_sync_mode: full
-        goquorum_consensus_algorithm: "qbft"
-        goquorum_http_host: "0.0.0.0"
-        goquorum_http_port: 8669
-        goquorum_http_api: ["eth", "net","web3", "quorum", "{{ goquorum_consensus_algorithm }}"]
-        goquorum_http_cors_origins: ["*"]
-        goquorum_http_virtual_hosts: ["*"]
-        goquorum_no_discovery: "true"
-        goquorum_p2p_port: "{{ custom_p2p_port }}"
-        goquorum_identity: "{{ custom_net_name }}_${IP_ADDRESS}" # Unique identity per brand
-
-        ## CLI args
-        # --nat extip:{{ goquorum_host_ip }}
-        goquorum_host_ip: "{{ custom_host_ip }}"
-        goquorum_default_ip: "127.0.0.1"
-        # --verbosity # 0=silent, 1=error, 2=warn, 3=info, 4=debug, 5=detail
-        goquorum_log_verbosity: 2
-        # --mine --minerthreads 1 --emitcheckpoints \          goquorum_miner_enabled: "true" WARNING!!!!
-        goquorum_miner_threads: 1
-        goquorum_miner_etherbase: 0
-        goquorum_miner_gasprice: "{{ custom_gasprice }}"
-        goquorum_miner_gaslimit: "{{ custom_genesis_gaslimit }}"
-        goquorum_miner_gastarget: "{{ custom_genesis_gastarget }}"
-
-        ## user defined list of cmd line args as a string
-        #goquorum_user_cmdline_args: ""
-        #goquorum_env_opts: []
-        #goquorum_raft_block_time: 50
-        #goquorum_raft_port: 50400
-        #goquorum_raft_dns_enable: "true"
-        goquorum_ws_enabled: "false"
-        #goquorum_ws_host: "127.0.0.1"
-        #goquorum_ws_port: 8546
-        #goquorum_ws_origins: ["*"]
-        #goquorum_ws_api: ["db", "eth","miner", "net", "shh", "txpool","web3", "quorum", "{{ goquorum_consensus_algorithm }}"]
-        #goquorum_ws_rpcprefix: "/"
-        goquorum_graphql_enabled: "false"
-        #goquorum_graphql_virtual_hosts: ["*"]
-        #goquorum_graphql_cors_origins: ["*"]
-        #goquorum_enable_node_permissions: "true"
-        #goquorum_bootnodes: []
-
-        ## --metrics --pprof --pprof.addr 0.0.0.0 --pprof.port 9545 \
-        goquorum_metrics_enabled: "false"
-        #goquorum_metrics_host: "{{ custom_metrics_host }}" #def: "0.0.0.0"
-        #goquorum_metrics_port: "{{ custom_metrics_port }}" # def: 9545)"
-        ## --ptm.timeout 5 --ptm.url \$\${QUORUM_PTM_URL} --ptm.http.writebuffersize 4096 --ptm.http.readbuffersize 4096 --ptm.tls.mode off \
-        goquorum_ptm_enabled: "false"
-        #goquorum_ptm_timeout: 5
-        #goquorum_ptm_url: "http://127.0.0.1:9101"
-        #goquorum_ptm_http_writebuffersize: 4096
-        #goquorum_ptm_http_readbuffersize: 4096
-        #goquorum_ptm_tls_mode: "off"
-        ## --unlock 0 --password /config/passwords.txt \
-        #goquorum_unlock: 0
-        #goquorum_account_password_file: ""
-
-        #goquorum_istanbul_request_timeout: 10000
-        #goquorum_istanbul_block_period: 12
-        #goquorum_istanbul_epoch: 5
-        #goquorum_istanbul_ceil2nby3block: 0
+        # Preseeding vars
+        goquorum_genesis_prealloc_addr_0: "aD8828b5Aa66a0642B925AAA2F6C6Dc6f04dc1a4"
+        goquorum_genesis_prealloc_addr_1: "c002dBb8Ce18Cd4d32Bf2F3CEc003696ae10B366"
+        goquorum_genesis_prealloc_addr_2: "00Ac05334326CCCe74056E5ed9D144Dece49177A"
+        goquorum_genesis_prealloc_addr_3: "c004afcA49dce97d3483Ffa1f46C98874C838477"
+        goquorum_genesis_prealloc_addr_4: "85E9a6Ad6e6ECDe0e7CC58321fb63655260EF026"
+        goquorum_genesis_prealloc_addr_5: "2471eAc62fDd09f891D7662447B641f679a4b810"
+        goquorum_genesis_prealloc_addr_6: "c001A1F72Fb82734908398A30f294EAD7B58CcFf"
+        goquorum_genesis_prealloc_addr_7: "06D4140c116fb7682D7c2919E94Bc48f5F43C811"
+        goquorum_genesis_prealloc_addr_8: "c003ea2Fcf1EE83bEE2225f18b159ca947084826"
+        goquorum_genesis_prealloc_addr_9: "2cCc179c46A512B3c05Da76950c897ea4F116B8f"
+        goquorum_genesis_prealloc_amount_wei: 100000000000000
 
         # Smart contract genesis params
-        # Smart Contract code
-
         # lockupOwner:  testnet - one of the "new" wallets created above
         #               mainnet - no entity assigned to this (yet?)
         #                       - this wallet will need to be generated during the key ceremony
@@ -285,9 +197,8 @@ $(goquorum_enode_list 12)
         # lockupIssuer: testnet - address of the testnet distribution smart contract
         #               mainnet - address of the mainnet distribution smart contract
         lace_genesis_lockup_issuer_address: 8Be503bcdEd90ED42Eff31f56199399B2b0154CA
-        lace_genesis_lockup_daily_limit: "18289060790000"
-
-        lace_genesis_lockup_last_dist_timestamp: "${NOW_IN_HEX#0x}" # TBD - should it have 0x or not?
+        lace_genesis_lockup_daily_limit: "${NETWORK_DAILY_LIMIT_WEI_HEX#0x}"
+        lace_genesis_lockup_last_dist_timestamp: "${NOW_IN_HEX#0x}"
 
         # distributionOwner:  testnet - one of the "new" wallets created above
         #                     mainnet - the brand will receive a wallet generated during the key ceremony that will own the distribution contract
@@ -299,12 +210,17 @@ $(goquorum_enode_list 12)
         #                     mainnet - nogo will receive a wallet generated during the key ceremony and that wallet address will be set as the distributionIssuer by the distribution owner.
         #                             - this private key will be stored in KMS and is the key that the nodeserver will sign transactions with
         #                             - "Prod distribution wallet address"
-        lace_genesis_distribution_issuer_address: e577b7b8ae3f7cc16f2d65dded598bfa83f77ccd
+        lace_genesis_distribution_issuer_address: 053db724EDD7248168355ec21526c53Cce87e921
+        lace_genesis_distribution_issuer_balance: ${ISSUER_GAS_SEED_WEI}
+
+
         goquorum_genesis_sc_dao_code: "0x$(cat ${DAO_RUNTIME_BIN_FILE})"
         goquorum_genesis_sc_lockup_code: "0x$(cat ${LOCKUP_RUNTIME_BIN_FILE})"
         goquorum_genesis_sc_distribution_code: "0x$(cat ${DIST_RUNTIME_BIN_FILE})"
         goquorum_genesis_sc_lockup_balance: "1000000000000000000000000000"
+        goquorum_genesis_sc_lockup_balance: "${LOCKUP_SC_BALANCE}"
         goquorum_genesis_sc_distribution_balance: "2087600000000000000"
+        goquorum_genesis_sc_distribution_balance: "0"
 
         # Smart Contract storage
         goquorum_genesis_sc_dao_storage: {
@@ -328,7 +244,10 @@ $(sed -nE '/storage/,/}/ {
 EOF
 }
 
-echo "---" > ansible/goquorum.yaml
-for IP in ${PUBLIC_IPS}; do
-  playbook_section $IP >> ansible/goquorum.yaml
-done
+
+#echo "---" > ansible/goquorum.yaml
+#for IP in ${PUBLIC_IPS}; do
+#  playbook_section $IP >> ansible/goquorum.yaml
+#done
+
+generate_ansible_galaxy_install_script $ANSIBLE_ROLE_LACE_VERSION

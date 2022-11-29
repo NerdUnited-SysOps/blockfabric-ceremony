@@ -1,7 +1,38 @@
 #!/bin/bash
-
+#
+#===================================================================================
+#
+# FILE: generate-ansible-goquorum-laybook.sh
+#
+# USAGE: generate-ansible-goquorum-laybook.sh [Validator IP String] [RPC IP String]
+#
+# DESCRIPTION: List and/or delete all stale links in directory trees.
+# The default starting directory is the current directory.
+# Don’t descend directories on other filesystems.
+#
+# OPTIONS: see function ’usage’ below
+# REQUIREMENTS: ---
+# BUGS: ---
+# NOTES: ---
+# AUTHOR:
+# COMPANY:
+# VERSION: v0.0.1
+# CREATED:
+# REVISION:
+#===================================================================================
 # This script REQUIRES various environment variables to be set.
 # For some of them, try to calculate them from other environment variables.
+#
+#
+
+DAO_VERSION=v0.0.1
+ANSIBLE_ROLE_LACE_VERSION=1.0.0.5-test
+
+IPS1=$1
+IPS2=$2
+echo $IPS1
+echo $IPS2
+exit 2
 
 # Environment Vars
 ENV_NETWORK=testnet
@@ -12,18 +43,25 @@ NETWORK_LAUNCH_DATE="221001"
 NETWORK_DAILY_LIMIT_WEI_HEX_NOPREFIX=18556a6b879e00
 NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX="0x4563918244f40000"
 NETWORK_ISSUER_GAS_SEED_WEI_HEX="0x5d21dba00"
-ANSIBLE_ROLE_LACE_VERSION=1.0.0.5-test
 
 LOCKUP_SC_BALANCE=$(($NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX-${NETWORK_ISSUER_GAS_SEED_WEI_HEX}))
 ISSUER_GAS_SEED_WEI=$(printf '%d\n' ${NETWORK_ISSUER_GAS_SEED_WEI_HEX})
 NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 
-#REMOVE
-PUBLIC_IPS=1
-
+PROJECT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+ANSIBLE_DIR=$PROJECT_DIR/ansible
+RPC_IPS_FILE=$ANSIBLE_DIR/rpc_ips.txt
+VALIDATOR_IPS_FILE=$ANSIBLE_DIR/validator_ips.txt
+echo $PROJECT_DIR
+echo $ANSIBLE_DIR
+echo $RPC_IPS_FILE
+echo $VALIDATOR_IPS_FILE
+echo 1
 if [ -z "${RPC_IPS}" ]; then
   if [ -n "${RPC_IPS_FILE}" ]; then
-    RPC_IPS=$(cat ${AWS_RPC_IPS_FILE} | tr "\n" " ")
+      echo 2
+    RPC_IPS=$(cat ${RPC_IPS_FILE} | tr "\n" " ")
+    echo 3
   elif [ -n "${AWS_RPC_IPS}" ] && [ -n "${AZURE_RPC_IPS}" ] && [ -n "${GCP_RPC_IPS}" ]; then
     RPC_IPS="${AWS_RPC_IPS} ${AZURE_RPC_IPS} ${GCP_RPC_IPS}"
   elif [ -n "${AWS_RPC_IPS_FILE}" ] && [ -n "${AZURE_RPC_IPS_FILE}" ] && [ -n "${GCP_RPC_IPS_FILE}" ]; then
@@ -33,10 +71,11 @@ if [ -z "${RPC_IPS}" ]; then
     exit 1
   fi
 fi
+echo 1
 
 if [ -z "${VALIDATOR_IPS}" ]; then
   if [ -n "${VALIDATOR_IPS_FILE}" ]; then
-    VALIDATOR_IPS=$(cat ${AWS_VALIDATOR_IPS_FILE} | tr "\n" " ")
+    VALIDATOR_IPS=$(cat ${VALIDATOR_IPS_FILE} | tr "\n" " ")
   elif [ -n "${AWS_VALIDATOR_IPS}" ] && [ -n "${AZURE_VALIDATOR_IPS}" ] && [ -n "${GCP_VALIDATOR_IPS}" ]; then
     VALIDATOR_IPS="${AWS_VALIDATOR_IPS} ${AZURE_VALIDATOR_IPS} ${GCP_VALIDATOR_IPS}"
   elif [ -n "${AWS_VALIDATOR_IPS_FILE}" ] && [ -n "${AZURE_VALIDATOR_IPS_FILE}" ] && [ -n "${GCP_VALIDATOR_IPS_FILE}" ]; then
@@ -46,8 +85,10 @@ if [ -z "${VALIDATOR_IPS}" ]; then
     exit 1
   fi
 fi
+echo 1
 
 [ -z "${PUBLIC_IPS}" ] && PUBLIC_IPS="${RPC_IPS} ${VALIDATOR_IPS}"
+echo 1
 
 if [ -z "${ENV_NETWORK}" ] || [ -z "${ENV_NETWORK_ID}" ] || [ -z "${ENV_NETWORK_NAME}" ] || [ -z "${PUBLIC_IPS}" ]
 then
@@ -55,31 +96,33 @@ then
     exit 1
 fi
 
+echo 1
 # These environment variables have DEFAULT values if not set
-[ -z "${DAO_STORAGE_FILE}" ] && DAO_STORAGE_FILE="ansible/contracts/sc_dao/Storage.txt"
-[ -z "${DAO_RUNTIME_BIN_FILE}" ] && DAO_RUNTIME_BIN_FILE="ansible/contracts/sc_dao/ValidatorSmartContractAllowList.bin-runtime"
+[ -z "${DAO_STORAGE_FILE}" ] && DAO_STORAGE_FILE="ansible/contracts/sc_dao/$DAO_VERSION/Storage.txt"
+[ -z "${DAO_RUNTIME_BIN_FILE}" ] && DAO_RUNTIME_BIN_FILE="ansible/contracts/sc_dao/v0.0.1/ValidatorSmartContractAllowList.bin-runtime"
 [ -z "${DIST_CONTRACT_ARCHIVE_DIR}" ] && DIST_CONTRACT_ARCHIVE_DIR="ansible/contracts/sc_lockup"
 [ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="ansible/contracts/sc_lockup/Distribution.bin-runtime"
-[ -z "${DIST_STORAGE_FILE}" ] && DIST_STORAGE_FILE="ansible/contracts/sc_lockup/Distribution.txt"
 [ -z "${DISTRIBUTION_OWNER_ADDRESS_FILE}" ] && DISTRIBUTION_OWNER_ADDRESS_FILE="ansible/keys/distributionOwner/address"
 [ -z "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] && LOCKUP_CONTRACT_ARCHIVE_DIR="ansible/contracts/sc_lockup"
 [ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="ansible/keys/lockupOwner/address"
 [ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="ansible/contracts/sc_lockup/Lockup.bin-runtime"
-[ -z "${LOCKUP_STORAGE_FILE}" ] && LOCKUP_STORAGE_FILE="ansible/contracts/sc_lockup/Lockup.txt"
 [ -z "${ANSIBLE_INSTALL_SCRIPT}" ] && ANSIBLE_INSTALL_SCRIPT="ansible/install"
 
-
+echo 1
 # If the INVENTORY_FILE contains a '/', then create the parent directory if it doesn't exists
 [ -z "${INVENTORY_FILE##*/*}" ] && [ ! -d ${INVENTORY_FILE%/*} ] && mkdir -p ${INVENTORY_FILE%/*}
 
+echo 1
 # Create directories that don't exist
 [ -d "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] || mkdir -p ${LOCKUP_CONTRACT_ARCHIVE_DIR}
 [ -d "${DIST_CONTRACT_ARCHIVE_DIR}" ] || mkdir -p ${DIST_CONTRACT_ARCHIVE_DIR}
 
+echo 1
 BASE_KEYS_DIR='ansible/keys'
 NOW=$(date +%s)
 NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 
+echo 1
 generate_ansible_galaxy_install_script() {
     if [ ! -f "$ANSIBLE_INSTALL_SCRIPT" ]; then
         echo "#!/usr/bin/env bash" > $ANSIBLE_INSTALL_SCRIPT
@@ -97,7 +140,7 @@ is_validator_ip() {
 
 goquorum_enode_list() {
   INDENTATION=$1
-  LAST_IP=${VALIDATOR_IPS##* }
+23 echo 1         LAST_IP=${VALIDATOR_IPS##* }
   COMMA=','
   for IP in ${VALIDATOR_IPS}; do
     # Set the comma to an empty sting for the last line.
@@ -107,6 +150,7 @@ goquorum_enode_list() {
 }
 
 goquorum_import_private_key() {
+    echo $0
   is_validator_ip $1 && echo 'true' && return
   echo 'false'
 }
@@ -245,8 +289,10 @@ EOF
 }
 
 
+echo 1
 echo "---" > ansible/goquorum.yaml
 for IP in ${PUBLIC_IPS}; do
+echo 2
   playbook_section $IP >> ansible/goquorum.yaml
 done
 

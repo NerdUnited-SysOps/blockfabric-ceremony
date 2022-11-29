@@ -160,9 +160,7 @@ download_ansible_role() {
     git clone git@github.com:NerdUnited-Nerd/ansible-role-lace.git ~/ansible/roles/ansible-role-lace
 }
 
-while getopts 'b:d:h' option; 
-shift $((OPTIND-1))
-do
+while getopts 'b:d:h' option; do
   case "$option" in
     b)
         BRAND_NAME="${OPTARG}"
@@ -180,13 +178,30 @@ do
       ;;
   esac
 done
-
+shift $((OPTIND-1))
 
 # validate required params
-if [ ! "$DESTINATION_DIR" ] || [ ! "$BRAND_NAME" ] \
-    || [ ! "$AWS_SSH_KEY_SECRET_ID" ] || [ ! "$SSH_KEY_DOWNLOAD_PATH" ]
+if [ ! "$DESTINATION_DIR" ]
 then
-    echo "Required params missing" 
+    echo "ERROR: Missing d param"
+    usage
+    exit 1
+fi
+if [ ! "$BRAND_NAME" ]
+then
+    echo "ERROR: Missing b param"
+    usage
+    exit 1
+fi
+if [ ! "$AWS_SSH_KEY_SECRET_ID" ]
+then
+    echo "ERROR: Missing aws ssh key secret id"
+    usage
+    exit 1
+fi
+if [ ! "$SSH_KEY_DOWNLOAD_PATH" ]
+then
+    echo "ERROR: Missing ssh key download path"
     usage
     exit 1
 fi

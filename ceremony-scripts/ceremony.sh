@@ -111,7 +111,6 @@ setup_validator_nodes () {
         # This requires a password file.
         ethkey inspect --private --passwordfile $PASSWORD_FILE $nodekey_ks > nodekey_contents 
         sed  -n "s/Private\skey:\s*\(.*\)/\1/p"  nodekey_contents | tr -d '\n' > ${WORKING_DIR}/nodekey
-        sed  -n "s/Private\skey:\s*\(.*\)/\1/p"  nodekey_contents | tr -d '\n' > ${WORKING_DIR}/nodekey
         sed  -n "s/Public\skey:\s*04\(.*\)/\1/p" nodekey_contents | tr -d '\n' > ${WORKING_DIR}/nodekey_pub
         sed  -n "s/Address:\s*\(.*\)/\1/p"       nodekey_contents | tr -d '\n' > ${WORKING_DIR}/nodekey_address
         echo -n "0x$(cat ${WORKING_DIR}/account_ks | jq -r ".address" | tr -d '\n')" > ${WORKING_DIR}/account_address

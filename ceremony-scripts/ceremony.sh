@@ -146,6 +146,11 @@ create_distribution_owner_wallet () {
     echo -n "$(cat ${WORKING_DIR}/ks | jq -r ".address" | tr -d '\n')" > ${WORKING_DIR}/address
 }
 
+download_ansible_role() {
+    mkdir -p ~/ansible/roles/
+    git clone git@github.com:NerdUnited-Nerd/ansible-role-lace.git ~/ansible/roles/ansible-role-lace
+}
+
 while getopts 'd:h' option; do
   case "$option" in
     d)

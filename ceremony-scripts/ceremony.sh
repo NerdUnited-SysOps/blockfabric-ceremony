@@ -1,6 +1,15 @@
 #!/bin/bash
 # Script `ceremony`
 
+# TODO:
+# Pull in validator DAO smart contract bytecode v0.0.1
+# Pull in bytecode for Lockup and Distribution contracts v0.1.0
+# Generate storage.txt with the account and nodekeys
+# Move the keys to the appropriate locations
+# We need to know where to put the passwords for the keystore files
+# Format the volumes
+# Push the keys to the volumes (wiht output of where they're going to the console)
+
 usage() {
   echo "This script sets up the validator nodes..."
   echo "Usage: $0 (options) ..."
@@ -121,6 +130,22 @@ setup_validator_nodes () {
         mv nodekey_contents ${WORKING_DIR}/nodekey_contents
     done
 }
+
+#- name: Build dao allowed accounts for storage section
+#if: (env.TF_ACTION_TYPE == 'apply' && github.event_name  == 'push')
+## TODO: Can cache the DAO allowed accounts list until the version changes
+#run: |
+#  [ -d $(dirname $DAO_CONTRACT_ARCHIVE_DIR) ] || mkdir -p $(dirname $DAO_CONTRACT_ARCHIVE_DIR)
+#  echo -n > $ALLOWED_ACCOUNTS_FILE
+#  while read ip; do
+#    ACCOUNT_ADDRESS=$(cat ansible/keys/$ip/account_address | tr -d '\n')
+#    NODEKEY_ADDRESS=$(cat ansible/keys/$ip/nodekey_address | tr -d '\n')
+#    echo "$ACCOUNT_ADDRESS, $NODEKEY_ADDRESS" >> $ALLOWED_ACCOUNTS_FILE
+#  done < $VALIDATOR_IPS_FILE
+#env:
+#  ALLOWED_ACCOUNTS_FILE: ansible/contracts/sc_dao/allowedAccountsAndValidators.txt
+#  VALIDATOR_IPS_FILE: ansible/validator_ips.txt
+#  DAO_CONTRACT_ARCHIVE_DIR: ansible/contracts/sc_dao
 
 create_lockup_owner_wallet () {
     mkdir -p ${DESTINATION_DIR}/lockupOwner

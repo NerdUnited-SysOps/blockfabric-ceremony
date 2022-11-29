@@ -22,10 +22,10 @@
     * During the update we have to select "yes" on the service prompt
     * User inputs credentials to retrieve secure data from AWS Secrets Manager
 * The following secrets are retrieved
-* Private SSH key for connecting with conductor
-* Private SSH key for connecting with nodes
-* github keys for smart contracts
-* github keys for `ansible-role-lace`
+    * Private SSH key for connecting with conductor
+    * Private SSH key for connecting with nodes
+    * github keys for smart contracts
+    * github keys for `ansible-role-lace`
 
 ### Update SSH Keys
 * generate new ssh keys for conductor and nodes

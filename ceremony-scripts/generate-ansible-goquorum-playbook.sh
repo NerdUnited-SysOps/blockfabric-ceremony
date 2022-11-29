@@ -21,31 +21,31 @@ NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 #REMOVE
 PUBLIC_IPS=1
 
-#if [ -z "${RPC_IPS}" ]; then
-#  if [ -n "${RPC_IPS_FILE}" ]; then
-#    RPC_IPS=$(cat ${AWS_RPC_IPS_FILE} | tr "\n" " ")
-#  elif [ -n "${AWS_RPC_IPS}" ] && [ -n "${AZURE_RPC_IPS}" ] && [ -n "${GCP_RPC_IPS}" ]; then
-#    RPC_IPS="${AWS_RPC_IPS} ${AZURE_RPC_IPS} ${GCP_RPC_IPS}"
-#  elif [ -n "${AWS_RPC_IPS_FILE}" ] && [ -n "${AZURE_RPC_IPS_FILE}" ] && [ -n "${GCP_RPC_IPS_FILE}" ]; then
-#    RPC_IPS=$(cat ${AWS_RPC_IPS_FILE} ${AZURE_RPC_IPS_FILE} ${GCP_RPC_IPS_FILE} | tr "\n" " ")
-#  else
-#    echo "ERROR: Reguired envrionment variable(s) missing"
-#    exit 1
-#  fi
-#fi
-#
-#if [ -z "${VALIDATOR_IPS}" ]; then
-#  if [ -n "${VALIDATOR_IPS_FILE}" ]; then
-#    VALIDATOR_IPS=$(cat ${AWS_VALIDATOR_IPS_FILE} | tr "\n" " ")
-#  elif [ -n "${AWS_VALIDATOR_IPS}" ] && [ -n "${AZURE_VALIDATOR_IPS}" ] && [ -n "${GCP_VALIDATOR_IPS}" ]; then
-#    VALIDATOR_IPS="${AWS_VALIDATOR_IPS} ${AZURE_VALIDATOR_IPS} ${GCP_VALIDATOR_IPS}"
-#  elif [ -n "${AWS_VALIDATOR_IPS_FILE}" ] && [ -n "${AZURE_VALIDATOR_IPS_FILE}" ] && [ -n "${GCP_VALIDATOR_IPS_FILE}" ]; then
-#    VALIDATOR_IPS=$(cat ${AWS_VALIDATOR_IPS_FILE} ${AZURE_VALIDATOR_IPS_FILE} ${GCP_VALIDATOR_IPS_FILE} | tr "\n" " ")
-#  else
-#    echo "ERROR: Required envrionment variable(s) missing"
-#    exit 1
-#  fi
-#fi
+if [ -z "${RPC_IPS}" ]; then
+  if [ -n "${RPC_IPS_FILE}" ]; then
+    RPC_IPS=$(cat ${AWS_RPC_IPS_FILE} | tr "\n" " ")
+  elif [ -n "${AWS_RPC_IPS}" ] && [ -n "${AZURE_RPC_IPS}" ] && [ -n "${GCP_RPC_IPS}" ]; then
+    RPC_IPS="${AWS_RPC_IPS} ${AZURE_RPC_IPS} ${GCP_RPC_IPS}"
+  elif [ -n "${AWS_RPC_IPS_FILE}" ] && [ -n "${AZURE_RPC_IPS_FILE}" ] && [ -n "${GCP_RPC_IPS_FILE}" ]; then
+    RPC_IPS=$(cat ${AWS_RPC_IPS_FILE} ${AZURE_RPC_IPS_FILE} ${GCP_RPC_IPS_FILE} | tr "\n" " ")
+  else
+    echo "ERROR: Reguired envrionment variable(s) missing"
+    exit 1
+  fi
+fi
+
+if [ -z "${VALIDATOR_IPS}" ]; then
+  if [ -n "${VALIDATOR_IPS_FILE}" ]; then
+    VALIDATOR_IPS=$(cat ${AWS_VALIDATOR_IPS_FILE} | tr "\n" " ")
+  elif [ -n "${AWS_VALIDATOR_IPS}" ] && [ -n "${AZURE_VALIDATOR_IPS}" ] && [ -n "${GCP_VALIDATOR_IPS}" ]; then
+    VALIDATOR_IPS="${AWS_VALIDATOR_IPS} ${AZURE_VALIDATOR_IPS} ${GCP_VALIDATOR_IPS}"
+  elif [ -n "${AWS_VALIDATOR_IPS_FILE}" ] && [ -n "${AZURE_VALIDATOR_IPS_FILE}" ] && [ -n "${GCP_VALIDATOR_IPS_FILE}" ]; then
+    VALIDATOR_IPS=$(cat ${AWS_VALIDATOR_IPS_FILE} ${AZURE_VALIDATOR_IPS_FILE} ${GCP_VALIDATOR_IPS_FILE} | tr "\n" " ")
+  else
+    echo "ERROR: Required envrionment variable(s) missing"
+    exit 1
+  fi
+fi
 
 [ -z "${PUBLIC_IPS}" ] && PUBLIC_IPS="${RPC_IPS} ${VALIDATOR_IPS}"
 
@@ -245,9 +245,9 @@ EOF
 }
 
 
-#echo "---" > ansible/goquorum.yaml
-#for IP in ${PUBLIC_IPS}; do
-#  playbook_section $IP >> ansible/goquorum.yaml
-#done
+echo "---" > ansible/goquorum.yaml
+for IP in ${PUBLIC_IPS}; do
+  playbook_section $IP >> ansible/goquorum.yaml
+done
 
 generate_ansible_galaxy_install_script $ANSIBLE_ROLE_LACE_VERSION

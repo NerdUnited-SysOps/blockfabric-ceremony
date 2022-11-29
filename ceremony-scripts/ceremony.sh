@@ -4,6 +4,7 @@
 usage() {
   echo "This script sets up the validator nodes..."
   echo "Usage: $0 (options) ..."
+  echo "  -b : Brand name"
   echo "  -d : Data directory on external volume"
   echo "  -h : Help"
   echo ""
@@ -146,8 +147,11 @@ create_distribution_owner_wallet () {
     echo -n "$(cat ${WORKING_DIR}/ks | jq -r ".address" | tr -d '\n')" > ${WORKING_DIR}/address
 }
 
-while getopts 'd:h' option; do
+while getopts 'b:d:h' option; do
   case "$option" in
+    b)
+        BRAND_NAME="${OPTARG}"
+        ;;
     d)
         DESTINATION_DIR="${OPTARG}"
         ;;
@@ -164,7 +168,7 @@ done
 
 
 # validate required params
-if [ ! "$DESTINATION_DIR" ] \
+if [ ! "$DESTINATION_DIR" ] || [ ! "$BRAND_NAME" ] \
     || [ ! "$AWS_SSH_KEY_SECRET_ID" ] || [ ! "$SSH_KEY_DOWNLOAD_PATH" ]
 then
     echo "Required params missing" 
@@ -176,7 +180,7 @@ fi
 echo "Starting key ceremony"
 install_dependencies
 download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
-download_inventory_file vagrant conductor.mainnet.nerd.blockfabric.net /opt/blockfabric/inventory ./inventory
+download_inventory_file vagrant conductor.mainnet."$BRAND_NAME".blockfabric.net /opt/blockfabric/inventory ./inventory
 IP_LIST=$(get_list_of_ips)
 setup_validator_nodes "$IP_LIST"
 create_lockup_owner_wallet

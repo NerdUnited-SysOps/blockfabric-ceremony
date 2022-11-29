@@ -152,7 +152,9 @@ download_ansible_role() {
     git clone git@github.com:NerdUnited-Nerd/ansible-role-lace.git ~/ansible/roles/ansible-role-lace
 }
 
-while getopts 'b:d:h' option; do
+while getopts 'b:d:h' option; 
+shift $((OPTIND-1))
+do
   case "$option" in
     b)
         BRAND_NAME="${OPTARG}"

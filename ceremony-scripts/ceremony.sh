@@ -59,6 +59,14 @@ get_list_of_ips () {
     ansible all_quorum --list-hosts -i ./inventory | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
 }
 
+get_list_of_validator_ips () {
+    ansible validator --list-hosts -i ./inventory | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
+}
+
+get_list_of_rpc_ips () {
+    ansible rpc --list-hosts -i ./inventory | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
+}
+
 install_dependencies () {
     sudo apt-get update # Probably put a specific version on all of these
     sudo apt-get install -y awscli pwgen jq golang
@@ -187,9 +195,12 @@ install_dependencies
 download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
 download_inventory_file vagrant conductor.mainnet."$BRAND_NAME".blockfabric.net /opt/blockfabric/inventory ./inventory
 IP_LIST=$(get_list_of_ips)
+VALIDATOR_IPS=$(get_list_of_validator_ips)
+RPC_IPS=$(get_list_of_rpc_ips)
 setup_validator_nodes "$IP_LIST"
 create_lockup_owner_wallet
 create_distribution_owner_wallet
+generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"
 # TODO:
 # put the github API key inside the secrets manager
 # We need to get the github API key to download galaxy role

@@ -113,17 +113,19 @@ Ask room for consensus on “fitness of purpose” of equipment
 
 Crypto Operator issues the following Linux commands 
 
-
 ```sh
 git clone repo… (this repo should be “publicly” available (VP of engineering of brand should inspect prior to ceremony, repo should be available X number of days before ceremony) 
 ```
 cd local repo directory 
+
+Execute scripts according to steps in `technical-steps.md`
+
 ```
 execute script 1 (creates and copies keys to validator nodes) 
 ```
 execute script 2 (copies keys to HOT locations), AWS SM 
 
-execute script n (no keys should be shown on screen during creation), keys can be stored locally on filesystem as it is ephemeral  
+execute script n (no keys should be shown on screen during creation), keys can be stored locally on filesystem as it is ephemeral
 
 *** I propose all ansible is executed here to copy keys to VA nodes and start geth systemd service *** 
 

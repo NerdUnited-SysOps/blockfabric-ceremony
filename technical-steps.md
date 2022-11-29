@@ -49,6 +49,13 @@
 * Generate ansible variables
 * Generate ansible playbook?
 
+### Save artifacts
+* Push ansible artifacts to a git repository
+    * `genesis.json`, variables files, inventory, etc
+* Push Distribution Issuer private key to AWS SM
+* Save all public/private keys to their respective volumes
+* Save new SSH keys to the necessary volume(s)
+
 ### Execute ansible
 * Run ansible against the entire inventory
 
@@ -56,3 +63,4 @@
 * Need to inactivate the IAM user
 * The key will be called blockfabric_<network>_ssh_key_pair
 * Need to input brand name for conductor name resolution (the address is `conductor.mainnet.<brand_name>.blockfabric.net`)
+

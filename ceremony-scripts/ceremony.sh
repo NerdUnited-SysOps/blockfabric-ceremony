@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script `ceremony`
 
-# TODO:
+# TODO: (Need to haves)
 # ✅ Create an env file with all the environment variables
 # ✅ Create env file with overrides
 # ✅ Pull in validator DAO smart contract bytecode v0.0.1
@@ -24,11 +24,17 @@
 # put the github API key inside the secrets manager
 # Retrieve github API token from secrets manager
 # install the role from ansible-galaxy
-# generate the ansible playbook
+# ✅ generate the ansible playbook
 # execute the playbook against all nodes in the inventory
+
+# TODO: (Nice to haves)
 # consistent formatting
 # sensible error checking
 # standardize individual scripts
+# * Standardized inputs
+# * Standardized output
+# * All output redirected to logs
+# Implement a verbose mode to output to logs and stdout
 
 usage() {
   echo "This script sets up the validator nodes..."

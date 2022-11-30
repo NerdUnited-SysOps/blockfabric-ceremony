@@ -23,22 +23,20 @@ LOCKUP_URL=https://${GIT_TOKEN}:@api.github.com/repos/NerdCoreSdk/sc_lockup/rele
 #     /v0.1.0
 #       /*.bin
 
-get_contract_binaries() {
-	wget -q --auth-no-challenge \
-		--header='Accept:application/octet-stream' \
-		${LOCKUP_URL} -O ${LOCKUP_DIR}/lockup.tar.gz
 
-	tar -xvf ${LOCKUP_DIR}/lockup.tar.gz -C ${LOCKUP_DIR}
-
-	wget -q --auth-no-challenge \
-		--header='Accept:application/octet-stream' \
-		${DAO_URL} -O ${DAO_DIR}/dao.zip
-
-	unzip -o ${DAO_DIR}/dao.zip -d ${DAO_DIR}
-}
-
-echo "Downloading smart contract bytecode"
+echo "Downloading smart contract bytecode" | tee ${LOG_FILE}
 
 mkdir -p ${DAO_DIR} ${LOCKUP_DIR}
-get_contract_binaries
+
+wget -q --auth-no-challenge \
+	--header='Accept:application/octet-stream' \
+	${LOCKUP_URL} -O ${LOCKUP_DIR}/lockup.tar.gz &>> ${LOG_FILE}
+
+tar -xvf ${LOCKUP_DIR}/lockup.tar.gz -C ${LOCKUP_DIR} &>> ${LOG_FILE}
+
+wget -q --auth-no-challenge \
+	--header='Accept:application/octet-stream' \
+	${DAO_URL} -O ${DAO_DIR}/dao.zip &>> ${LOG_FILE}
+
+unzip -o ${DAO_DIR}/dao.zip -d ${DAO_DIR} &>> ${LOG_FILE}
 

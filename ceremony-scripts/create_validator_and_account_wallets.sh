@@ -27,7 +27,7 @@ do
 	echo $password > $PASSWORD_FILE
 
 	# Setup node wallet
-	geth account new --password <(echo -n "$password") --keystore ${WORKING_DIR} > /dev/null
+	geth account new --password <(echo -n "$password") --keystore ${WORKING_DIR} &>> ${LOG_FILE}
 	nodekey_ks=${WORKING_DIR}/nodekey_keystore
 	mv ${WORKING_DIR}/UTC* ${nodekey_ks}
 
@@ -42,7 +42,7 @@ do
 
 	# Setup account wallet
 	password2=$(pwgen -c 25 -n 1)
-	geth account new --password <(echo -n "$password2") --keystore ${WORKING_DIR} > /dev/null
+	geth account new --password <(echo -n "$password2") --keystore ${WORKING_DIR} &>> ${LOG_FILE}
 	mv ${WORKING_DIR}/UTC* ${WORKING_DIR}/account_keystore
 	echo $password2 > ${WORKING_DIR}/account_password
 

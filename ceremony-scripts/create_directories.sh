@@ -11,3 +11,5 @@ mkdir -p ${KEYS_DIR}/distributionOwner \
     ${VOLUMES_DIR}/volume2 \
     ${VOLUMES_DIR}/volume3 \
     ${VOLUMES_DIR}/volume4
+
+echo -e &> ${LOG_FILE}

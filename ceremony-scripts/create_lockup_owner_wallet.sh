@@ -14,7 +14,7 @@ WORKING_DIR=${vol1}
 
 password=$(pwgen -c 25 -n 1)
 
-geth account new --password <(echo -n "$password") --keystore ${WORKING_DIR} > /dev/null
+geth account new --password <(echo -n "$password") --keystore ${WORKING_DIR} &>> ${LOG_FILE}
 mv ${WORKING_DIR}/UTC* ${WORKING_DIR}/keystore
 echo $password > ${WORKING_DIR}/password
 

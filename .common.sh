@@ -10,8 +10,6 @@ export GETH_VERSION=v1.10.26
 export ANSIBLE_ROLE_LACE_VERSION=1.0.0.5-test
 
 # Contract versions
-export SC_LOCKUP_BINARY_VERSION=
-export DAO_LOCKUP_BINARY_VERSION=
 export DAO_VERSION=v0.0.1
 export LOCKUP_VERSION=v0.1.0
 
@@ -24,6 +22,7 @@ export KEYS_DIR=${BASE_DIR}/keys
 export CONTRACTS_DIR=${BASE_DIR}/contracts
 export VOLUMES_DIR=${BASE_DIR}/volumes
 export ANSIBLE_DIR=${BASE_DIR}/ansible
+export LOG_FILE=${BASE_DIR}/log
 
 # Pathing for additional binaries
 export PATH="${HOME}/go/bin:${PATH}"	 # Go binary path

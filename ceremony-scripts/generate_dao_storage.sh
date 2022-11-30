@@ -14,9 +14,9 @@ DAO_DIR=${CONTRACTS_DIR}/sc_dao/${DAO_VERSION}
 DAO_URL=https://api.github.com/repos/NerdCoreSdk/sc_dao/zipball/${DAO_VERSION}
 mkdir -p ${DAO_DIR}
 
-curl -L -H "Authorization: Bearer ${GIT_TOKEN}" ${DAO_URL} --output ${DAO_DIR}/repo.zip
+curl -L -H "Authorization: Bearer ${GIT_TOKEN}" ${DAO_URL} --output ${DAO_DIR}/repo.zip &>> ${LOG_FILE}
 
-unzip -o ${DAO_DIR}/repo.zip -d ${DAO_DIR}
+unzip -o ${DAO_DIR}/repo.zip -d ${DAO_DIR} &>> ${LOG_FILE}
 mv ${DAO_DIR}/Nerd* ${DAO_DIR}/repo
 
 WORKING_DIR=${DAO_DIR}/repo/genesisContent
@@ -34,7 +34,7 @@ do
   echo "$ACCOUNT_ADDRESS, $NODEKEY_ADDRESS" >> $ALLOWED_ACCOUNTS_FILE
 done
 
-npm i
+npm i &>> ${LOG_FILE}
 node ./createContent.js
 mv ${WORKING_DIR}/Storage.txt ${DAO_DIR}
 

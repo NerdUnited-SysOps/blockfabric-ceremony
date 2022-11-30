@@ -245,6 +245,7 @@ create_key_directories
 setup_validator_nodes "$IP_LIST"
 create_lockup_owner_wallet
 create_distribution_owner_wallet
-./scripts/generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"
-echo "Key ceremony complete"
+${SCRIPTS_DIR}/generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"
+
+${SCRIPTDS_DIR}/finished.sh
 

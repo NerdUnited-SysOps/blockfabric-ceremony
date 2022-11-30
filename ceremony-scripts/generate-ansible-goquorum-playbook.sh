@@ -65,7 +65,7 @@ function help {
 
 
 # In case you wanted to check what variables were passed
-echo "flags = $*"
+#echo "flags = $*"
 
 OPTSPEC=":hv:r:-:"
 while getopts "$OPTSPEC" optchar; do
@@ -90,11 +90,9 @@ while getopts "$OPTSPEC" optchar; do
 			;;
 		v)
             VALIDATOR_IPS+=$OPTARG
-			echo VALIDATOR_IPS: $VALIDATOR_IPS
 			;;
 		r)
 			RPC_IPS=$OPTARG
-			echo RPC_IPS: $RPC_IPS
 			;;
 		h)
 			help

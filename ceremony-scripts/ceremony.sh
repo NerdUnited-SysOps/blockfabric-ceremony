@@ -4,11 +4,18 @@
 # TODO:
 # Pull in validator DAO smart contract bytecode v0.0.1
 # Pull in bytecode for Lockup and Distribution contracts v0.1.0
-# Generate storage.txt with the account and nodekeys
+# Get bin-runtime added to the distribution and lockup contract releases
+# stoarge.txt generation
+# * Pull down the validator DAO contract
+# * install npm and javascript
+# * pull in the JS (createContent.js) for generating the storage.txt
+# * generate the allowlist.txt with the account and nodekeys
+# * Generate storage.txt with createContent.js
 # Move the keys to the appropriate locations
 # We need to know where to put the passwords for the keystore files
 # Format the volumes
 # Push the keys to the volumes (wiht output of where they're going to the console)
+# Push distribution issuer private key to Secrets Manager
 
 usage() {
   echo "This script sets up the validator nodes..."
@@ -241,7 +248,7 @@ RPC_IPS=$(get_list_of_rpc_ips)
 setup_validator_nodes "$IP_LIST"
 create_lockup_owner_wallet
 create_distribution_owner_wallet
-generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"
+./scripts/generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"
 # TODO:
 # put the github API key inside the secrets manager
 # We need to get the github API key to download galaxy role

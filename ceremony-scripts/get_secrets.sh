@@ -7,6 +7,9 @@
 
 echo "Retrieving secrets"
 
+BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source .common.sh
+
 SECRET_ID=$1
 LOCAL_FILE=$2
 

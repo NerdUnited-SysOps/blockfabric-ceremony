@@ -1,4 +1,6 @@
 # Versioning for dependencies
+export APT_NODEJS_VERSION=18.10.0+dfsg-6
+export APT_NPM_VERSION=9.1.2~ds1-2
 export APT_GO_VERSION=2:1.19~1
 export APT_JQ_VERSION=1.6-2.1
 export APT_PWGEN_VERSION=2.08-2
@@ -31,6 +33,7 @@ export PATH="${HOME}/.local/bin:${PATH}" # python binary path
 # For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
 AWS_SSH_KEY_SECRET_ID="conductor-key-test"
 SSH_KEY_DOWNLOAD_PATH=${BASE_DIR}/id_rsa
+INVENTORY_PATH=${ANSIBLE_DIR}/inventory
 
 # Overrides based on the environment
 source .env

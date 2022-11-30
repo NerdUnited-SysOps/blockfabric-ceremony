@@ -17,6 +17,8 @@
 # Format the volumes
 # Push the keys to the volumes (wiht output of where they're going to the console)
 # Push distribution issuer private key to Secrets Manager
+# Pin dependency versions
+# Clone specific tag of dao contract
 
 usage() {
   echo "This script sets up the validator nodes..."
@@ -31,6 +33,20 @@ usage() {
 # For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
 AWS_SSH_KEY_SECRET_ID="conductor-key-test"
 SSH_KEY_DOWNLOAD_PATH="../id_rsa"
+
+source .common
+
+install_dependencies () {
+    sudo apt-get update # Probably put a specific version on all of these
+    sudo apt-get install -y awscli pwgen jq golang
+    go install github.com/ethereum/go-ethereum/cmd/ethkey@${ETHEREUM_VERSION}
+    go install github.com/ethereum/go-ethereum/cmd/geth@${GETH_VERSION}
+    python3 -m pip install --user ansible
+    export PATH="${HOME}/go/bin:${PATH}"
+    export PATH="${HOME}/.local/bin:${PATH}"
+
+    aws configure
+}
 
 # Helper function to download files from AWS Secrets Manager
 # We'll have an SSH key inside AWS Secrets Manager to be used by Ansible
@@ -84,16 +100,14 @@ get_list_of_rpc_ips () {
     ansible rpc --list-hosts -i ./inventory | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
 }
 
-install_dependencies () {
-    sudo apt-get update # Probably put a specific version on all of these
-    sudo apt-get install -y awscli pwgen jq golang
-    go install github.com/ethereum/go-ethereum/cmd/ethkey@v1.10.26
-    go install github.com/ethereum/go-ethereum/cmd/geth@v1.10.26
-    python3 -m pip install --user ansible
-    export PATH="${HOME}/go/bin:${PATH}"
-    export PATH="${HOME}/.local/bin:${PATH}"
-
-    aws configure
+create_key_directories() {
+    mkdir -p ${KEYS_DIR}/distributionOwner \
+	    ${KEYS_DIR}/lockupOwner \
+	    ${CONTRACTS_DIR} \
+	    ${VOLUMES_DIR}/volume1 \
+	    ${VOLUMES_DIR}/volume2 \
+	    ${VOLUMES_DIR}/volume3 \
+	    ${VOLUMES_DIR}/volume4 \
 }
 
 setup_validator_nodes () {
@@ -258,15 +272,16 @@ fi
 
 # All required params present, run the script.
 echo "Starting key ceremony"
-PROJECT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-KEYS_DIR=$BASE_DIR/keys
-source .env
+
 install_dependencies
 download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
-download_inventory_file vagrant conductor.mainnet."$BRAND_NAME".blockfabric.net /opt/blockfabric/inventory ./inventory
+download_inventory_file ${SCP_USER} ${CONDUCTOR_NODE_URL} /opt/blockfabric/inventory ./inventory
 IP_LIST=$(get_list_of_ips)
 VALIDATOR_IPS=$(get_list_of_validator_ips)
 RPC_IPS=$(get_list_of_rpc_ips)
+
+create_key_directories
+
 setup_validator_nodes "$IP_LIST"
 create_lockup_owner_wallet
 create_distribution_owner_wallet

@@ -4,9 +4,9 @@
 # TODO:
 # ✅ Create an env file with all the environment variables
 # ✅ Create env file with overrides
-# Pull in validator DAO smart contract bytecode v0.0.1
-# Pull in bytecode for Lockup and Distribution contracts v0.1.0
-# Get bin-runtime added to the distribution and lockup contract releases
+# ✅ Pull in validator DAO smart contract bytecode v0.0.1
+# ✅ Pull in bytecode for Lockup and Distribution contracts v0.1.0
+# ✅ Get bin-runtime added to the distribution and lockup contract releases
 # stoarge.txt generation
 # * Pull down the validator DAO contract
 # * install npm and javascript
@@ -14,9 +14,9 @@
 # * generate the allowlist.txt with the account and nodekeys
 # * Generate storage.txt with createContent.js
 # Move the keys to the appropriate locations
-# We need to know where to put the passwords for the keystore files
+# ✅ We need to know where to put the passwords for the keystore files
 # Format the volumes
-# Push the keys to the volumes (wiht output of where they're going to the console)
+# Push the keys to the volumes (with output of where they're going to the console)
 # Push distribution issuer private key to Secrets Manager
 # Pin dependency versions
 # Clone specific tag of dao contract

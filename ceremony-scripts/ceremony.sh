@@ -7,13 +7,13 @@
 # ✅ Pull in validator DAO smart contract bytecode v0.0.1
 # ✅ Pull in bytecode for Lockup and Distribution contracts v0.1.0
 # ✅ Get bin-runtime added to the distribution and lockup contract releases
-# stoarge.txt generation
-# * Clone specific tag of dao contract
-# * Pull down the validator DAO contract
-# * install npm and javascript
-# * pull in the JS (createContent.js) for generating the storage.txt
-# * generate the allowlist.txt with the account and nodekeys
-# * Generate storage.txt with createContent.js
+# ✅ stoarge.txt generation
+# ✅ * Clone specific tag of dao contract
+# ✅ * Pull down the validator DAO contract
+# ✅ * install npm and javascript
+# ✅ * pull in the JS (createContent.js) for generating the storage.txt
+# ✅ * generate the allowlist.txt with the account and nodekeys
+# ✅ * Generate storage.txt with createContent.js
 # ✅ Move the keys to the appropriate locations
 # ✅ We need to know where to put the passwords for the keystore files
 # Format the volumes

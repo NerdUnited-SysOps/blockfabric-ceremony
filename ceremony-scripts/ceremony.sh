@@ -2,29 +2,12 @@
 # Script `ceremony`
 
 # TODO: (Need to haves)
-# ✅ Create an env file with all the environment variables
-# ✅ Create env file with overrides
-# ✅ Pull in validator DAO smart contract bytecode v0.0.1
-# ✅ Pull in bytecode for Lockup and Distribution contracts v0.1.0
-# ✅ Get bin-runtime added to the distribution and lockup contract releases
-# ✅ stoarge.txt generation
-# ✅ * Clone specific tag of dao contract
-# ✅ * Pull down the validator DAO contract
-# ✅ * install npm and javascript
-# ✅ * pull in the JS (createContent.js) for generating the storage.txt
-# ✅ * generate the allowlist.txt with the account and nodekeys
-# ✅ * Generate storage.txt with createContent.js
-# ✅ Move the keys to the appropriate locations
-# ✅ We need to know where to put the passwords for the keystore files
 # Format the volumes
 # Push the keys to the volumes (with output of where they're going to the console)
 # Push distribution issuer private key to Secrets Manager
-# ✅ Pin dependency versions
-# ✅ Break functions out into individual scripts
 # put the github API key inside the secrets manager
 # Retrieve github API token from secrets manager
 # install the role from ansible-galaxy
-# ✅ generate the ansible playbook
 # execute the playbook against all nodes in the inventory
 
 # TODO: (Nice to haves)

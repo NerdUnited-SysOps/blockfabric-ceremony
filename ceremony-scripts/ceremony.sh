@@ -11,6 +11,7 @@
 # install the role from ansible-galaxy (using the github token)
 # execute the playbook against all nodes in the inventory
 # Pull in brand specific variables for network (chainid, brand name, etc)
+# Add the public key that corresponds to the private key that we pull down from secrets mgr into the conductor and all the nodes, val1, val2, rpc in the authorized user
 
 # TODO: (Nice to haves)
 # Create templates of all the ansible artifacts (genesis.json, brand vars, etc)

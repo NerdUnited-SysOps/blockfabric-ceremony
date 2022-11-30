@@ -4,7 +4,7 @@
 #
 # FILE: generate-ansible-goquorum-laybook.sh
 #
-# USAGE: generate-ansible-goquorum-laybook.sh [Validator IP String] [RPC IP String]
+# USAGE: generate-ansible-goquorum-laybook.sh -v [Validator IP String] -r [RPC IP String]
 #
 # DESCRIPTION: List and/or delete all stale links in directory trees.
 # The default starting directory is the current directory.
@@ -20,19 +20,16 @@
 # CREATED:
 # REVISION:
 #===================================================================================
+#
 # This script REQUIRES various environment variables to be set.
 # For some of them, try to calculate them from other environment variables.
 #
-#
 
-DAO_VERSION=v0.0.1
+DAO_VERSION=.
+#v0.0.1
+LOCKUP_VERSION=.
+#v0.1.0
 ANSIBLE_ROLE_LACE_VERSION=1.0.0.5-test
-
-IPS1=$1
-IPS2=$2
-echo $IPS1
-echo $IPS2
-exit 2
 
 # Environment Vars
 ENV_NETWORK=testnet
@@ -50,45 +47,67 @@ NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 
 PROJECT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 ANSIBLE_DIR=$PROJECT_DIR/ansible
-RPC_IPS_FILE=$ANSIBLE_DIR/rpc_ips.txt
-VALIDATOR_IPS_FILE=$ANSIBLE_DIR/validator_ips.txt
-echo $PROJECT_DIR
-echo $ANSIBLE_DIR
-echo $RPC_IPS_FILE
-echo $VALIDATOR_IPS_FILE
-echo 1
-if [ -z "${RPC_IPS}" ]; then
-  if [ -n "${RPC_IPS_FILE}" ]; then
-      echo 2
-    RPC_IPS=$(cat ${RPC_IPS_FILE} | tr "\n" " ")
-    echo 3
-  elif [ -n "${AWS_RPC_IPS}" ] && [ -n "${AZURE_RPC_IPS}" ] && [ -n "${GCP_RPC_IPS}" ]; then
-    RPC_IPS="${AWS_RPC_IPS} ${AZURE_RPC_IPS} ${GCP_RPC_IPS}"
-  elif [ -n "${AWS_RPC_IPS_FILE}" ] && [ -n "${AZURE_RPC_IPS_FILE}" ] && [ -n "${GCP_RPC_IPS_FILE}" ]; then
-    RPC_IPS=$(cat ${AWS_RPC_IPS_FILE} ${AZURE_RPC_IPS_FILE} ${GCP_RPC_IPS_FILE} | tr "\n" " ")
-  else
-    echo "ERROR: Reguired envrionment variable(s) missing"
-    exit 1
-  fi
-fi
-echo 1
+VALIDATOR_IPS=""
+RPC_IPS=""
+## Let's do some admin work to find out the variables to be used here
+BOLD='\e[1;31m'         # Bold Red
+REV='\e[1;32m'       # Bold Green
 
-if [ -z "${VALIDATOR_IPS}" ]; then
-  if [ -n "${VALIDATOR_IPS_FILE}" ]; then
-    VALIDATOR_IPS=$(cat ${VALIDATOR_IPS_FILE} | tr "\n" " ")
-  elif [ -n "${AWS_VALIDATOR_IPS}" ] && [ -n "${AZURE_VALIDATOR_IPS}" ] && [ -n "${GCP_VALIDATOR_IPS}" ]; then
-    VALIDATOR_IPS="${AWS_VALIDATOR_IPS} ${AZURE_VALIDATOR_IPS} ${GCP_VALIDATOR_IPS}"
-  elif [ -n "${AWS_VALIDATOR_IPS_FILE}" ] && [ -n "${AZURE_VALIDATOR_IPS_FILE}" ] && [ -n "${GCP_VALIDATOR_IPS_FILE}" ]; then
-    VALIDATOR_IPS=$(cat ${AWS_VALIDATOR_IPS_FILE} ${AZURE_VALIDATOR_IPS_FILE} ${GCP_VALIDATOR_IPS_FILE} | tr "\n" " ")
-  else
-    echo "ERROR: Required envrionment variable(s) missing"
-    exit 1
-  fi
-fi
-echo 1
+function help {
+	echo -e "${REV}Basic usage:${OFF} ${BOLD}$SCRIPT -v <"value"> -r <"value"> [--longopt[=]<value>] command ${OFF}"\\n
+	echo -e "${REV}The following switches are recognized. $OFF "
+	echo -e "${REV}-v                   ${OFF}Validator Node IP List"
+	echo -e "${REV}-r                   ${OFF}RPC Node IP List"
+	echo -e "${REV}--longopt[=]<value>  ${OFF}Description"
+	echo -e "${REV}-h                   ${OFF}Displays this help message. No further functions are performed."\\n
+	echo -e "${REV}Commands:${OFF}"
+	exit 1
+}
+
+
+# In case you wanted to check what variables were passed
+echo "flags = $*"
+
+OPTSPEC=":hv:r:-:"
+while getopts "$OPTSPEC" optchar; do
+	case "${optchar}" in
+		-)
+			case "${OPTARG}" in
+				longopt)
+					val="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+					echo "Parsing option: '--${OPTARG}', value: '${val}'" >&2;
+					;;
+				longopt=*)
+					val=${OPTARG#*=}
+					opt=${OPTARG%=$val}
+					echo "Parsing option: '--${opt}', value: '${val}'" >&2
+					;;
+				*)
+					if [ "$OPTERR" = 1 ] && [ "${OPTSPEC:0:1}" != ":" ]; then
+						echo "Unknown option --${OPTARG}" >&2
+					fi
+					;;
+			esac
+			;;
+		v)
+            VALIDATOR_IPS+=$OPTARG
+			echo VALIDATOR_IPS: $VALIDATOR_IPS
+			;;
+		r)
+			RPC_IPS=$OPTARG
+			echo RPC_IPS: $RPC_IPS
+			;;
+		h)
+			help
+			;;
+		\?) #unrecognized option - show help
+			echo -e "\nOption -${BOLD}$OPTARG${OFF} not allowed.\n"
+			help
+			;;
+	esac
+done
 
 [ -z "${PUBLIC_IPS}" ] && PUBLIC_IPS="${RPC_IPS} ${VALIDATOR_IPS}"
-echo 1
 
 if [ -z "${ENV_NETWORK}" ] || [ -z "${ENV_NETWORK_ID}" ] || [ -z "${ENV_NETWORK_NAME}" ] || [ -z "${PUBLIC_IPS}" ]
 then
@@ -96,33 +115,29 @@ then
     exit 1
 fi
 
-echo 1
 # These environment variables have DEFAULT values if not set
-[ -z "${DAO_STORAGE_FILE}" ] && DAO_STORAGE_FILE="ansible/contracts/sc_dao/$DAO_VERSION/Storage.txt"
-[ -z "${DAO_RUNTIME_BIN_FILE}" ] && DAO_RUNTIME_BIN_FILE="ansible/contracts/sc_dao/v0.0.1/ValidatorSmartContractAllowList.bin-runtime"
+[ -z "${DAO_CONTRACT_ARCHIVE_DIR}" ] && DAO_CONTRACT_ARCHIVE_DIR="ansible/contracts/sc_dao"
+[ -z "${DAO_STORAGE_FILE}" ] && DAO_STORAGE_FILE="$DAO_CONTRACT_ARCHIVE_DIR/$DAO_VERSION/Storage.txt"
+[ -z "${DAO_RUNTIME_BIN_FILE}" ] && DAO_RUNTIME_BIN_FILE="$DAO_CONTRACT_ARCHIVE_DIR/$DAO_VERSION/ValidatorSmartContractAllowList.bin-runtime"
 [ -z "${DIST_CONTRACT_ARCHIVE_DIR}" ] && DIST_CONTRACT_ARCHIVE_DIR="ansible/contracts/sc_lockup"
-[ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="ansible/contracts/sc_lockup/Distribution.bin-runtime"
+[ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="$DIST_CONTRACT_ARCHIVE_DIR/$LOCKUP_VERSION/Distribution.bin-runtime"
 [ -z "${DISTRIBUTION_OWNER_ADDRESS_FILE}" ] && DISTRIBUTION_OWNER_ADDRESS_FILE="ansible/keys/distributionOwner/address"
 [ -z "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] && LOCKUP_CONTRACT_ARCHIVE_DIR="ansible/contracts/sc_lockup"
 [ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="ansible/keys/lockupOwner/address"
-[ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="ansible/contracts/sc_lockup/Lockup.bin-runtime"
+[ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/$LOCKUP_VERSION/Lockup.bin-runtime"
 [ -z "${ANSIBLE_INSTALL_SCRIPT}" ] && ANSIBLE_INSTALL_SCRIPT="ansible/install"
 
-echo 1
 # If the INVENTORY_FILE contains a '/', then create the parent directory if it doesn't exists
 [ -z "${INVENTORY_FILE##*/*}" ] && [ ! -d ${INVENTORY_FILE%/*} ] && mkdir -p ${INVENTORY_FILE%/*}
 
-echo 1
 # Create directories that don't exist
 [ -d "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] || mkdir -p ${LOCKUP_CONTRACT_ARCHIVE_DIR}
 [ -d "${DIST_CONTRACT_ARCHIVE_DIR}" ] || mkdir -p ${DIST_CONTRACT_ARCHIVE_DIR}
 
-echo 1
 BASE_KEYS_DIR='ansible/keys'
 NOW=$(date +%s)
 NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 
-echo 1
 generate_ansible_galaxy_install_script() {
     if [ ! -f "$ANSIBLE_INSTALL_SCRIPT" ]; then
         echo "#!/usr/bin/env bash" > $ANSIBLE_INSTALL_SCRIPT
@@ -140,7 +155,7 @@ is_validator_ip() {
 
 goquorum_enode_list() {
   INDENTATION=$1
-23 echo 1         LAST_IP=${VALIDATOR_IPS##* }
+  LAST_IP=${VALIDATOR_IPS##* }
   COMMA=','
   for IP in ${VALIDATOR_IPS}; do
     # Set the comma to an empty sting for the last line.
@@ -289,10 +304,8 @@ EOF
 }
 
 
-echo 1
 echo "---" > ansible/goquorum.yaml
 for IP in ${PUBLIC_IPS}; do
-echo 2
   playbook_section $IP >> ansible/goquorum.yaml
 done
 

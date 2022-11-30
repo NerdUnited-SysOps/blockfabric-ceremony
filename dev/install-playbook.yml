@@ -1,0 +1,15 @@
+---
+- name: "Install what is needed for the ceremony laptop"
+  hosts: all
+  become: yes
+
+  pre_tasks:
+    - name: "Update cache"
+      apt: update_cache=yes cache_valid_time=3600
+
+  tasks:
+    - name: "Installing git"
+      apt: name=git state=present update_cache='yes'
+
+    - name: 
+      apt: name=vim state=present update_cache='yes'

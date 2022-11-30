@@ -5,4 +5,5 @@ source .common.sh
 
 rm -r ${KEYS_DIR} \
     ${CONTRACTS_DIR} \
-    ${VOLUMES_DIR}
+    ${VOLUMES_DIR} \
+    ${ANSIBLE_DIR}

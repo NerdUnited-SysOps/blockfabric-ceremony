@@ -136,22 +136,6 @@ clone_dao() {
     git clone https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/NerdCoreSdk/sc_dao.git ~/sc_dao
 }
 
-create_lockup_owner_wallet () {
-    mkdir -p ${DESTINATION_DIR}/lockupOwner
-    WORKING_DIR=${DESTINATION_DIR}/lockupOwner
-
-    password=$(pwgen -c 25 -n 1)
-
-    geth account new --password <(echo -n "$password") --keystore ${DESTINATION_DIR}
-    mv ${DESTINATION_DIR}/UTC* ${WORKING_DIR}/ks
-    address=$(cat ${WORKING_DIR}/ks | jq -r ".address" | tr -d '\n')
-    echo -n "Node key address: $address"
-    aws secretsmanager create-secret --name "$address" --description "Encryption pw for 0x$address." --secret-string "$password"
-    
-    # Extract address from keystore file, insert into new address file
-    echo -n "$(cat ${WORKING_DIR}/ks | jq -r ".address" | tr -d '\n')" > ${WORKING_DIR}/address
-}
-
 create_distribution_owner_wallet () {
     mkdir -p ${DESTINATION_DIR}/distributionOwner
     WORKING_DIR=${DESTINATION_DIR}/distributionOwner
@@ -214,7 +198,7 @@ ${SCRIPTS_DIR}/create_directories.sh
 
 ${SCRIPTS_DIR}/get_contract_bytecode.sh
 setup_validator_nodes "$IP_LIST"
-create_lockup_owner_wallet
+${SCRIPTS_DIR}/create_lockup_owner_wallet.sh
 create_distribution_owner_wallet
 ${SCRIPTS_DIR}/generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"
 

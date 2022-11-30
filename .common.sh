@@ -11,7 +11,7 @@ export DAO_VERSION=v0.0.1
 export CONDUCTOR_NODE_URL=conductor.mainnet.${BRAND_NAME}.blockfabric.net
 
 # Common paths to be used throughout the various scripts
-export BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+# export BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 export KEYS_DIR=${BASE_DIR}/keys
 export CONTRACTS_DIR=${BASE_DIR}/contracts
 export VOLUMES_DIR=${BASE_DIR}/volumes

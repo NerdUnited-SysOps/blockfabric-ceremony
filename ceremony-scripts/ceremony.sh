@@ -3,6 +3,7 @@
 
 # TODO:
 # Create an env file with all the environment variables
+# Create env file with overrides
 # Pull in validator DAO smart contract bytecode v0.0.1
 # Pull in bytecode for Lockup and Distribution contracts v0.1.0
 # Get bin-runtime added to the distribution and lockup contract releases
@@ -34,7 +35,8 @@ usage() {
 AWS_SSH_KEY_SECRET_ID="conductor-key-test"
 SSH_KEY_DOWNLOAD_PATH="../id_rsa"
 
-source .common
+BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source .common.sh
 
 install_dependencies () {
     sudo apt-get update # Probably put a specific version on all of these
@@ -107,7 +109,7 @@ create_key_directories() {
 	    ${VOLUMES_DIR}/volume1 \
 	    ${VOLUMES_DIR}/volume2 \
 	    ${VOLUMES_DIR}/volume3 \
-	    ${VOLUMES_DIR}/volume4 \
+	    ${VOLUMES_DIR}/volume4
 }
 
 setup_validator_nodes () {

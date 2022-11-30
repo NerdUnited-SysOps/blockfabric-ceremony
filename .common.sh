@@ -26,5 +26,9 @@ export VOLUMES_DIR=${BASE_DIR}/volumes
 export PATH="${HOME}/go/bin:${PATH}"	 # GO binary path
 export PATH="${HOME}/.local/bin:${PATH}" # python binary path
 
+# Interacting with AWS Secrets Manager
+AWS_SSH_KEY_SECRET_ID="conductor-key-test"
+SSH_KEY_DOWNLOAD_PATH=${BASE_DIR}/id_rsa
+
 # Overrides based on the environment
 source .env

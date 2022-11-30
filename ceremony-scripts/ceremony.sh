@@ -8,6 +8,7 @@
 # ✅ Pull in bytecode for Lockup and Distribution contracts v0.1.0
 # ✅ Get bin-runtime added to the distribution and lockup contract releases
 # stoarge.txt generation
+# * Clone specific tag of dao contract
 # * Pull down the validator DAO contract
 # * install npm and javascript
 # * pull in the JS (createContent.js) for generating the storage.txt
@@ -18,8 +19,7 @@
 # Format the volumes
 # Push the keys to the volumes (with output of where they're going to the console)
 # Push distribution issuer private key to Secrets Manager
-# Pin dependency versions
-# Clone specific tag of dao contract
+# ✅ Pin dependency versions
 # Break functions out into individual scripts
 # put the github API key inside the secrets manager
 # Retrieve github API token from secrets manager
@@ -57,13 +57,8 @@ while getopts 'b:d:h' option; do
 done
 shift $((OPTIND-1))
 
-# For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
-AWS_SSH_KEY_SECRET_ID="conductor-key-test"
-SSH_KEY_DOWNLOAD_PATH="../id_rsa"
-
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
-
 
 # Helper function to download files from AWS Secrets Manager
 # We'll have an SSH key inside AWS Secrets Manager to be used by Ansible
@@ -84,27 +79,6 @@ download_file_from_aws () {
     fi
 }
 
-# Downloads via scp an inventory file containing ip address list of nodes
-# Params:
-#   user - user to ssh into box
-#   host - host to pull file from
-#   file - file to scp
-# Example call: download_inventory_file "user" "152.167.123.1" "inventory_file.txt" "../ceremony_scripts/"
-download_inventory_file () {
-    user=$1
-    host=$2
-    file=$3
-    local_file=$4
-    scp -i $SSH_KEY_DOWNLOAD_PATH "$user"@"$host":"$file" "$local_file"
-
-    if [ -f "$local_file" ]; then
-        echo "$local_file exists."
-    else 
-        echo "$local_file does not exist."
-        exit 1
-    fi
-}
-
 get_list_of_ips () {
     ansible all_quorum --list-hosts -i ./inventory | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
 }
@@ -119,12 +93,12 @@ get_list_of_rpc_ips () {
 
 create_key_directories() {
     mkdir -p ${KEYS_DIR}/distributionOwner \
-	    ${KEYS_DIR}/lockupOwner \
-	    ${CONTRACTS_DIR} \
-	    ${VOLUMES_DIR}/volume1 \
-	    ${VOLUMES_DIR}/volume2 \
-	    ${VOLUMES_DIR}/volume3 \
-	    ${VOLUMES_DIR}/volume4
+        ${KEYS_DIR}/lockupOwner \
+        ${CONTRACTS_DIR} \
+        ${VOLUMES_DIR}/volume1 \
+        ${VOLUMES_DIR}/volume2 \
+        ${VOLUMES_DIR}/volume3 \
+        ${VOLUMES_DIR}/volume4
 }
 
 setup_validator_nodes () {
@@ -260,7 +234,7 @@ echo "Starting key ceremony"
 ${SCRIPTS_DIR}/install_dependencies.sh
 aws configure
 download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
-download_inventory_file ${SCP_USER} ${CONDUCTOR_NODE_URL} /opt/blockfabric/inventory ./inventory
+${SCRIPTS_DIR}/get_inventory.sh ${SCP_USER} ${CONDUCTOR_NODE_URL} /opt/blockfabric/inventory ./inventory
 IP_LIST=$(get_list_of_ips)
 VALIDATOR_IPS=$(get_list_of_validator_ips)
 RPC_IPS=$(get_list_of_rpc_ips)

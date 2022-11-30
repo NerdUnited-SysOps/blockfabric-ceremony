@@ -26,6 +26,9 @@
 # install the role from ansible-galaxy
 # generate the ansible playbook
 # execute the playbook against all nodes in the inventory
+# consistent formatting
+# sensible error checking
+# standardize individual scripts
 
 usage() {
   echo "This script sets up the validator nodes..."
@@ -174,14 +177,12 @@ ${SCRIPTS_DIR}/install_dependencies.sh
 aws configure
 ${SCRIPTS_DIR}/get_secrets.sh $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
 ${SCRIPTS_DIR}/get_inventory.sh ${SCP_USER} ${CONDUCTOR_NODE_URL} /opt/blockfabric/inventory ./inventory
-IP_LIST=$(get_list_of_ips)
 VALIDATOR_IPS=$(get_list_of_validator_ips)
 RPC_IPS=$(get_list_of_rpc_ips)
 
 ${SCRIPTS_DIR}/create_directories.sh
-
 ${SCRIPTS_DIR}/get_contract_bytecode.sh
-setup_validator_nodes "$IP_LIST"
+${SCRIPTS_DIR}/create_validator_and_account_wallets.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/create_lockup_owner_wallet.sh
 ${SCRIPTS_DIR}/create_distribution_owner_wallet.sh
 ${SCRIPTS_DIR}/generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"

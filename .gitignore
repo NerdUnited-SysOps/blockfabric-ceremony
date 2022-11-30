@@ -1,2 +1,4 @@
+# Vagrant build files
+.vagrant
 *.swp
 .env

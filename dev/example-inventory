@@ -1,0 +1,32 @@
+[aws_rpc]
+192.168.56.3 ansible_host=192.168.56.3
+
+[aws_validator]
+192.168.56.0 ansible_host=192.168.56.0
+192.168.56.1 ansible_host=192.168.56.1
+
+[azure_rpc]
+
+[azure_validator]
+
+[conductor]
+192.168.56.3 ansible_host=192.168.56.3
+
+[gcp_rpc]
+
+[gcp_validator]
+
+[rpc:children]
+aws_rpc
+azure_rpc
+gcp_rpc
+
+[validator:children]
+aws_validator
+azure_validator
+gcp_validator
+
+[all_quorum:children]
+validator
+rpc
+

@@ -1,0 +1,51 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  config.vm.provider "virtualbox" do |v|
+    v.gui = false
+  end
+
+  config.vm.define "val1" do |val|
+    val.vm.network "private_network", ip: "192.168.56.0"
+    val.vm.network :forwarded_port, guest: 22, host: 2200, id: 'ssh'
+
+    val.vm.box = "debian/bullseye64"
+  end
+
+  config.vm.define "val2" do |val|
+    val.vm.network "private_network", ip: "192.168.56.1"
+    val.vm.network :forwarded_port, guest: 22, host: 2201, id: 'ssh'
+
+    val.vm.box = "debian/bullseye64"
+  end
+
+  config.vm.define "rpc", autostart: false do |rpc|
+    rpc.vm.network "private_network", ip: "192.168.56.2"
+    rpc.vm.network :forwarded_port, guest: 22, host: 2202, id: 'ssh'
+
+    rpc.vm.box = "debian/bullseye64"
+  end
+
+  config.vm.define "conductor", autostart: false do |con|
+    con.vm.network "private_network", ip: "192.168.56.3"
+    con.vm.network :forwarded_port, guest: 22, host: 2203, id: 'ssh'
+
+    con.vm.box = "debian/bullseye64"
+  end
+
+  config.vm.define "ceremony", autostart: false do |cer|
+    cer.vm.network "private_network", ip: "192.168.56.4"
+    cer.vm.network :forwarded_port, guest: 22, host: 2204, id: 'ssh'
+
+    cer.vm.box = "kalilinux/rolling"
+    cer.vm.provision "ansible" do |ansible|
+      ansible.verbose = "v"
+      ansible.playbook = "install-playbook.yml"
+    end
+  end
+end

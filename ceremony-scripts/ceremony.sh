@@ -2,6 +2,7 @@
 # Script `ceremony`
 
 # TODO:
+# Create an env file with all the environment variables
 # Pull in validator DAO smart contract bytecode v0.0.1
 # Pull in bytecode for Lockup and Distribution contracts v0.1.0
 # Get bin-runtime added to the distribution and lockup contract releases
@@ -154,6 +155,24 @@ setup_validator_nodes () {
 #  VALIDATOR_IPS_FILE: ansible/validator_ips.txt
 #  DAO_CONTRACT_ARCHIVE_DIR: ansible/contracts/sc_dao
 
+clone_dao() {
+    mkdir -p ~/sc_dao
+    git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/NerdCoreSdk/sc_dao.git ~/sc_dao
+}
+
+# Find the assets in a release
+# curl -H "Accept: application/vnd.github+json" -H 'Authorization: Bearer ${GIT_PASSWORD}' 'https://api.github.com/repos/NerdCoreSdk/sc_lockup/releases'
+get_contract_binaries() {
+    wget -q --auth-no-challenge \
+	    --header='Accept:application/octet-stream' \
+	    https://${GIT_PASSWORD}:@api.github.com/repos/NerdCoreSdk/sc_lockup/releases/assets/86414347 -O lockup.tar.gz | tar xvf
+
+    wget -q --auth-no-challenge \
+	    --header='Accept:application/octet-stream' \
+	    https://${GIT_PASSWORD}:@api.github.com/repos/NerdCoreSdk/sc_lockup/releases/assets/86410959 -O dao.zip
+    unzip dao.zip
+}
+
 create_lockup_owner_wallet () {
     mkdir -p ${DESTINATION_DIR}/lockupOwner
     WORKING_DIR=${DESTINATION_DIR}/lockupOwner
@@ -239,6 +258,9 @@ fi
 
 # All required params present, run the script.
 echo "Starting key ceremony"
+PROJECT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+KEYS_DIR=$BASE_DIR/keys
+source .env
 install_dependencies
 download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
 download_inventory_file vagrant conductor.mainnet."$BRAND_NAME".blockfabric.net /opt/blockfabric/inventory ./inventory

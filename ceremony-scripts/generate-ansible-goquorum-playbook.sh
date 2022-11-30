@@ -37,7 +37,7 @@ ENV_NETWORK_ID="2666328"
 ENV_NETWORK_NAME=WinTestnet
 
 NETWORK_LAUNCH_DATE="221001"
-NETWORK_DAILY_LIMIT_WEI_HEX_NOPREFIX=18556a6b879e00
+NETWORK_DAILY_LIMIT_WEI_HEX="0x18556a6b879e00"
 NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX="0x4563918244f40000"
 NETWORK_ISSUER_GAS_SEED_WEI_HEX="0x5d21dba00"
 
@@ -46,7 +46,6 @@ ISSUER_GAS_SEED_WEI=$(printf '%d\n' ${NETWORK_ISSUER_GAS_SEED_WEI_HEX})
 NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 
 PROJECT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-ANSIBLE_DIR=$PROJECT_DIR/ansible
 VALIDATOR_IPS=""
 RPC_IPS=""
 ## Let's do some admin work to find out the variables to be used here
@@ -116,25 +115,20 @@ then
 fi
 
 # These environment variables have DEFAULT values if not set
-[ -z "${DAO_CONTRACT_ARCHIVE_DIR}" ] && DAO_CONTRACT_ARCHIVE_DIR="ansible/contracts/sc_dao"
+[ -z "${DAO_CONTRACT_ARCHIVE_DIR}" ] && DAO_CONTRACT_ARCHIVE_DIR="$PROJECT_DIR/contracts/sc_dao"
 [ -z "${DAO_STORAGE_FILE}" ] && DAO_STORAGE_FILE="$DAO_CONTRACT_ARCHIVE_DIR/$DAO_VERSION/Storage.txt"
 [ -z "${DAO_RUNTIME_BIN_FILE}" ] && DAO_RUNTIME_BIN_FILE="$DAO_CONTRACT_ARCHIVE_DIR/$DAO_VERSION/ValidatorSmartContractAllowList.bin-runtime"
-[ -z "${DIST_CONTRACT_ARCHIVE_DIR}" ] && DIST_CONTRACT_ARCHIVE_DIR="ansible/contracts/sc_lockup"
-[ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="$DIST_CONTRACT_ARCHIVE_DIR/$LOCKUP_VERSION/Distribution.bin-runtime"
-[ -z "${DISTRIBUTION_OWNER_ADDRESS_FILE}" ] && DISTRIBUTION_OWNER_ADDRESS_FILE="ansible/keys/distributionOwner/address"
-[ -z "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] && LOCKUP_CONTRACT_ARCHIVE_DIR="ansible/contracts/sc_lockup"
-[ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="ansible/keys/lockupOwner/address"
+[ -z "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] && LOCKUP_CONTRACT_ARCHIVE_DIR="$PROJECT_DIR/contracts/sc_lockup"
+[ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/$LOCKUP_VERSION/Distribution.bin-runtime"
+[ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$PROJECT_DIR/keys/distributionOwner/address"
+[ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="$PROJECT_DIR/keys/lockupOwner/address"
 [ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/$LOCKUP_VERSION/Lockup.bin-runtime"
-[ -z "${ANSIBLE_INSTALL_SCRIPT}" ] && ANSIBLE_INSTALL_SCRIPT="ansible/install"
-
-# If the INVENTORY_FILE contains a '/', then create the parent directory if it doesn't exists
-[ -z "${INVENTORY_FILE##*/*}" ] && [ ! -d ${INVENTORY_FILE%/*} ] && mkdir -p ${INVENTORY_FILE%/*}
+[ -z "${ANSIBLE_INSTALL_SCRIPT}" ] && ANSIBLE_INSTALL_SCRIPT="$PROJECT_DIR/ansible/install"
 
 # Create directories that don't exist
 [ -d "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] || mkdir -p ${LOCKUP_CONTRACT_ARCHIVE_DIR}
-[ -d "${DIST_CONTRACT_ARCHIVE_DIR}" ] || mkdir -p ${DIST_CONTRACT_ARCHIVE_DIR}
 
-BASE_KEYS_DIR='ansible/keys'
+BASE_KEYS_DIR='keys'
 NOW=$(date +%s)
 NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 
@@ -146,7 +140,7 @@ generate_ansible_galaxy_install_script() {
 }
 
 is_rpc_ip() {
-  [ -z "${RPC_IPS##*$1*}" ]
+  [ ! -z $RPC_IPS] && [ -z "${RPC_IPS##*$1*}" ]
 }
 
 is_validator_ip() {
@@ -212,7 +206,7 @@ playbook_section() {
         #   ${NODE_CMD_LINE_FLAGS}
         goquorum_node_type: "${NODE_TYPE}"
         goquorum_network_id: "${ENV_NETWORK_ID}"
-        goquorum_identity: "${ENV_NETWORK_NAME}_${NETWORK_ENV}_${ip}" # Unique identity per brand
+        goquorum_identity: "${ENV_NETWORK_NAME}_${ENV_NETWORK}_${IP_ADDRESS}" # Unique identity per brand
 
 $(node_validator_pubs 8)
         # GoQuorum version to install
@@ -247,28 +241,11 @@ $(goquorum_enode_list 12)
         goquorum_genesis_prealloc_addr_9: "2cCc179c46A512B3c05Da76950c897ea4F116B8f"
         goquorum_genesis_prealloc_amount_wei: 100000000000000
 
-        # Smart contract genesis params
-        # lockupOwner:  testnet - one of the "new" wallets created above
-        #               mainnet - no entity assigned to this (yet?)
-        #                       - this wallet will need to be generated during the key ceremony
         lace_genesis_lockup_owner_address: $(cat $LOCKUP_OWNER_ADDRESS_FILE)
-
-        # lockupIssuer: testnet - address of the testnet distribution smart contract
-        #               mainnet - address of the mainnet distribution smart contract
         lace_genesis_lockup_issuer_address: 8Be503bcdEd90ED42Eff31f56199399B2b0154CA
         lace_genesis_lockup_daily_limit: "${NETWORK_DAILY_LIMIT_WEI_HEX#0x}"
         lace_genesis_lockup_last_dist_timestamp: "${NOW_IN_HEX#0x}"
-
-        # distributionOwner:  testnet - one of the "new" wallets created above
-        #                     mainnet - the brand will receive a wallet generated during the key ceremony that will own the distribution contract
-        #                             - the distributionOwner will be the address of this wallet.
-        lace_genesis_distribution_owner_address: $(cat $DISTRIBUTION_OWNER_ADDRESS_FILE)
-
-        # distributionIssuer: testnet - the service team already has this wallet, private key in KMS.
-        #                             - "Stage distribution wallet address"
-        #                     mainnet - nogo will receive a wallet generated during the key ceremony and that wallet address will be set as the distributionIssuer by the distribution owner.
-        #                             - this private key will be stored in KMS and is the key that the nodeserver will sign transactions with
-        #                             - "Prod distribution wallet address"
+        lace_genesis_distribution_owner_address: $(cat $DIST_OWNER_ADDRESS_FILE)
         lace_genesis_distribution_issuer_address: 053db724EDD7248168355ec21526c53Cce87e921
         lace_genesis_distribution_issuer_balance: ${ISSUER_GAS_SEED_WEI}
 

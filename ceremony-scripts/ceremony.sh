@@ -2,8 +2,8 @@
 # Script `ceremony`
 
 # TODO:
-# Create an env file with all the environment variables
-# Create env file with overrides
+# ✅ Create an env file with all the environment variables
+# ✅ Create env file with overrides
 # Pull in validator DAO smart contract bytecode v0.0.1
 # Pull in bytecode for Lockup and Distribution contracts v0.1.0
 # Get bin-runtime added to the distribution and lockup contract releases
@@ -173,20 +173,7 @@ setup_validator_nodes () {
 
 clone_dao() {
     mkdir -p ~/sc_dao
-    git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/NerdCoreSdk/sc_dao.git ~/sc_dao
-}
-
-# Find the assets in a release
-# curl -H "Accept: application/vnd.github+json" -H 'Authorization: Bearer ${GIT_PASSWORD}' 'https://api.github.com/repos/NerdCoreSdk/sc_lockup/releases'
-get_contract_binaries() {
-    wget -q --auth-no-challenge \
-	    --header='Accept:application/octet-stream' \
-	    https://${GIT_PASSWORD}:@api.github.com/repos/NerdCoreSdk/sc_lockup/releases/assets/86414347 -O lockup.tar.gz | tar xvf
-
-    wget -q --auth-no-challenge \
-	    --header='Accept:application/octet-stream' \
-	    https://${GIT_PASSWORD}:@api.github.com/repos/NerdCoreSdk/sc_lockup/releases/assets/86410959 -O dao.zip
-    unzip dao.zip
+    git clone https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/NerdCoreSdk/sc_dao.git ~/sc_dao
 }
 
 create_lockup_owner_wallet () {
@@ -284,6 +271,7 @@ RPC_IPS=$(get_list_of_rpc_ips)
 
 create_key_directories
 
+./get_contract_bytecode.sh
 setup_validator_nodes "$IP_LIST"
 create_lockup_owner_wallet
 create_distribution_owner_wallet

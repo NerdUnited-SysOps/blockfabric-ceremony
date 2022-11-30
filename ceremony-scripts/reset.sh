@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
 
 rm -r ${KEYS_DIR} \

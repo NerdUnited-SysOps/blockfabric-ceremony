@@ -4,13 +4,17 @@
 # TODO: (Need to haves)
 # Format the volumes
 # Push the keys to the volumes (with output of where they're going to the console)
+# Make sure you can support and test with 2 copies of each volume
 # Push distribution issuer private key to Secrets Manager
 # put the github API key inside the secrets manager
 # Retrieve github API token from secrets manager
-# install the role from ansible-galaxy
+# install the role from ansible-galaxy (using the github token)
 # execute the playbook against all nodes in the inventory
+# Pull in brand specific variables for network (chainid, brand name, etc)
 
 # TODO: (Nice to haves)
+# Create templates of all the ansible artifacts (genesis.json, brand vars, etc)
+# Push those template files to a brand repo.
 # consistent formatting
 # sensible error checking
 # standardize individual scripts
@@ -18,6 +22,7 @@
 # * Standardized output
 # * All output redirected to logs
 # Implement a verbose mode to output to logs and stdout
+# Verification step in code
 
 usage() {
   echo "This script sets up the validator nodes..."

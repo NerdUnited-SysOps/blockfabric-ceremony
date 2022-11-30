@@ -1,5 +1,8 @@
 # Versioning for dependencies
-export GO_VERSION=
+export APT_GO_VERSION=2:1.19~1
+export APT_JQ_VERSION=1.6-2.1
+export APT_PWGEN_VERSION=2.08-2
+export APT_AWSCLI_VERSION=1.24.8-1
 export ETHKEY_VERSION=v1.10.26
 export GETH_VERSION=v1.10.26
 export ANSIBLE_ROLE_LACE_VERSION=
@@ -18,6 +21,10 @@ export SCRIPTS_DIR=${BASE_DIR}/ceremony-scripts
 export KEYS_DIR=${BASE_DIR}/keys
 export CONTRACTS_DIR=${BASE_DIR}/contracts
 export VOLUMES_DIR=${BASE_DIR}/volumes
+
+# Pathing for additional binaries
+export PATH="${HOME}/go/bin:${PATH}"	 # GO binary path
+export PATH="${HOME}/.local/bin:${PATH}" # python binary path
 
 # Overrides based on the environment
 source .env

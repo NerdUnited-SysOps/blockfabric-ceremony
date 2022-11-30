@@ -20,6 +20,12 @@
 # Push distribution issuer private key to Secrets Manager
 # Pin dependency versions
 # Clone specific tag of dao contract
+# Break functions out into individual scripts
+# put the github API key inside the secrets manager
+# Retrieve github API token from secrets manager
+# install the role from ansible-galaxy
+# generate the ansible playbook
+# execute the playbook against all nodes in the inventory
 
 usage() {
   echo "This script sets up the validator nodes..."
@@ -31,6 +37,26 @@ usage() {
   echo "Example: "
 }
 
+while getopts 'b:d:h' option; do
+  case "$option" in
+    b)
+        BRAND_NAME="${OPTARG}"
+        ;;
+    d)
+        DESTINATION_DIR="${OPTARG}"
+        ;;
+    h)
+      usage
+	  exit 0
+      ;;
+    ?)
+      usage
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
 # For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
 AWS_SSH_KEY_SECRET_ID="conductor-key-test"
 SSH_KEY_DOWNLOAD_PATH="../id_rsa"
@@ -38,17 +64,6 @@ SSH_KEY_DOWNLOAD_PATH="../id_rsa"
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
 
-install_dependencies () {
-    sudo apt-get update # Probably put a specific version on all of these
-    sudo apt-get install -y awscli pwgen jq golang
-    go install github.com/ethereum/go-ethereum/cmd/ethkey@${ETHEREUM_VERSION}
-    go install github.com/ethereum/go-ethereum/cmd/geth@${GETH_VERSION}
-    python3 -m pip install --user ansible
-    export PATH="${HOME}/go/bin:${PATH}"
-    export PATH="${HOME}/.local/bin:${PATH}"
-
-    aws configure
-}
 
 # Helper function to download files from AWS Secrets Manager
 # We'll have an SSH key inside AWS Secrets Manager to be used by Ansible
@@ -213,26 +228,6 @@ download_ansible_role() {
     git clone git@github.com:NerdUnited-Nerd/ansible-role-lace.git ~/ansible/roles/ansible-role-lace
 }
 
-while getopts 'b:d:h' option; do
-  case "$option" in
-    b)
-        BRAND_NAME="${OPTARG}"
-        ;;
-    d)
-        DESTINATION_DIR="${OPTARG}"
-        ;;
-    h)
-      usage
-	  exit 0
-      ;;
-    ?)
-      usage
-      exit 1
-      ;;
-  esac
-done
-shift $((OPTIND-1))
-
 # validate required params
 if [ ! "$DESTINATION_DIR" ]
 then
@@ -262,7 +257,8 @@ fi
 # All required params present, run the script.
 echo "Starting key ceremony"
 
-install_dependencies
+${SCRIPTS_DIR}/install_dependencies.sh
+aws configure
 download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
 download_inventory_file ${SCP_USER} ${CONDUCTOR_NODE_URL} /opt/blockfabric/inventory ./inventory
 IP_LIST=$(get_list_of_ips)
@@ -276,11 +272,5 @@ setup_validator_nodes "$IP_LIST"
 create_lockup_owner_wallet
 create_distribution_owner_wallet
 ./scripts/generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"
-# TODO:
-# put the github API key inside the secrets manager
-# We need to get the github API key to download galaxy role
-# install the role from ansible-galaxy
-# generate the ansible playbook
-# execute the playbook against all nodes in the inventory
 echo "Key ceremony complete"
 

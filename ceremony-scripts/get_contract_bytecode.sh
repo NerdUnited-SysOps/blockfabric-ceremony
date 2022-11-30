@@ -37,6 +37,8 @@ get_contract_binaries() {
     unzip -o ${DAO_DIR}/dao.zip -d ${DAO_DIR}
 }
 
+echo "Downloading smart contract bytecode"
+
 mkdir -p ${DAO_DIR} ${LOCKUP_DIR}
 get_contract_binaries
 

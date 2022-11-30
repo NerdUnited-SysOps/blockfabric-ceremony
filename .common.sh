@@ -5,13 +5,13 @@ export APT_PWGEN_VERSION=2.08-2
 export APT_AWSCLI_VERSION=1.24.8-1
 export ETHKEY_VERSION=v1.10.26
 export GETH_VERSION=v1.10.26
-export ANSIBLE_ROLE_LACE_VERSION=
+export ANSIBLE_ROLE_LACE_VERSION=1.0.0.5-test
 
 # Contract versions
 export SC_LOCKUP_BINARY_VERSION=
 export DAO_LOCKUP_BINARY_VERSION=
-export LOCKUP_VERSION=v0.1.0
 export DAO_VERSION=v0.0.1
+export LOCKUP_VERSION=v0.1.0
 
 export CONDUCTOR_NODE_URL=conductor.mainnet.${BRAND_NAME}.blockfabric.net
 
@@ -21,12 +21,14 @@ export SCRIPTS_DIR=${BASE_DIR}/ceremony-scripts
 export KEYS_DIR=${BASE_DIR}/keys
 export CONTRACTS_DIR=${BASE_DIR}/contracts
 export VOLUMES_DIR=${BASE_DIR}/volumes
+export ANSIBLE_DIR=${BASE_DIR}/ansible
 
 # Pathing for additional binaries
-export PATH="${HOME}/go/bin:${PATH}"	 # GO binary path
+export PATH="${HOME}/go/bin:${PATH}"	 # Go binary path
 export PATH="${HOME}/.local/bin:${PATH}" # python binary path
 
 # Interacting with AWS Secrets Manager
+# For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
 AWS_SSH_KEY_SECRET_ID="conductor-key-test"
 SSH_KEY_DOWNLOAD_PATH=${BASE_DIR}/id_rsa
 

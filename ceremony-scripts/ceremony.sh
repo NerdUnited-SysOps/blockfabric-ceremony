@@ -60,25 +60,6 @@ shift $((OPTIND-1))
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
 
-# Helper function to download files from AWS Secrets Manager
-# We'll have an SSH key inside AWS Secrets Manager to be used by Ansible
-# Example call: download_file_from_aws "my-secret-aws-key" "../privatekey.pem"
-# Use `aws secretsmanager create-secret --name $SECRET_ID --secret-binary fileb://../test_secret_file.txt` to create a test file.
-download_file_from_aws () {
-    SECRET_ID=$1
-    LOCAL_FILE=$2
-    
-    aws secretsmanager get-secret-value --secret-id $SECRET_ID --query SecretBinary --output text | base64 --decode > $LOCAL_FILE
-
-    if [ -f "$LOCAL_FILE" ]; then
-        echo "$LOCAL_FILE exists."
-	chmod 0600 $SSH_KEY_DOWNLOAD_PATH
-    else 
-        echo "$LOCAL_FILE does not exist."
-        exit 1
-    fi
-}
-
 get_list_of_ips () {
     ansible all_quorum --list-hosts -i ./inventory | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
 }
@@ -89,16 +70,6 @@ get_list_of_validator_ips () {
 
 get_list_of_rpc_ips () {
     ansible rpc --list-hosts -i ./inventory | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
-}
-
-create_key_directories() {
-    mkdir -p ${KEYS_DIR}/distributionOwner \
-        ${KEYS_DIR}/lockupOwner \
-        ${CONTRACTS_DIR} \
-        ${VOLUMES_DIR}/volume1 \
-        ${VOLUMES_DIR}/volume2 \
-        ${VOLUMES_DIR}/volume3 \
-        ${VOLUMES_DIR}/volume4
 }
 
 setup_validator_nodes () {
@@ -233,19 +204,19 @@ echo "Starting key ceremony"
 
 ${SCRIPTS_DIR}/install_dependencies.sh
 aws configure
-download_file_from_aws $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
+${SCRIPTS_DIR}/get_secrets.sh $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
 ${SCRIPTS_DIR}/get_inventory.sh ${SCP_USER} ${CONDUCTOR_NODE_URL} /opt/blockfabric/inventory ./inventory
 IP_LIST=$(get_list_of_ips)
 VALIDATOR_IPS=$(get_list_of_validator_ips)
 RPC_IPS=$(get_list_of_rpc_ips)
 
-create_key_directories
+${SCRIPTS_DIR}/create_directories.sh
 
-./get_contract_bytecode.sh
+${SCRIPTS_DIR}/get_contract_bytecode.sh
 setup_validator_nodes "$IP_LIST"
 create_lockup_owner_wallet
 create_distribution_owner_wallet
 ${SCRIPTS_DIR}/generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"
 
-${SCRIPTDS_DIR}/finished.sh
+${SCRIPTS_DIR}/finished.sh
 

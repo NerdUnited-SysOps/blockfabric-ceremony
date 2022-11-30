@@ -25,11 +25,8 @@
 # For some of them, try to calculate them from other environment variables.
 #
 
-DAO_VERSION=.
-#v0.0.1
-LOCKUP_VERSION=.
-#v0.1.0
-ANSIBLE_ROLE_LACE_VERSION=1.0.0.5-test
+BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source .common.sh
 
 # Environment Vars
 ENV_NETWORK=testnet
@@ -45,7 +42,7 @@ LOCKUP_SC_BALANCE=$(($NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX-${NETWORK_ISSUER_GAS_SEE
 ISSUER_GAS_SEED_WEI=$(printf '%d\n' ${NETWORK_ISSUER_GAS_SEED_WEI_HEX})
 NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 
-PROJECT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+PROJECT_DIR=$BASE_DIR
 VALIDATOR_IPS=""
 RPC_IPS=""
 ## Let's do some admin work to find out the variables to be used here

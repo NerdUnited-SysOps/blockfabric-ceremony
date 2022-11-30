@@ -10,6 +10,8 @@
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
 
+echo "Downloading inventory file"
+
 user=$1
 host=$2
 file=$3

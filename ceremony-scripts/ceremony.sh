@@ -50,7 +50,7 @@ done
 shift $((OPTIND-1))
 
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+source $BASE_DIR/../.common.sh
 
 get_list_of_validator_ips () {
     ansible validator --list-hosts -i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo

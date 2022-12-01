@@ -2,9 +2,9 @@
 #
 #===================================================================================
 #
-# FILE: generate-ansible-goquorum-laybook.sh
+# FILE: generate_ansible_goquorum_laybook.sh
 #
-# USAGE: generate-ansible-goquorum-laybook.sh -v [Validator IP String] -r [RPC IP String]
+# USAGE: generate_ansible_goquorum_laybook.sh -v [Validator IP String] -r [RPC IP String]
 #
 # DESCRIPTION: List and/or delete all stale links in directory trees.
 # The default starting directory is the current directory.
@@ -25,8 +25,8 @@
 # For some of them, try to calculate them from other environment variables.
 #
 
-BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source $SCRIPT_DIR/../.common.sh
 
 # Environment Vars
 ENV_NETWORK=testnet
@@ -42,7 +42,7 @@ LOCKUP_SC_BALANCE=$(($NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX-${NETWORK_ISSUER_GAS_SEE
 ISSUER_GAS_SEED_WEI=$(printf '%d\n' ${NETWORK_ISSUER_GAS_SEED_WEI_HEX})
 NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 
-PROJECT_DIR=$BASE_DIR
+PROJECT_DIR=$SCRIPT_DIR
 VALIDATOR_IPS=""
 RPC_IPS=""
 ## Let's do some admin work to find out the variables to be used here
@@ -56,7 +56,6 @@ function help {
 	echo -e "${REV}-r                   ${OFF}RPC Node IP List"
 	echo -e "${REV}--longopt[=]<value>  ${OFF}Description"
 	echo -e "${REV}-h                   ${OFF}Displays this help message. No further functions are performed."\\n
-	echo -e "${REV}Commands:${OFF}"
 	exit 1
 }
 
@@ -91,6 +90,10 @@ while getopts "$OPTSPEC" optchar; do
 		r)
 			RPC_IPS=$OPTARG
 			;;
+        :)
+            echo "Error: -${OPTARG} requires an argument."
+            help
+            ;;
 		h)
 			help
 			;;
@@ -101,6 +104,14 @@ while getopts "$OPTSPEC" optchar; do
 	esac
 done
 
+shift "$(( OPTIND - 1 ))"
+
+if [ -z "$RPC_IPS" ] && [ -z "$VALIDATOR_IPS" ]; then
+        echo 'Missing -v and -r' >&2
+        help
+        exit 1
+fi
+
 [ -z "${PUBLIC_IPS}" ] && PUBLIC_IPS="${RPC_IPS} ${VALIDATOR_IPS}"
 
 if [ -z "${ENV_NETWORK}" ] || [ -z "${ENV_NETWORK_ID}" ] || [ -z "${ENV_NETWORK_NAME}" ] || [ -z "${PUBLIC_IPS}" ]
@@ -110,20 +121,20 @@ then
 fi
 
 # These environment variables have DEFAULT values if not set
-[ -z "${DAO_CONTRACT_ARCHIVE_DIR}" ] && DAO_CONTRACT_ARCHIVE_DIR="$PROJECT_DIR/contracts/sc_dao"
+[ -z "${DAO_CONTRACT_ARCHIVE_DIR}" ] && DAO_CONTRACT_ARCHIVE_DIR="$PROJECT_DIR/contracts/sc_dao/$DAO_VERSION/repo"
 [ -z "${DAO_STORAGE_FILE}" ] && DAO_STORAGE_FILE="$DAO_CONTRACT_ARCHIVE_DIR/$DAO_VERSION/Storage.txt"
 [ -z "${DAO_RUNTIME_BIN_FILE}" ] && DAO_RUNTIME_BIN_FILE="$DAO_CONTRACT_ARCHIVE_DIR/$DAO_VERSION/ValidatorSmartContractAllowList.bin-runtime"
 [ -z "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] && LOCKUP_CONTRACT_ARCHIVE_DIR="$PROJECT_DIR/contracts/sc_lockup"
-[ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/$LOCKUP_VERSION/Distribution.bin"
+[ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/$LOCKUP_VERSION/Distribution.bin-runtime"
 [ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$PROJECT_DIR/keys/distributionOwner/address"
 [ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="$PROJECT_DIR/keys/lockupOwner/address"
-[ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/$LOCKUP_VERSION/Lockup.bin"
+[ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/$LOCKUP_VERSION/Lockup.bin-runtime"
 [ -z "${ANSIBLE_INSTALL_SCRIPT}" ] && ANSIBLE_INSTALL_SCRIPT="$PROJECT_DIR/ansible/install"
 
 # Create directories that don't exist
 [ -d "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] || mkdir -p ${LOCKUP_CONTRACT_ARCHIVE_DIR}
 
-BASE_KEYS_DIR='keys'
+BASE_KEYS_DIR=$SCRIPT_DIR/keys
 NOW=$(date +%s)
 NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 
@@ -135,11 +146,11 @@ generate_ansible_galaxy_install_script() {
 }
 
 is_rpc_ip() {
-  [ ! -z $RPC_IPS] && [ -z "${RPC_IPS##*$1*}" ]
+  [ ! -z "$RPC_IPS" ] && [ -z "${RPC_IPS##*$1*}" ]
 }
 
 is_validator_ip() {
-  [ -z "${VALIDATOR_IPS##*$1*}" ]
+  [ ! -z "$VALIDATOR_IPS" ]  && [ -z "${VALIDATOR_IPS##*$1*}" ]
 }
 
 goquorum_enode_list() {
@@ -154,7 +165,6 @@ goquorum_enode_list() {
 }
 
 goquorum_import_private_key() {
-    echo $0
   is_validator_ip $1 && echo 'true' && return
   echo 'false'
 }
@@ -179,7 +189,6 @@ node_command_line_flags() {
 node_validator_pubs() {
   INDENTATION=$1
   for IP in ${VALIDATOR_IPS}; do
-    # TBD - Must figuure out where to get the public key
     printf '%*scustom_validator_pub_%s: "%s"\n' $INDENTATION '' ${IP//[.]/_} $(cat ${BASE_KEYS_DIR}/${IP}/nodekey_pub)
   done
 }
@@ -219,7 +228,7 @@ $(node_validator_pubs 8)
 $(goquorum_enode_list 12)
         ]
 
-      # Secure files
+        # Secure files
         goquorum_import_private_key: "$(goquorum_import_private_key ${IP_ADDRESS})"
         secure_custom_nodekey_keydir: "$(nodekey_keydir ${IP_ADDRESS})"
 

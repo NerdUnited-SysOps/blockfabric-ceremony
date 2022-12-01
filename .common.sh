@@ -50,5 +50,4 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 
 # Overrides based on the environment
-source .env
-
+[ -f .env ] && source .env

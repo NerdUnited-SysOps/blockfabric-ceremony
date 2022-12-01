@@ -2,10 +2,10 @@
 
 IP_ADDRESS_LIST=${1:?ERROR: Missing IP Address list}
 
-${SCRIPTS_DIR}/print_title.sh "Generating the Validator DAO Storage"
-
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+source $BASE_DIR/../.common.sh
+
+${SCRIPTS_DIR}/print_title.sh "Generating the Validator DAO Storage"
 
 DAO_DIR=${CONTRACTS_DIR}/sc_dao/${DAO_VERSION}
 DAO_URL=https://api.github.com/repos/NerdCoreSdk/sc_dao/zipball/${DAO_VERSION}
@@ -26,7 +26,7 @@ ALLOWED_ACCOUNTS_FILE=${WORKING_DIR}/allowedAccountsAndValidators.txt
 echo -n > $ALLOWED_ACCOUNTS_FILE
 for ip in ${IP_ADDRESS_LIST}
 do
-	IP_DIR=${KEYS_DIR}/${ip}
+  IP_DIR=${KEYS_DIR}/${ip}
   ACCOUNT_ADDRESS=$(cat ${IP_DIR}/account_address | tr -d '\n')
   NODEKEY_ADDRESS=$(cat ${IP_DIR}/nodekey_address | tr -d '\n')
   echo "$ACCOUNT_ADDRESS, $NODEKEY_ADDRESS" >> $ALLOWED_ACCOUNTS_FILE

@@ -13,7 +13,7 @@ export ANSIBLE_ROLE_LACE_VERSION=1.0.0.5-test
 export DAO_VERSION=v0.0.1
 export LOCKUP_VERSION=v0.1.0
 
-export CONDUCTOR_NODE_URL=conductor.mainnet.${BRAND_NAME}.blockfabric.net
+export CONDUCTOR_NODE_URL=conductor.mainnet.${BRAND_NAME:-nerd}.blockfabric.net
 
 # Common paths to be used throughout the various scripts
 export BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
@@ -23,6 +23,7 @@ export CONTRACTS_DIR=${BASE_DIR}/contracts
 export VOLUMES_DIR=${BASE_DIR}/volumes
 export ANSIBLE_DIR=${BASE_DIR}/ansible
 export LOG_FILE=${BASE_DIR}/log
+export ENV_FILE=${BASE_DIR}/.env
 
 # Pathing for additional binaries
 export PATH="${HOME}/go/bin:${PATH}"	 # Go binary path
@@ -33,7 +34,11 @@ export PATH="${HOME}/.local/bin:${PATH}" # python binary path
 AWS_SSH_KEY_SECRET_ID="conductor-key-test"
 SSH_KEY_DOWNLOAD_PATH=${BASE_DIR}/id_rsa
 INVENTORY_PATH=${ANSIBLE_DIR}/inventory
+REMOTE_INVENTORY_PATH=/opt/blockfabric/inventory
 AWS_DISTIRBUTION_ISSUER_KEY_NAME="DISTRIBUTION_ISSUER_PRIVATE_KEY"
+AWS_GITHUB_SYSOPS_TOKEN_NAME="SYSOPS_TOKEN"
+AWS_GITHUB_CORESDK_TOKEN_NAME="CORESDK_TOKEN"
 
 # Overrides based on the environment
 source .env
+

@@ -26,6 +26,8 @@
 # Implement a verbose mode to output to logs and stdout
 # Verification step in code
 
+set -e
+
 usage() {
   echo "This script sets up the validator nodes..."
   echo "Usage: $0 (options) ..."
@@ -100,7 +102,7 @@ ${SCRIPTS_DIR}/create_directories.sh
 ${SCRIPTS_DIR}/install_dependencies.sh
 aws configure
 ${SCRIPTS_DIR}/get_secrets.sh $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
-${SCRIPTS_DIR}/get_inventory.sh ${SCP_USER} ${CONDUCTOR_NODE_URL} /opt/blockfabric/inventory ${INVENTORY_PATH}
+${SCRIPTS_DIR}/get_inventory.sh ${SCP_USER} ${CONDUCTOR_NODE_URL} ${REMOTE_INVENTORY_PATH} ${INVENTORY_PATH}
 
 VALIDATOR_IPS=$(get_list_of_validator_ips)
 RPC_IPS=$(get_list_of_rpc_ips)

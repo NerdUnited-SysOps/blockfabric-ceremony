@@ -1,11 +1,6 @@
 #!/bin/bash
 
-IP_ADDRESS_LIST=$1
-if [ ! "$IP_ADDRESS_LIST" ]
-then
-    echo "ERROR: Missing IPS"
-    exit 1
-fi
+IP_ADDRESS_LIST=${1:?ERROR: Missing IP Address list}
 
 echo "Generating validator and account wallets"
 

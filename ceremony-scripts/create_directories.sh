@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo -e "Creating project structure"
+
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
 

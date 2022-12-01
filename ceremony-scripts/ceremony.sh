@@ -95,7 +95,11 @@ ${SCRIPTS_DIR}/print_title.sh "Starting key ceremony"
 
 ${SCRIPTS_DIR}/create_directories.sh
 ${SCRIPTS_DIR}/install_dependencies.sh
+
+echo -e "\nVerify credentials\n"
+
 aws configure
+
 ${SCRIPTS_DIR}/get_secrets.sh $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
 ${SCRIPTS_DIR}/get_inventory.sh ${SCP_USER} ${CONDUCTOR_NODE_URL} ${REMOTE_INVENTORY_PATH} ${INVENTORY_PATH}
 

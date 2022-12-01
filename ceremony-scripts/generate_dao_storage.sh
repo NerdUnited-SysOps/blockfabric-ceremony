@@ -38,5 +38,5 @@ mv ${WORKING_DIR}/Storage.txt ${DAO_DIR}
 
 cd $BASE_DIR
 
-echo -e "Completed storage generation"
+${SCRIPTS_DIR}/print_success.sh "Completed storage generation"
 

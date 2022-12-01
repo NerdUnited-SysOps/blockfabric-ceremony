@@ -28,7 +28,7 @@ aws secretsmanager \
 	--secret-string ${PRIVATE_KEY} &>> ${LOG_FILE}
 
 if [ $? -eq 0 ]; then
-	echo "Generated distribution wallet"
+	${SCRIPTS_DIR}/print_success.sh "Generated distribution wallet"
 else
 	aws secretsmanager \
 		create-secret \
@@ -36,9 +36,9 @@ else
 		--secret-string ${PRIVATE_KEY}
 
 	if [ $? -eq 0 ]; then
-		echo "Generated distribution wallet"
+		${SCRIPTS_DIR}/print_success.sh "Generated distribution wallet"
 	else
-		echo "Failed to push distribution wallet to secret manager"
+		${SCRIPTS_DIR}/print_error.sh "Failed to push distribution wallet to secret manager"
 		exit 1
 	fi
 fi

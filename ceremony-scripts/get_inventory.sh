@@ -20,9 +20,9 @@ local_file=${4:-$INVENTORY_PATH}
 scp -i $SSH_KEY_DOWNLOAD_PATH "${user}"@"${host}":"${remote_file}" "${local_file}" &>> ${LOG_FILE}
 
 if [ -f "$local_file" ]; then
-	echo "$local_file exists."
+	${SCRIPTS_DIR}/print_success.sh "$local_file exists."
 else 
-	echo "Failed to retrieve ${local_file}."
+	${SCRIPTS_DIR}/print_error.sh "Failed to retrieve ${local_file}."
 	exit 1
 fi
 

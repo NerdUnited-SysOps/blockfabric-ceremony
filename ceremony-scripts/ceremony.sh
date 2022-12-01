@@ -118,5 +118,13 @@ ${SCRIPTS_DIR}/generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RP
 ${SCRIPTS_DIR}/install_ansible_role.sh
 ${SCRIPTS_DIR}/run_ansible_playbook.sh
 
+# Move sensitive things to the volumes
+for volume in *../volumes ; do
+    for count in 1 2
+    do 
+        ${SCRIPTS_DIR}/move_keys_to_volume.sh $DESTINATION_DIR $volume 
+    done
+done
+
 ${SCRIPTS_DIR}/finished.sh
 

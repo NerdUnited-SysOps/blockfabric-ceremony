@@ -77,18 +77,6 @@ then
     usage
     exit 1
 fi
-if [ ! "$AWS_SSH_KEY_SECRET_ID" ]
-then
-    echo "ERROR: Missing aws ssh key secret id"
-    usage
-    exit 1
-fi
-if [ ! "$SSH_KEY_DOWNLOAD_PATH" ]
-then
-    ${SCRIPTS_DIR}/print_error.sh "ERROR: Missing ssh key download path"
-    usage
-    exit 1
-fi
 
 # All required params present, run the script.
 ${SCRIPTS_DIR}/print_title.sh "Starting key ceremony"
@@ -100,7 +88,12 @@ echo -e "\nVerify credentials\n"
 
 aws configure
 
-${SCRIPTS_DIR}/get_secrets.sh $AWS_SSH_KEY_SECRET_ID $SSH_KEY_DOWNLOAD_PATH
+${SCRIPTS_DIR}/get_secrets.sh \
+  $AWS_CONDUCTOR_SSH_KEY \
+  $AWS_CONDUCTOR_SSH_KEY_PATH \
+  $AWS_NODES_SSH_KEY \
+  $AWS_NODES_SSH_KEY_PATH
+
 ${SCRIPTS_DIR}/get_inventory.sh ${SCP_USER} ${CONDUCTOR_NODE_URL} ${REMOTE_INVENTORY_PATH} ${INVENTORY_PATH}
 
 VALIDATOR_IPS=$(get_list_of_validator_ips)

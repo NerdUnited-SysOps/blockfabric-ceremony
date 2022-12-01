@@ -31,8 +31,12 @@ export PATH="${HOME}/.local/bin:${PATH}" # python binary path
 
 # Interacting with AWS Secrets Manager
 # For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
-AWS_SSH_KEY_SECRET_ID="conductor-key-test"
-SSH_KEY_DOWNLOAD_PATH=${BASE_DIR}/id_rsa
+AWS_CONDUCTOR_SSH_KEY="conductor-key-test"
+AWS_CONDUCTOR_SSH_KEY_PATH=${BASE_DIR}/id_rsa_conductor
+
+AWS_NODES_SSH_KEY="conductor-key-test"
+AWS_NODES_SSH_KEY_PATH=${BASE_DIR}/id_rsa_nodes
+
 export SCP_USER=admin
 INVENTORY_PATH=${ANSIBLE_DIR}/inventory
 REMOTE_INVENTORY_PATH=/opt/blockfabric/inventory

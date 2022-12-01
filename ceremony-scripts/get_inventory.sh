@@ -17,12 +17,12 @@ host=${2:-$CONDUCTOR_NODE_URL}
 remote_file=${3:-$REMOTE_INVENTORY_PATH}
 local_file=${4:-$INVENTORY_PATH}
 
-scp -i $AWS_CONDUCTOR_SSH_KEY_PATH "${user}"@"${host}":"${remote_file}" "${local_file}" &>> ${LOG_FILE}
+scp -i ${AWS_CONDUCTOR_SSH_KEY_PATH} "${user}"@"${host}":"${remote_file}" "${local_file}" &>> ${LOG_FILE}
 
 if [ -f "$local_file" ]; then
 	${SCRIPTS_DIR}/print_success.sh "$local_file exists."
 else 
-	${SCRIPTS_DIR}/print_error.sh "Failed to retrieve ${local_file}."
+	${SCRIPTS_DIR}/print_error.sh "Failed to retrieve ${local_file}"
 	exit 1
 fi
 

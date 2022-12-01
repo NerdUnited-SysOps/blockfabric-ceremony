@@ -23,7 +23,7 @@ LOCKUP_URL=https://${GITHUB_CORESDK_TOKEN}:@api.github.com/repos/NerdCoreSdk/sc_
 #     /v0.1.0
 #       /*.bin
 
-${SCRIPTS_DIR}/print_title.sh "Downloading smart contract bytecode" | tee ${LOG_FILE}
+${SCRIPTS_DIR}/print_title.sh "Downloading smart contract bytecode"
 
 mkdir -p ${DAO_DIR} ${LOCKUP_DIR}
 
@@ -32,7 +32,7 @@ wget -q --auth-no-challenge \
 	${LOCKUP_URL} -O ${LOCKUP_DIR}/lockup.tar.gz &>> ${LOG_FILE}
 
 if [ ! $? -eq 0 ]; then
-   echo "Failed to retrieve lockup code"
+   ${SCRIPTS_DIR}/print_error.sh "$(basename $0):${LINENO} Failed to retrieve lockup code"
    exit 1
 fi
 
@@ -43,7 +43,7 @@ wget -q --auth-no-challenge \
 	${DAO_URL} -O ${DAO_DIR}/dao.zip &>> ${LOG_FILE}
 
 if [ ! $? -eq 0 ]; then
-   echo "Failed to retrieve dao code"
+   ${SCRIPTS_DIR}/print_error.sh "$(basename $0):${LINENO} Failed to retrieve dao code"
    exit 1
 fi
 

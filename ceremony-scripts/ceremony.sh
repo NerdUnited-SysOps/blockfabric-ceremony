@@ -6,17 +6,12 @@
 # Push the keys to the volumes (with output of where they're going to the console)
 # Make sure you can support and test with 2 copies of each volume
 
-# put the github API key inside the secrets manager
-# Retrieve github API token from secrets manager
 # Pull in brand specific variables for network (chainid, brand name, etc)
-# Push all the brand ansible back to repo
-# Add chmod to the id_rsa key
-# Add the public key that corresponds to the private key that we pull down from secrets mgr into the conductor and all the nodes, val1, val2, rpc in the authorized user
 # Find out names for variables to be kept in the secrets manager
+# replace the GIT_TOKENs with specific tokens
 
 # TODO: (Nice to haves)
 # Create templates of all the ansible artifacts (genesis.json, brand vars, etc)
-# Push those template files to a brand repo.
 # consistent formatting
 # sensible error checking
 # standardize individual scripts
@@ -25,6 +20,7 @@
 # * All output redirected to logs
 # Implement a verbose mode to output to logs and stdout
 # Verification step in code
+# (for vagrant dev) Add the public key that corresponds to the private key that we pull down from secrets mgr into the conductor and all the nodes, val1, val2, rpc in the authorized user
 
 set -e
 

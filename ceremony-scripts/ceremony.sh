@@ -114,6 +114,7 @@ ${SCRIPTS_DIR}/generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RP
 ${SCRIPTS_DIR}/install_ansible_role.sh
 ${SCRIPTS_DIR}/get_ansible_vars.sh
 ${SCRIPTS_DIR}/run_ansible_playbook.sh
+${SCRIPTS_DIR}/push_ansible_artifacts.sh
 
 # Move sensitive things to the volumes
 for volume in *../volumes ; do

@@ -7,3 +7,8 @@ source .common.sh
 
 ansible-galaxy install git+https://${GIT_TOKEN}:@github.com/NerdUnited-Nerd/ansible-role-lace,${ANSIBLE_ROLE_LACE_VERSION} --force
 
+if [ ! $? -eq 0 ]; then
+   echo "Failed to install ansible role"
+   exit 1
+fi
+

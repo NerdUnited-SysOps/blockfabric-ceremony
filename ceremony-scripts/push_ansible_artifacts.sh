@@ -25,5 +25,5 @@ fi
 git -C ${WORKING_DIR}/ checkout -b ceremony-artifacts
 git -C ${WORKING_DIR}/ add ${WORKING_DIR}
 git -C ${WORKING_DIR}/ commit -m "Committing produced artifacts"
-git -C ${WORKING_DIR}/ push origin HEAD
+git -C ${WORKING_DIR}/ push origin HEAD --force &>> ${LOG_FILE}
 

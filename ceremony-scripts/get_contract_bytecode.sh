@@ -5,14 +5,14 @@ source .common.sh
 
 DAO_DIR=${CONTRACTS_DIR}/sc_dao/${DAO_VERSION}
 DAO_ASSET_VERSION=86410959
-DAO_URL=https://${GIT_TOKEN}:@api.github.com/repos/NerdCoreSdk/sc_dao/releases/assets/${DAO_ASSET_VERSION}
+DAO_URL=https://${GITHUB_CORESDK_TOKEN}:@api.github.com/repos/NerdCoreSdk/sc_dao/releases/assets/${DAO_ASSET_VERSION}
 
 LOCKUP_DIR=${CONTRACTS_DIR}/sc_lockup/${LOCKUP_VERSION}
 LOCKUP_ASSET_VERSION=86414347
-LOCKUP_URL=https://${GIT_TOKEN}:@api.github.com/repos/NerdCoreSdk/sc_lockup/releases/assets/${LOCKUP_ASSET_VERSION}
+LOCKUP_URL=https://${GITHUB_CORESDK_TOKEN}:@api.github.com/repos/NerdCoreSdk/sc_lockup/releases/assets/${LOCKUP_ASSET_VERSION}
 
 # Find the assets in a release
-# curl -H "Accept: application/vnd.github+json" -H 'Authorization: Bearer ${GIT_TOKEN}' 'https://api.github.com/repos/NerdCoreSdk/sc_lockup/releases'
+# curl -H "Accept: application/vnd.github+json" -H 'Authorization: Bearer ${GITHUB_CORESDK_TOKEN}' 'https://api.github.com/repos/NerdCoreSdk/sc_lockup/releases'
 
 # The expected path will be the following
 # $CONTRACTS_DIR/

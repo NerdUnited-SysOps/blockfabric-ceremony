@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Generating lockup admin wallet"
+${SCRIPTS_DIR}/print_title.sh "Generating lockup admin wallet"
 
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
@@ -19,3 +19,4 @@ echo $password > ${WORKING_DIR}/password
 
 cp ${WORKING_DIR}/keystore ${VOL2}/keystore
 echo $password > ${VOL2}/password
+

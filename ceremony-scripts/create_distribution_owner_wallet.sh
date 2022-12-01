@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Generating distribution owner wallet"
+${SCRIPTS_DIR}/print_title.sh "Generating distribution owner wallet"
 
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
@@ -27,3 +27,4 @@ echo $password > ${VOL4}/password
 
 address=$(cat ${WORKING_DIR}/keystore | jq -r ".address" | tr -d '\n')
 echo $address > ${KEY_DIR}/address
+

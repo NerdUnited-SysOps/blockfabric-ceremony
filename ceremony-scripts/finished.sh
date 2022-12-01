@@ -1,9 +1,9 @@
 #!/bin/bash
 
+${SCRIPTS_DIR}/print_title.sh "Execution Complete"
 echo ""
-echo "Execution complete"
 echo ""
-echo -e "\tThanks for working with"
+echo ""
 echo ""
 echo "    _   ____________  ____  _____"
 echo "   / | / / ____/ __ \/ __ \/ ___/"

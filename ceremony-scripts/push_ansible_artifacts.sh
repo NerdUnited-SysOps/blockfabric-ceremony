@@ -1,5 +1,7 @@
 #!/bin/bash
 
+${SCRIPTS_DIR}/print_title.sh "Pushing Ansible artifacts"
+
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
 

@@ -2,7 +2,7 @@
 
 IP_ADDRESS_LIST=${1:?ERROR: Missing IP Address list}
 
-echo "Generating validator and account wallets"
+${SCRIPTS_DIR}/print_title.sh "Generating validator and account wallets"
 
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh

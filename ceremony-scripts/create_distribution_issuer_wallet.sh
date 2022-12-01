@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Generating distribution issuer wallet"
+${SCRIPTS_DIR}/print_title.sh "Generating distribution issuer wallet"
 
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh

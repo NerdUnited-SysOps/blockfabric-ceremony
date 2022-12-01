@@ -23,7 +23,7 @@ LOCKUP_URL=https://${GIT_TOKEN}:@api.github.com/repos/NerdCoreSdk/sc_lockup/rele
 #     /v0.1.0
 #       /*.bin
 
-echo "Downloading smart contract bytecode" | tee ${LOG_FILE}
+${SCRIPTS_DIR}/print_title.sh "Downloading smart contract bytecode" | tee ${LOG_FILE}
 
 mkdir -p ${DAO_DIR} ${LOCKUP_DIR}
 

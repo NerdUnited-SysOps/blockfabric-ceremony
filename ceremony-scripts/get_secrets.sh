@@ -5,7 +5,7 @@
 # Example call: download_file_from_aws "my-secret-aws-key" "../privatekey.pem"
 # Use `aws secretsmanager create-secret --name $SECRET_ID --secret-binary fileb://../test_secret_file.txt` to create a test file.
 
-echo "Retrieving secrets"
+${SCRIPTS_DIR}/print_title.sh "Retrieving secrets"
 
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh

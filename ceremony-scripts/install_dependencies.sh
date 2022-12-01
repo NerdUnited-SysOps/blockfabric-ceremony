@@ -3,8 +3,8 @@
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
 
-echo "Installing dependencies" | tee ${LOG_FILE}
-echo -e "\tThis may take a while..." | tee ${LOG_FILE}
+${SCRIPTS_DIR}/print_title.sh "Installing dependencies" | tee ${LOG_FILE}
+echo "This may take a minute..." | tee ${LOG_FILE}
 
 sudo apt-get update &>> ${LOG_FILE}
 
@@ -19,3 +19,4 @@ sudo apt-get install -y \
 go install github.com/ethereum/go-ethereum/cmd/ethkey@${ETHKEY_VERSION} &>> ${LOG_FILE}
 go install github.com/ethereum/go-ethereum/cmd/geth@${GETH_VERSION} &>> ${LOG_FILE}
 python3 -m pip install --user ansible &>> ${LOG_FILE}
+

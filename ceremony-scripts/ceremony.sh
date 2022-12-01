@@ -92,7 +92,7 @@ then
 fi
 
 # All required params present, run the script.
-echo "Starting key ceremony"
+${SCRIPTS_DIR}/print_title.sh "Starting key ceremony"
 
 ${SCRIPTS_DIR}/create_directories.sh
 ${SCRIPTS_DIR}/install_dependencies.sh
@@ -112,6 +112,7 @@ ${SCRIPTS_DIR}/create_validator_and_account_wallets.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_dao_storage.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"
 ${SCRIPTS_DIR}/install_ansible_role.sh
+${SCRIPTS_DIR}/get_ansible_vars.sh
 ${SCRIPTS_DIR}/run_ansible_playbook.sh
 
 # Move sensitive things to the volumes

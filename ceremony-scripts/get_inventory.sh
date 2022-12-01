@@ -10,7 +10,7 @@
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
 
-echo "Downloading inventory file" | tee ${LOG_FILE}
+${SCRIPTS_DIR}/print_title.sh "Downloading inventory file" | tee ${LOG_FILE}
 
 user=${1:-$SCP_USER}
 host=${2:-$CONDUCTOR_NODE_URL}

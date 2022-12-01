@@ -5,12 +5,13 @@
 # Format the volumes
 # Push the keys to the volumes (with output of where they're going to the console)
 # Make sure you can support and test with 2 copies of each volume
+
 # Push distribution issuer private key to Secrets Manager
 # put the github API key inside the secrets manager
 # Retrieve github API token from secrets manager
-# install the role from ansible-galaxy (using the github token)
-# execute the playbook against all nodes in the inventory
 # Pull in brand specific variables for network (chainid, brand name, etc)
+# Push all the brand ansible back to repo
+# Add chmod to the id_rsa key
 # Add the public key that corresponds to the private key that we pull down from secrets mgr into the conductor and all the nodes, val1, val2, rpc in the authorized user
 
 # TODO: (Nice to haves)
@@ -66,11 +67,6 @@ get_list_of_rpc_ips () {
     ansible rpc --list-hosts -i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
 }
 
-download_ansible_role() {
-    mkdir -p ~/ansible/roles/
-    git clone git@github.com:NerdUnited-Nerd/ansible-role-lace.git ~/ansible/roles/ansible-role-lace
-}
-
 # validate required params
 if [ ! "$DESTINATION_DIR" ]
 then
@@ -112,6 +108,8 @@ RPC_IPS=$(get_list_of_rpc_ips)
 ${SCRIPTS_DIR}/get_contract_bytecode.sh
 ${SCRIPTS_DIR}/create_lockup_owner_wallet.sh
 ${SCRIPTS_DIR}/create_distribution_owner_wallet.sh
+${SCRIPTS_DIR}/create_distribution_issuer_wallet.sh
+${SCRIPTS_DIR}/create_lockup_admin_wallet.sh
 ${SCRIPTS_DIR}/create_validator_and_account_wallets.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_dao_storage.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate-ansible-goquorum-playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"

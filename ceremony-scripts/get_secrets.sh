@@ -13,12 +13,12 @@ source .common.sh
 SECRET_ID=$1
 LOCAL_FILE=$2
 
-aws secretsmanager get-secret-value --secret-id $SECRET_ID --query SecretBinary --output text | base64 --decode > $LOCAL_FILE
+aws secretsmanager get-secret-value --secret-id ${SECRET_ID} --query SecretBinary --output text | base64 --decode > ${LOCAL_FILE}
 
-if [ -f "$LOCAL_FILE" ]; then
-    echo "$LOCAL_FILE exists."
-    chmod 0600 $SSH_KEY_DOWNLOAD_PATH
+if [ -f "${LOCAL_FILE}" ]; then
+    echo "${LOCAL_FILE} exists."
+    chmod 0600 ${SSH_KEY_DOWNLOAD_PATH}
 else 
-    echo "$LOCAL_FILE does not exist."
+    echo "${LOCAL_FILE} does not exist."
     exit 1
 fi

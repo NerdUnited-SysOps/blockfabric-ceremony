@@ -8,3 +8,6 @@ keys
 contracts
 ansible
 id_rsa
+id_rsa_conductor
+id_rsa_nodes
+

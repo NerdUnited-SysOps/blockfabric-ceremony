@@ -12,6 +12,7 @@
 # Pull in brand specific variables for network (chainid, brand name, etc)
 # Push all the brand ansible back to repo
 # Add chmod to the id_rsa key
+# Add the public key that corresponds to the private key that we pull down from secrets mgr into the conductor and all the nodes, val1, val2, rpc in the authorized user
 
 # TODO: (Nice to haves)
 # Create templates of all the ansible artifacts (genesis.json, brand vars, etc)

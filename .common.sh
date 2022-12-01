@@ -33,6 +33,7 @@ export PATH="${HOME}/.local/bin:${PATH}" # python binary path
 AWS_SSH_KEY_SECRET_ID="conductor-key-test"
 SSH_KEY_DOWNLOAD_PATH=${BASE_DIR}/id_rsa
 INVENTORY_PATH=${ANSIBLE_DIR}/inventory
+AWS_DISTIRBUTION_ISSUER_KEY_NAME="DISTRIBUTION_ISSUER_PRIVATE_KEY"
 
 # Overrides based on the environment
 source .env

@@ -26,3 +26,20 @@ aws secretsmanager \
 	put-secret-value \
 	--secret-id ${AWS_DISTIRBUTION_ISSUER_KEY_NAME} \
 	--secret-string ${PRIVATE_KEY} &>> ${LOG_FILE}
+
+if [ $? -eq 0 ]; then
+	echo "Generated distribution wallet"
+else
+	aws secretsmanager \
+		create-secret \
+		--name ${AWS_DISTIRBUTION_ISSUER_KEY_NAME} \
+		--secret-string ${PRIVATE_KEY}
+
+	if [ $? -eq 0 ]; then
+		echo "Generated distribution wallet"
+	else
+		echo "Failed to push distribution wallet to secret manager"
+		exit 1
+	fi
+fi
+

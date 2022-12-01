@@ -1,11 +1,8 @@
 #!/bin/bash
 
-IP_ADDRESS_LIST=$1
-if [ ! "$IP_ADDRESS_LIST" ]
-then
-    echo "ERROR: Missing IPS"
-    exit 1
-fi
+IP_ADDRESS_LIST=${1:?ERROR: Missing IP Address list}
+
+echo -e "Generating the Validator DAO Storage"
 
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source .common.sh
@@ -16,6 +13,7 @@ mkdir -p ${DAO_DIR}
 
 curl -L -H "Authorization: Bearer ${GITHUB_CORESDK_TOKEN}" ${DAO_URL} --output ${DAO_DIR}/repo.zip &>> ${LOG_FILE}
 
+rm -rf ${DAO_DIR}/repo
 unzip -o ${DAO_DIR}/repo.zip -d ${DAO_DIR} &>> ${LOG_FILE}
 mv ${DAO_DIR}/Nerd* ${DAO_DIR}/repo
 
@@ -39,4 +37,6 @@ node ./createContent.js
 mv ${WORKING_DIR}/Storage.txt ${DAO_DIR}
 
 cd $BASE_DIR
+
+echo -e "Completed storage generation"
 

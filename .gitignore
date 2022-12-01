@@ -2,3 +2,9 @@
 .vagrant
 *.swp
 .env
+volumes
+log
+keys
+contracts
+ansible
+id_rsa

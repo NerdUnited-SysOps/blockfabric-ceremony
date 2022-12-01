@@ -4,7 +4,7 @@
 # Params:
 #   user - user to ssh into box
 #   host - host to pull file from
-#   file - file to scp
+#   remote_file - file to scp
 # Example call: get_inventory "user" "152.167.123.1" "inventory_file.txt" "../ceremony_scripts/"
 
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
@@ -12,15 +12,17 @@ source .common.sh
 
 echo "Downloading inventory file" | tee ${LOG_FILE}
 
-user=$1
-host=$2
-file=$3
-local_file=$4
-scp -i $SSH_KEY_DOWNLOAD_PATH "$user"@"$host":"$file" "$local_file" &>> ${LOG_FILE}
+user=${1:-$SCP_USER}
+host=${2:-$CONDUCTOR_NODE_URL}
+remote_file=${3:-$REMOTE_INVENTORY_PATH}
+local_file=${4:-$INVENTORY_PATH}
+
+scp -i $SSH_KEY_DOWNLOAD_PATH "${user}"@"${host}":"${remote_file}" "${local_file}" &>> ${LOG_FILE}
 
 if [ -f "$local_file" ]; then
 	echo "$local_file exists."
 else 
-	echo "$local_file does not exist."
+	echo "Failed to retrieve ${local_file}."
 	exit 1
 fi
+

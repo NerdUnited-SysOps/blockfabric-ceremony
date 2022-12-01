@@ -1,51 +1,35 @@
 #!/bin/bash
 
-BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source $SCRIPT_DIR/../.common.sh
 
 DAO_DIR=${CONTRACTS_DIR}/sc_dao/${DAO_VERSION}
-DAO_ASSET_VERSION=86410959
-DAO_URL=https://${GITHUB_CORESDK_TOKEN}:@api.github.com/repos/NerdCoreSdk/sc_dao/releases/assets/${DAO_ASSET_VERSION}
-
 LOCKUP_DIR=${CONTRACTS_DIR}/sc_lockup/${LOCKUP_VERSION}
-LOCKUP_ASSET_VERSION=86414347
-LOCKUP_URL=https://${GITHUB_CORESDK_TOKEN}:@api.github.com/repos/NerdCoreSdk/sc_lockup/releases/assets/${LOCKUP_ASSET_VERSION}
 
-# Find the assets in a release
-# curl -H "Accept: application/vnd.github+json" -H 'Authorization: Bearer ${GITHUB_CORESDK_TOKEN}' 'https://api.github.com/repos/NerdCoreSdk/sc_lockup/releases'
+DAO_RELEASE_ARCHIVE_FILENAME=$DAO_VERSION.zip
+LOCKUP_RELEASE_ARCHIVE_FILENAME=contracts_$LOCKUP_VERSION.tar.gz
 
-# The expected path will be the following
-# $CONTRACTS_DIR/
-#   /sc_dao
-#     /v0.0.1
-#       /*.bin-runtime
-#   /sc_lockup
-#     /v0.1.0
-#       /*.bin
+download_lockup_release () {
+    CURRENT_DIR=$(pwd)
+    cd $LOCKUP_DIR
+    ${UTIL_SCRIPTS_DIR}/gh_dl_release.sh NerdCoreSdk sc_lockup $LOCKUP_VERSION $LOCKUP_RELEASE_ARCHIVE_FILENAME
+    tar -xvf $LOCKUP_RELEASE_ARCHIVE_FILENAME &>> ${LOG_FILE}
+    cd $CURRENT_DIR
+}
 
-${SCRIPTS_DIR}/print_title.sh "Downloading smart contract bytecode"
+download_dao_release () {
+    cd $DAO_DIR
 
-mkdir -p ${DAO_DIR} ${LOCKUP_DIR}
+    ${UTIL_SCRIPTS_DIR}/gh_dl_release.sh NerdCoreSdk sc_dao $DAO_VERSION $DAO_RELEASE_ARCHIVE_FILENAME
+    unzip $DAO_RELEASE_ARCHIVE_FILENAME &>> ${LOG_FILE}
 
-wget -q --auth-no-challenge \
-	--header='Accept:application/octet-stream' \
-	${LOCKUP_URL} -O ${LOCKUP_DIR}/lockup.tar.gz &>> ${LOG_FILE}
+    cd $CURRENT_DIR
+}
 
-if [ ! $? -eq 0 ]; then
-   ${SCRIPTS_DIR}/print_error.sh "$(basename $0):${LINENO} Failed to retrieve lockup code"
-   exit 1
-fi
+${SCRIPTS_DIR}/print_title.sh "Downloading smart contract bytecode" | tee ${LOG_FILE}
+[ -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && [ -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] &&  echo -e "ERR: sc_dao ($DAO_VERSION) and sc_lockuip ($LOCKUP_VERSION)_already exist. \nSkipping..."  && exit 17
 
-tar -xvf ${LOCKUP_DIR}/lockup.tar.gz -C ${LOCKUP_DIR} &>> ${LOG_FILE}
+[ ! -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${LOCKUP_DIR} && download_lockup_release
+[ ! -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${DAO_DIR} && download_dao_release
 
-wget -q --auth-no-challenge \
-	--header='Accept:application/octet-stream' \
-	${DAO_URL} -O ${DAO_DIR}/dao.zip &>> ${LOG_FILE}
-
-if [ ! $? -eq 0 ]; then
-   ${SCRIPTS_DIR}/print_error.sh "$(basename $0):${LINENO} Failed to retrieve dao code"
-   exit 1
-fi
-
-unzip -o ${DAO_DIR}/dao.zip -d ${DAO_DIR} &>> ${LOG_FILE}
-
+echo done.

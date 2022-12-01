@@ -18,6 +18,7 @@ export CONDUCTOR_NODE_URL=conductor.mainnet.${BRAND_NAME:-nerd}.blockfabric.net
 # Common paths to be used throughout the various scripts
 export BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 export SCRIPTS_DIR=${BASE_DIR}/ceremony-scripts
+export UTIL_SCRIPTS_DIR=${BASE_DIR}/ceremony-scripts/util
 export KEYS_DIR=${BASE_DIR}/keys
 export CONTRACTS_DIR=${BASE_DIR}/contracts
 export VOLUMES_DIR=${BASE_DIR}/volumes

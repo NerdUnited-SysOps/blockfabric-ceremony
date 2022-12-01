@@ -1,9 +1,10 @@
 #!/bin/bash
 
-${SCRIPTS_DIR}/print_title.sh "Creating project structure"
 
 BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+source $BASE_DIR/../.common.sh
+
+${SCRIPTS_DIR}/print_title.sh "Creating project structure"
 
 mkdir -p ${KEYS_DIR}/distributionOwner \
     ${KEYS_DIR}/lockupOwner \

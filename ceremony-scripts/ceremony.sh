@@ -8,7 +8,6 @@
 
 # Pull in brand specific variables for network (chainid, brand name, etc)
 # Find out names for variables to be kept in the secrets manager
-# replace the GIT_TOKENs with specific tokens
 
 # TODO: (Nice to haves)
 # Create templates of all the ansible artifacts (genesis.json, brand vars, etc)
@@ -86,7 +85,7 @@ then
 fi
 if [ ! "$SSH_KEY_DOWNLOAD_PATH" ]
 then
-    echo "ERROR: Missing ssh key download path"
+    ${SCRIPTS_DIR}/print_error.sh "ERROR: Missing ssh key download path"
     usage
     exit 1
 fi

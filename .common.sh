@@ -33,11 +33,17 @@ export PATH="${HOME}/.local/bin:${PATH}" # python binary path
 # For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
 AWS_SSH_KEY_SECRET_ID="conductor-key-test"
 SSH_KEY_DOWNLOAD_PATH=${BASE_DIR}/id_rsa
+export SCP_USER=admin
 INVENTORY_PATH=${ANSIBLE_DIR}/inventory
 REMOTE_INVENTORY_PATH=/opt/blockfabric/inventory
 AWS_DISTIRBUTION_ISSUER_KEY_NAME="DISTRIBUTION_ISSUER_PRIVATE_KEY"
 AWS_GITHUB_SYSOPS_TOKEN_NAME="SYSOPS_TOKEN"
 AWS_GITHUB_CORESDK_TOKEN_NAME="CORESDK_TOKEN"
+
+# Output coloring
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
 
 # Overrides based on the environment
 source .env

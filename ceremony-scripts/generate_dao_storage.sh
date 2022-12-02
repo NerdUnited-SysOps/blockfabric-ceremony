@@ -2,8 +2,8 @@
 
 IP_ADDRESS_LIST=${1:?ERROR: Missing IP Address list}
 
-BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source $BASE_DIR/../.common.sh
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source $SCRIPT_DIR/../.common.sh
 
 ${SCRIPTS_DIR}/print_title.sh "Generating the Validator DAO Storage"
 

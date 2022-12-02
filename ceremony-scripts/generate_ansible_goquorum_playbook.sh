@@ -42,7 +42,7 @@ LOCKUP_SC_BALANCE=$(($NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX-${NETWORK_ISSUER_GAS_SEE
 ISSUER_GAS_SEED_WEI=$(printf '%d\n' ${NETWORK_ISSUER_GAS_SEED_WEI_HEX})
 NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 
-PROJECT_DIR=$SCRIPT_DIR
+PROJECT_DIR=$BASE_DIR
 VALIDATOR_IPS=""
 RPC_IPS=""
 ## Let's do some admin work to find out the variables to be used here
@@ -134,7 +134,7 @@ fi
 # Create directories that don't exist
 [ -d "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] || mkdir -p ${LOCKUP_CONTRACT_ARCHIVE_DIR}
 
-BASE_KEYS_DIR=$SCRIPT_DIR/keys
+BASE_KEYS_DIR=$BASE_DIR/keys
 NOW=$(date +%s)
 NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 

@@ -2,14 +2,14 @@
 
 IP_ADDRESS_LIST=${1:?ERROR: Missing IP Address list}
 
-BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source ${SCRIPT_DIR}/../.common.sh
 
-${SCRIPTS_DIR}/print_title.sh "Generating validator and account wallets"
+${SCRIPTS_DIR}/printer.sh -t "Generating validator and account wallets"
 
 for ip in ${IP_ADDRESS_LIST}
 do
-	echo "Setting up keys for ip: ${ip}"
+	${SCRIPT_DIR}/printer.sh -n "Setting up keys for ip: ${ip}"
 
 	VOLUME_DIR=${VOLUMES_DIR}/volume1/${ip}
 	KEY_DIR=${KEYS_DIR}/${ip}

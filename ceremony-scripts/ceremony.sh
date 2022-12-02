@@ -79,7 +79,7 @@ then
 fi
 
 # All required params present, run the script.
-${SCRIPTS_DIR}/print_title.sh "Starting key ceremony"
+${SCRIPTS_DIR}/printer.sh -t "Starting key ceremony"
 
 ${SCRIPTS_DIR}/create_directories.sh
 ${SCRIPTS_DIR}/install_dependencies.sh

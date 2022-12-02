@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 
-${SCRIPTS_DIR}/print_title.sh "Installing Ansible role"
+${SCRIPTS_DIR}/printer.sh -t "Installing Ansible role"
 
-BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source ${SCRIPT_DIR}/../.common.sh
 
 ansible-galaxy install git+https://${GITHUB_SYSOPS_TOKEN}:@github.com/NerdUnited-Nerd/ansible-role-lace,${ANSIBLE_ROLE_LACE_VERSION} --force
 
 if [ ! $? -eq 0 ]; then
-   ${SCRIPTS_DIR}/print_error.sh "Failed to install ansible role"
-   exit 1
+   ${SCRIPTS_DIR}/printer.sh -e "Failed to install ansible role"
 fi
 

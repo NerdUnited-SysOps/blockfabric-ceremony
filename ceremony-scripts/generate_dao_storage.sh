@@ -7,7 +7,7 @@ IP_ADDRESS_LIST=${1:?ERROR: Missing IP Address list}
 SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source $SCRIPT_DIR/../.common.sh
 
-${SCRIPTS_DIR}/print_title.sh "Generating the Validator DAO Storage"
+${SCRIPTS_DIR}/printer.sh -t "Generating the Validator DAO Storage"
 
 DAO_DIR=${CONTRACTS_DIR}/sc_dao/${DAO_VERSION}
 mkdir -p ${DAO_DIR}
@@ -15,20 +15,18 @@ mkdir -p ${DAO_DIR}
 curl -L -H "Authorization: Bearer ${GITHUB_CORESDK_TOKEN}" ${GITHUB_DAO_URL} --output ${DAO_DIR}/repo.zip &>> ${LOG_FILE}
 
 if [ $? -eq 0 ]; then
-	${SCRIPTS_DIR}/print_success.sh "Retrieved Validator DAO code"
+	${SCRIPTS_DIR}/printer.sh -s "Retrieved Validator DAO code"
 else
-	${SCRIPTS_DIR}/print_error.sh "Failed retrieve Validator DAO code"
-	exit 1
+	${SCRIPTS_DIR}/printer.sh -e "Failed retrieve Validator DAO code"
 fi
 
 rm -rf ${DAO_DIR}/repo
 unzip -o ${DAO_DIR}/repo.zip -d ${DAO_DIR} &>> ${LOG_FILE}
 
 if [ $? -eq 0 ]; then
-	${SCRIPTS_DIR}/print_success.sh "Unpacked DAO code"
+	${SCRIPTS_DIR}/printer.sh -s "Unpacked DAO code"
 else
-	${SCRIPTS_DIR}/print_error.sh "Failed to unpack DAO code"
-	exit 1
+	${SCRIPTS_DIR}/printer.sh -e "Failed to unpack DAO code"
 fi
 
 mv ${DAO_DIR}/Nerd* ${DAO_DIR}/repo
@@ -54,5 +52,5 @@ mv ${WORKING_DIR}/Storage.txt ${DAO_DIR}
 
 cd -
 
-${SCRIPTS_DIR}/print_success.sh "Completed storage generation"
+${SCRIPTS_DIR}/printer.sh -s "Completed storage generation"
 

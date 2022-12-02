@@ -26,11 +26,15 @@ download_dao_release () {
     cd $CURRENT_DIR
 }
 
-${SCRIPTS_DIR}/print_title.sh "Downloading smart contract bytecode"
-[ -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && [ -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] &&  echo -e "ERR: sc_dao ($DAO_VERSION) and sc_lockuip ($LOCKUP_VERSION)_already exist. \nSkipping..."  && exit 17
+if [ -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && [ -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] 
+then
+	${SCRIPTS_DIR}/printer.sh -n "Smart contract bytecode present, skipping"
+ # echo -e "ERR: ${GITHUB_DAO_REPO} ($DAO_VERSION) and ${GITHUB_LOCKUP_REPO} ($LOCKUP_VERSION)_already exist. \nSkipping..."
+else
+	${SCRIPTS_DIR}/printer.sh -t "Downloading smart contract bytecode"
+	[ ! -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${LOCKUP_DIR} && download_lockup_release
+	[ ! -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${DAO_DIR} && download_dao_release
 
-[ ! -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${LOCKUP_DIR} && download_lockup_release
-[ ! -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${DAO_DIR} && download_dao_release
-
-${SCRIPTS_DIR}/print_success.sh "Retrieved contract bytecode"
+	${SCRIPTS_DIR}/printer.sh -s "Retrieved contract bytecode"
+fi
 

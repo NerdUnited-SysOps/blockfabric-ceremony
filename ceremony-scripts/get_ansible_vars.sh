@@ -1,9 +1,9 @@
 #!/bin/bash
 
-${SCRIPTS_DIR}/print_title.sh "Fetching ansible variables"
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source $SCRIPT_DIR/../.common.sh
 
-BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+${SCRIPTS_DIR}/printer.sh -t "Fetching ansible variables"
 
 BRAND=${1:-nerd}
 NETWORK=${2:-mainnet}
@@ -17,8 +17,7 @@ rm -rf ${WORKING_DIR}
 git clone ${BRAND_ANSIBLE_URL} ${WORKING_DIR}
 
 if [ ! $? -eq 0 ]; then
-   echo "Failed to clone brand repo ${BRAND_ANSIBLE_URL}"
-   exit 1
+   ${SCRIPTS_DIR}/printer.sh -e "Failed to clone brand repo ${BRAND_ANSIBLE_URL}"
 fi
 
 mkdir -p ${ANSIBLE_DIR}

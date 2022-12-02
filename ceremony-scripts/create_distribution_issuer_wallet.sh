@@ -1,9 +1,11 @@
 #!/bin/bash
 
-${SCRIPTS_DIR}/print_title.sh "Generating distribution issuer wallet"
+set -e
 
-BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source $SCRIPT_DIR/../.common.sh
+
+${SCRIPTS_DIR}/printer.sh -t "Generating distribution issuer wallet"
 
 VOL1=${VOLUMES_DIR}/volume1/distributionIssuer
 VOL2=${VOLUMES_DIR}/volume2/distributionIssuer
@@ -28,7 +30,7 @@ aws secretsmanager \
 	--secret-string ${PRIVATE_KEY} &>> ${LOG_FILE}
 
 if [ $? -eq 0 ]; then
-	${SCRIPTS_DIR}/print_success.sh "Generated distribution wallet"
+	${SCRIPTS_DIR}/printer.sh -s "Generated distribution wallet"
 else
 	aws secretsmanager \
 		create-secret \
@@ -36,10 +38,9 @@ else
 		--secret-string ${PRIVATE_KEY}
 
 	if [ $? -eq 0 ]; then
-		${SCRIPTS_DIR}/print_success.sh "Generated distribution wallet"
+		${SCRIPTS_DIR}/printer.sh -s "Generated distribution wallet"
 	else
-		${SCRIPTS_DIR}/print_error.sh "Failed to push distribution wallet to secret manager"
-		exit 1
+		${SCRIPTS_DIR}/printer.sh -e "Failed to push distribution wallet to secret manager"
 	fi
 fi
 

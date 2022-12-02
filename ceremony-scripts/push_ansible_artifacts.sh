@@ -1,9 +1,10 @@
 #!/bin/bash
 
-${SCRIPTS_DIR}/print_title.sh "Pushing Ansible artifacts"
 
-BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source ${BASE_DIR}/../.common.sh
+
+${SCRIPTS_DIR}/printer.sh -t "Pushing Ansible artifacts"
 
 BRAND=${1:-nerd}
 NETWORK=${2:-mainnet}
@@ -17,13 +18,13 @@ mkdir -p ${ANSIBLE_DIR}
 cp -r  ${ANSIBLE_DIR}/* ${WORKING_DIR}
 
 if [ ! $? -eq 0 ]; then
-   echo "Failed to copy ansible content to brand repo"
-   exit 1
+   ${SCRIPTS_DIR}/printer.sh -e "Failed to copy ansible content to brand repo"
 fi
-
 
 git -C ${WORKING_DIR}/ checkout -b ceremony-artifacts
 git -C ${WORKING_DIR}/ add ${WORKING_DIR}
 git -C ${WORKING_DIR}/ commit -m "Committing produced artifacts"
 git -C ${WORKING_DIR}/ push origin HEAD --force &>> ${LOG_FILE}
+
+${SCRIPTS_DIR}/printer.sh -s "Pushed ansible code to remote repo"
 

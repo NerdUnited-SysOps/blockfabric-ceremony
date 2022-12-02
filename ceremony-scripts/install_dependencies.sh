@@ -8,10 +8,9 @@ source .common.sh
 function print_status() {
   package=$1
   if [ $? -eq 0 ]; then
-    ${SCRIPTS_DIR}/print_success.sh "Installed ${package}"
+    ${SCRIPTS_DIR}/printer.sh -s "Installed ${package}"
   else
-    ${SCRIPTS_DIR}/print_error.sh "Failed to install ${package}"
-    exit 1
+    ${SCRIPTS_DIR}/printer.sh -e "Failed to install ${package}"
   fi
 }
 

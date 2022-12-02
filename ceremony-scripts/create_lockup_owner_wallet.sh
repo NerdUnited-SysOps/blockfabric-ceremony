@@ -1,9 +1,9 @@
 #!/bin/bash
 
-${SCRIPTS_DIR}/print_title.sh "Generating lockup owner wallet"
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source ${SCRIPT_DIR}/../.common.sh
 
-BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+${SCRIPTS_DIR}/printer.sh -t "Generating lockup owner wallet"
 
 VOL1=${VOLUMES_DIR}/volume1/lockupOwner
 VOL3=${VOLUMES_DIR}/volume3/lockupOwner

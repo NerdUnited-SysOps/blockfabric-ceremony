@@ -1,6 +1,10 @@
 #!/bin/bash
 
-${SCRIPTS_DIR}/print_title.sh "Execution Complete"
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source $SCRIPT_DIR/../.common.sh
+
+${SCRIPTS_DIR}/printer.sh -s "Execution Complete"
+
 echo ""
 echo ""
 echo ""

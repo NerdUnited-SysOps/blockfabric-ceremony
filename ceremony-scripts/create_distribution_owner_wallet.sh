@@ -1,9 +1,9 @@
 #!/bin/bash
 
-${SCRIPTS_DIR}/print_title.sh "Generating distribution owner wallet"
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source ${SCRIPT_DIR}/../.common.sh
 
-BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+${SCRIPTS_DIR}/printer.sh -t "Generating distribution owner wallet"
 
 VOL1=${VOLUMES_DIR}/volume1/distributionOwner
 VOL3=${VOLUMES_DIR}/volume3/distributionOwner

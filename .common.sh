@@ -32,18 +32,12 @@ export PATH="${HOME}/.local/bin:${PATH}" # python binary path
 
 # Interacting with AWS Secrets Manager
 # For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
-AWS_CONDUCTOR_SSH_KEY="CONDUCTOR_SSH_KEY"
-AWS_CONDUCTOR_SSH_KEY_PATH=${BASE_DIR}/id_rsa_conductor
-
-AWS_NODES_SSH_KEY="CONDUCTOR_SSH_KEY"
-AWS_NODES_SSH_KEY_PATH=${BASE_DIR}/id_rsa_nodes
+export AWS_CONDUCTOR_SSH_KEY_PATH=${BASE_DIR}/id_rsa_conductor
+export AWS_NODES_SSH_KEY_PATH=${BASE_DIR}/id_rsa_nodes
 
 export SCP_USER=admin
-INVENTORY_PATH=${ANSIBLE_DIR}/inventory
-REMOTE_INVENTORY_PATH=/opt/blockfabric/inventory
-AWS_DISTIRBUTION_ISSUER_KEY_NAME="DISTRIBUTION_ISSUER_PRIVATE_KEY"
-AWS_GITHUB_SYSOPS_TOKEN_NAME="SYSOPS_PAT"
-AWS_GITHUB_CORESDK_TOKEN_NAME="CORESDK_PAT"
+export INVENTORY_PATH=${ANSIBLE_DIR}/inventory
+export REMOTE_INVENTORY_PATH=/opt/blockfabric/inventory
 
 # Output coloring
 RED='\033[0;31m'
@@ -55,5 +49,7 @@ if [ -f .env ]
 then
   source .env
 else
-  touch .env
+	echo "Missing .env file"
+	echo "This program requires a .env file to run"
+	exit 1
 fi

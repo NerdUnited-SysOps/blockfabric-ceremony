@@ -50,7 +50,7 @@ if [ ! $? -eq 0 ]; then
    exit 1
 fi
 
-sed -i "1iexport GITHUB_SYSOPS_TOKEN=${LOCAL_SYSOPS_TOKEN}" ${ENV_FILE}
+echo "export GITHUB_SYSOPS_TOKEN=${LOCAL_SYSOPS_TOKEN}" >> ${ENV_FILE}
 
 LOCAL_CORESDK_TOKEN=$(aws secretsmanager get-secret-value \
     --secret-id ${AWS_GITHUB_CORESDK_TOKEN_NAME} \
@@ -62,5 +62,5 @@ if [ ! $? -eq 0 ]; then
    exit 1
 fi
 
-sed -i "1iexport GITHUB_CORESDK_TOKEN=${LOCAL_CORESDK_TOKEN}" ${ENV_FILE}
+echo "export GITHUB_CORESDK_TOKEN=${LOCAL_CORESDK_TOKEN}" >> ${ENV_FILE}
 

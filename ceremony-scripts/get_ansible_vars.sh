@@ -7,7 +7,7 @@ ${SCRIPTS_DIR}/printer.sh -t "Fetching ansible variables"
 
 BRAND=${1:-nerd}
 NETWORK=${2:-mainnet}
-GITHUB_ORG_URL=${3:github.com/NerdUnited-SysOps}
+GITHUB_ORG_URL=${3:-github.com/NerdUnited-SysOps}
 
 REPO_NAME=ansible.${BRAND}-${NETWORK}
 WORKING_DIR=${BASE_DIR}/../${REPO_NAME}

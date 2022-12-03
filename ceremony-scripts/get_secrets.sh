@@ -40,6 +40,19 @@ else
     ${SCRIPTS_DIR}/print_error.sh "${LOCAL_FILE2} does not exist."
 fi
 
+set_env_var() {
+	VAR_NAME=$1
+	VAR_VAL=$2
+	FILE_NAME=$ENV_FILE
+
+	if grep -q "${VAR_NAME}" "${FILE_NAME}"
+	then
+		sed -i "s/^export ${VAR_NAME}=.*/export ${VAR_NAME}=${VAR_VAL}/g" "${FILE_NAME}"
+	else
+		echo "export ${VAR_NAME}=${VAR_VAL}" >> "${FILE_NAME}"
+	fi
+}
+
 LOCAL_SYSOPS_TOKEN=$(aws secretsmanager get-secret-value \
     --secret-id ${AWS_GITHUB_SYSOPS_TOKEN_NAME} \
     --output text \
@@ -49,7 +62,8 @@ if [ ! $? -eq 0 ]; then
    ${SCRIPTS_DIR}/printer.sh -e "Failed to retrieve sysops github token"
 fi
 
-echo "export GITHUB_SYSOPS_TOKEN=${LOCAL_SYSOPS_TOKEN}" >> ${ENV_FILE}
+set_env_var "GITHUB_SYSOPS_TOKEN" "${LOCAL_SYSOPS_TOKEN}"
+# echo "export GITHUB_SYSOPS_TOKEN=${LOCAL_SYSOPS_TOKEN}" >> ${ENV_FILE}
 
 LOCAL_CORESDK_TOKEN=$(aws secretsmanager get-secret-value \
     --secret-id ${AWS_GITHUB_CORESDK_TOKEN_NAME} \
@@ -60,5 +74,6 @@ if [ ! $? -eq 0 ]; then
    ${SCRIPTS_DIR}/printer.sh -e "Failed to retrieve coresdk github token"
 fi
 
-echo "export GITHUB_CORESDK_TOKEN=${LOCAL_CORESDK_TOKEN}" >> ${ENV_FILE}
+	# echo "export GITHUB_CORESDK_TOKEN=${LOCAL_CORESDK_TOKEN}" >> ${ENV_FILE}
+set_env_var "GITHUB_CORESDK_TOKEN" "${LOCAL_CORESDK_TOKEN}"
 

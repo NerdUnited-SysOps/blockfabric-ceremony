@@ -56,4 +56,3 @@ while getopts 'e:s:t:n:' option; do
 	esac
 done
 
-shift $((OPTIND-1))

@@ -8,10 +8,11 @@ ${SCRIPTS_DIR}/printer.sh -t "Pushing Ansible artifacts"
 
 BRAND=${1:-nerd}
 NETWORK=${2:-mainnet}
+GITHUB_ORG_URL=${3:github.com/NerdUnited-SysOps}
 
 REPO_NAME=ansible.${BRAND}-${NETWORK}
 WORKING_DIR=${BASE_DIR}/../${REPO_NAME}
-BRAND_ANSIBLE_URL=https://${GITHUB_SYSOPS_TOKEN}:@github.com/NerdUnited-SysOps/${REPO_NAME}.git
+BRAND_ANSIBLE_URL=https://${GITHUB_SYSOPS_TOKEN}:@${GITHUB_ORG_URL}/${REPO_NAME}.git
 
 mkdir -p ${ANSIBLE_DIR}
 

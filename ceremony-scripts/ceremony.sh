@@ -78,6 +78,30 @@ then
     exit 1
 fi
 
+get_ansible_vars() {
+	${SCRIPTS_DIR}/printer.sh -t "Fetching ansible variables"
+
+	# git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR}
+
+	# [ ! $? -eq 0 ] && ${SCRIPTS_DIR}/printer.sh -e "Failed to clone brand repo ${BRAND_ANSIBLE_URL}"
+}
+
+install_ansible_role() {
+	${SCRIPTS_DIR}/printer.sh -t "Installing Ansible role"
+
+	ansible-galaxy install ${ANSIBLE_ROLE_PATH}
+
+	[ ! $? -eq 0 ] && ${SCRIPTS_DIR}/printer.sh -e "Failed to install ansible role"
+}
+
+run_ansible() {
+	${SCRIPTS_DIR}/printer.sh -t "Executing Ansible Playbook"
+
+	ansible-playbook -i ${INVENTORY_PATH} ${ANSIBLE_DIR}/goquorum.yaml --private-key=${AWS_NODES_SSH_KEY_PATH}
+
+	[ ! $? -eq 0 ] && ${SCRIPTS_DIR}/printer.sh -e "Failed to execute ansible playbook"
+}
+
 # All required params present, run the script.
 ${SCRIPTS_DIR}/printer.sh -t "Starting key ceremony"
 
@@ -94,6 +118,8 @@ ${SCRIPTS_DIR}/get_secrets.sh \
   $AWS_NODES_SSH_KEY \
   $AWS_NODES_SSH_KEY_PATH
 
+get_ansible_vars
+
 ${SCRIPTS_DIR}/get_inventory.sh ${SCP_USER} ${CONDUCTOR_NODE_URL} ${REMOTE_INVENTORY_PATH} ${INVENTORY_PATH}
 
 VALIDATOR_IPS=$(get_list_of_validator_ips)
@@ -106,10 +132,10 @@ ${SCRIPTS_DIR}/create_distribution_issuer_wallet.sh
 ${SCRIPTS_DIR}/create_lockup_admin_wallet.sh
 ${SCRIPTS_DIR}/create_validator_and_account_wallets.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_dao_storage.sh "$VALIDATOR_IPS"
-${SCRIPTS_DIR}/generate_ansible_goquorum_playbook.sh -v "$VALIDATOR_IPS" -r "$RPC_IPS"
-${SCRIPTS_DIR}/install_ansible_role.sh
-${SCRIPTS_DIR}/get_ansible_vars.sh
-${SCRIPTS_DIR}/run_ansible_playbook.sh
+${SCRIPTS_DIR}/generate_ansible_playbook2.sh -v "$VALIDATOR_IPS"
+# install_ansible_role
+cp -r ${KEYS_DIR} ${ANSIBLE_DIR}/
+run_ansible
 ${SCRIPTS_DIR}/push_ansible_artifacts.sh
 
 # Move sensitive things to the volumes

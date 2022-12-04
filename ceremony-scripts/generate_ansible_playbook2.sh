@@ -82,25 +82,18 @@ generate_enode_list() {
 	for IP in ${VALIDATOR_IPS}; do
 		# Set the comma to an empty sting for the last line.
 		[ -z "${IP/$LAST_IP}" ] && COMMA=''
-		FILE_NAME=${ANSIBLE_DIR}/host_vars/${IP}
-		touch $FILE_NAME
 		public_key=$(cat ${BASE_KEYS_DIR}/${IP}/nodekey_pub)
-		# var=$(echo "custom_validator_pub_${IP//[.]/_}: \"$(cat ${BASE_KEYS_DIR}/${IP}/nodekey_pub)\"")
-		# put_all_quorum_var "enode://{{ custom_validator_pub_%s }}" "{{ goquorum_p2p_port }}," ${IP//[.]/_} ${IP} ${COMMA}
-		# printf '%*s\"enode://{{ custom_validator_pub_%s }}@%s:{{ goquorum_p2p_port }}\"%s\n' $INDENTATION '' ${IP//[.]/_} ${IP} ${COMMA}
-		# enode://public_key@ip_address:port
-		echo "\"enode://${public_key}@${IP}:40111${COMMA}\""
+		echo -n "\"enode://${public_key}@${IP}:40110\"${COMMA}"
 	done
-	# return "heyo, bobby-yo"
 }
 
 all_quorum_vars() {
 	NOW=$(date +%s)
 	NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
 
-	put_all_quorum_var "goquorum_genesis_timestamp" "${NOW_IN_HEX}"
-	put_all_quorum_var "lace_genesis_lockup_owner_address" "$(cat $LOCKUP_OWNER_ADDRESS_FILE)"
-  put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "${NOW_IN_HEX#0x}"
+	put_all_quorum_var "goquorum_genesis_timestamp" "\"${NOW}\""
+	put_all_quorum_var "lace_genesis_lockup_owner_address" "\"$(cat $LOCKUP_OWNER_ADDRESS_FILE)\""
+  put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${NOW_IN_HEX#0x}\""
   put_all_quorum_var "lace_genesis_distribution_owner_address" "\"$(cat $DIST_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${ISSUER_GAS_SEED_WEI}"
 
@@ -125,7 +118,7 @@ cp -r ${BASE_DIR}/keys ${ANSIBLE_DIR}/keys
 all_quorum_vars
 
 if [ $? -eq 0 ]; then
-   ${SCRIPTS_DIR}/printer.sh -s "Generate playbook"
+   ${SCRIPTS_DIR}/printer.sh -s "Generated playbook"
 else
    ${SCRIPTS_DIR}/printer.sh -e "Failed to generate playbook"
 fi

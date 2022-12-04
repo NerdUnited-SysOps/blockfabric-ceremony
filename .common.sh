@@ -22,7 +22,8 @@ export UTIL_SCRIPTS_DIR=${BASE_DIR}/ceremony-scripts/util
 export KEYS_DIR=${BASE_DIR}/keys
 export CONTRACTS_DIR=${BASE_DIR}/contracts
 export VOLUMES_DIR=${BASE_DIR}/volumes
-export ANSIBLE_DIR=${BASE_DIR}/ansible
+# export ANSIBLE_DIR=${BASE_DIR}/ansible
+export ANSIBLE_DIR=${BASE_DIR}/../ansible
 export LOG_FILE=${BASE_DIR}/log
 export ENV_FILE=${BASE_DIR}/.env
 

@@ -97,7 +97,7 @@ install_ansible_role() {
 run_ansible() {
 	${SCRIPTS_DIR}/printer.sh -t "Executing Ansible Playbook"
 
-	ansible-playbook -i ${INVENTORY_PATH} ${ANSIBLE_DIR}/goquorum.yaml --private-key=${AWS_NODES_SSH_KEY_PATH}
+	ansible-playbook --limit all_quorum -i ${INVENTORY_PATH} ${ANSIBLE_DIR}/goquorum.yaml --private-key=${AWS_NODES_SSH_KEY_PATH}
 
 	[ ! $? -eq 0 ] && ${SCRIPTS_DIR}/printer.sh -e "Failed to execute ansible playbook"
 }

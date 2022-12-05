@@ -115,7 +115,7 @@ get_inventory() {
 
 	if [ -n "${$?}" ] && [ -f "$INVENTORY_PATH" ]; then
 		printer -s "$INVENTORY_PATH exists."
-	else 
+	else
 		printer -e "Failed to retrieve ${local_file}"
 	fi
 }
@@ -220,11 +220,11 @@ wait
 
 push_ansible_artifacts
 
-# Move sensitive things to the volumes
+# Copy sensitive things to the volumes
 for volume in $VOLUMES_DIR/*/ ; do
     for count in 1 2
-    do 
-        ${SCRIPTS_DIR}/move_keys_to_volume.sh $DESTINATION_DIR $volume 
+    do
+        ${SCRIPTS_DIR}/copy_keys_to_volume.sh $DESTINATION_DIR $volume
     done
 done
 

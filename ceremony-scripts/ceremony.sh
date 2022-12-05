@@ -8,12 +8,10 @@
 
 # Pull in brand specific variables for network (chainid, brand name, etc)
 # Find out names for variables to be kept in the secrets manager
-# Change SSL cert path to /etc/ssl/certs
 
 # TODO: (Nice to haves)
 # Change name away from "ansible" inside the templates for ansible dir
 # Make the .env file a parameter you pas to the script
-# Create templates of all the ansible artifacts (genesis.json, brand vars, etc)
 # consistent formatting
 # sensible error checking
 # standardize individual scripts
@@ -22,7 +20,6 @@
 # * All output redirected to logs
 # Implement a verbose mode to output to logs and stdout
 # Verification step in code
-# (for vagrant dev) Add the public key that corresponds to the private key that we pull down from secrets mgr into the conductor and all the nodes, val1, val2, rpc in the authorized user
 
 set -e
 
@@ -179,6 +176,8 @@ create_directories() {
 push_ansible_artifacts() {
 	printer -t "Pushing Ansible artifacts"
 
+	git config --global user.name "ceremony-script"
+	git config --global user.email "ceremony@email.com"
 	git -C ${ANSIBLE_DIR}/ checkout -b ceremony-artifacts
 	git -C ${ANSIBLE_DIR}/ add ${ANSIBLE_DIR}/
 	git -C ${ANSIBLE_DIR}/ commit -m "Committing produced artifacts"
@@ -192,7 +191,7 @@ printer -t "Starting key ceremony"
 
 create_directories
 
-configure_aws
+# configure_aws
 
 ${SCRIPTS_DIR}/get_secrets.sh \
   $AWS_CONDUCTOR_SSH_KEY \

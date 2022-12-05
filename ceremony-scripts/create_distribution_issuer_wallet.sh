@@ -9,8 +9,9 @@ ${SCRIPTS_DIR}/printer.sh -t "Generating distribution issuer wallet"
 
 VOL1=${VOLUMES_DIR}/volume1/distributionIssuer
 VOL2=${VOLUMES_DIR}/volume2/distributionIssuer
+KEY_DIR=${KEYS_DIR}/distributionIssuer
 
-mkdir -p ${VOL1} ${VOL2}
+mkdir -p ${VOL1} ${VOL2} ${KEY_DIR}
 WORKING_DIR=${VOL1}
 
 password=$(pwgen -c 25 -n 1)
@@ -23,6 +24,9 @@ cp ${WORKING_DIR}/keystore ${VOL2}/keystore
 echo $password > ${VOL2}/password
 
 PRIVATE_KEY=$(ethkey inspect --private --passwordfile ${WORKING_DIR}/password ${WORKING_DIR}/keystore | grep Private | sed 's/Private key\:\s*//')
+
+address=$(cat ${WORKING_DIR}/keystore | jq -r ".address" | tr -d '\n')
+echo $address > ${KEY_DIR}/address
 
 aws secretsmanager \
 	put-secret-value \

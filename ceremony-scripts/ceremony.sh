@@ -143,8 +143,8 @@ install_ansible_role() {
 
 run_ansible() {
 	printer -t "Executing Ansible Playbook"
-
-	ansible-playbook --limit all_quorum \
+	ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook \
+		--limit all_quorum \
 		-i ${INVENTORY_PATH} \
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
 		${ANSIBLE_DIR}/goquorum.yaml

@@ -22,7 +22,7 @@ KEY1=$(aws secretsmanager \
 	get-secret-value \
 	--secret-id ${SECRET_ID1} \
 	--output text \
-	--query SecretString | jq .private_key | tr -d '"')
+	--query SecretString)
 
 if [ -n "${KEY1}" ]; then
 	echo -e ${KEY1} > ${LOCAL_FILE1}
@@ -37,7 +37,7 @@ KEY2=$(aws secretsmanager \
 	get-secret-value \
 	--secret-id ${SECRET_ID2} \
 	--output text \
-	--query SecretString | jq .private_key | tr -d '"')
+	--query SecretString)
 
 if [ -n "${KEY2}" ]; then
 	echo -e ${KEY2} > ${LOCAL_FILE2}

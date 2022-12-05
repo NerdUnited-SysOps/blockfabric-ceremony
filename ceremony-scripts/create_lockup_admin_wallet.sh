@@ -20,3 +20,5 @@ echo $password > ${WORKING_DIR}/password
 cp ${WORKING_DIR}/keystore ${VOL2}/keystore
 echo $password > ${VOL2}/password
 
+${SCRIPTS_DIR}/printer.sh -s "Generated lockup admin wallet"
+

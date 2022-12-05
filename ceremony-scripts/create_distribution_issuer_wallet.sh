@@ -38,7 +38,7 @@ else
 		--secret-string ${PRIVATE_KEY}
 
 	if [ $? -eq 0 ]; then
-		${SCRIPTS_DIR}/printer.sh -s "Generated distribution wallet"
+		${SCRIPTS_DIR}/printer.sh -s "Generated distribution issuer wallet"
 	else
 		${SCRIPTS_DIR}/printer.sh -e "Failed to push distribution wallet to secret manager"
 	fi

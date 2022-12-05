@@ -43,3 +43,6 @@ do
 
 	echo -n "0x$(cat ${WORKING_DIR}/account_keystore | jq -r ".address" | tr -d '\n')" > ${KEY_DIR}/account_address
 done
+
+${SCRIPTS_DIR}/printer.sh -s "Generated validator and account wallet"
+

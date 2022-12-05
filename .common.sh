@@ -28,7 +28,6 @@ export ENV_FILE=${BASE_DIR}/.env
 
 # Pathing for additional binaries
 export PATH="${HOME}/go/bin:${PATH}"	 # Go binary path
-export PATH="${HOME}/.local/bin:${PATH}" # python binary path
 
 # Interacting with AWS Secrets Manager
 # For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.

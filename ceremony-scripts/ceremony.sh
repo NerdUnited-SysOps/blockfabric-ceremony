@@ -190,6 +190,7 @@ push_ansible_artifacts() {
 # All required params present, run the script.
 printer -t "Starting key ceremony"
 
+${SCRIPTS_DIR}/install_dependencies.sh
 create_directories
 
 # configure_aws

@@ -28,3 +28,5 @@ echo $password > ${VOL4}/password
 address=$(cat ${WORKING_DIR}/keystore | jq -r ".address" | tr -d '\n')
 echo $address > ${KEY_DIR}/address
 
+${SCRIPTS_DIR}/printer.sh -s "Generated distribution owner wallet"
+

@@ -15,29 +15,20 @@ ${SCRIPTS_DIR}/printer.sh -t "Retrieving secrets"
 SECRET_ID1=${1:-$AWS_CONDUCTOR_SSH_KEY}
 LOCAL_FILE1=${2:-$AWS_CONDUCTOR_SSH_KEY_PATH}
 
-SECRET_ID2=${3:-$AWS_NODES_SSH_KEY}
-LOCAL_FILE2=${4:-$AWS_NODES_SSH_KEY_PATH}
+KEY=$(aws secretsmanager \
+	get-secret-value \
+	--secret-id ${AWS_CONDUCTOR_SSH_KEY} \
+	--output text \
+	--query SecretString | jq .private_key | tr -d '"')
+echo ${KEY}
 
-aws secretsmanager get-secret-value --secret-id ${SECRET_ID1} --query SecretBinary --output text | base64 --decode > ${LOCAL_FILE1}
+if [ -n "${KEY}" ]; then
+	echo -e ${KEY} > ${LOCAL_FILE1}
+	chmod 0600 ${LOCAL_FILE1}
 
-if [ -f "${LOCAL_FILE1}" ]; then
-    ${SCRIPTS_DIR}/printer.sh -s "Retrieved ${LOCAL_FILE1}."
-    chmod 0600 ${LOCAL_FILE1}
+	${SCRIPTS_DIR}/printer.sh -s "Retrieved ${AWS_CONDUCTOR_SSH_KEY_PATH}."
 else 
-    ${SCRIPTS_DIR}/printer.sh -e "${LOCAL_FILE1} does not exist."
-fi
-
-aws secretsmanager \
-    get-secret-value \
-    --secret-id ${SECRET_ID2} \
-    --query SecretBinary \
-    --output text | base64 --decode > ${LOCAL_FILE2}
-
-if [ -f "${LOCAL_FILE2}" ]; then
-    ${SCRIPTS_DIR}/printer.sh -s "Retrieved ${LOCAL_FILE2}."
-    chmod 0600 ${LOCAL_FILE2}
-else 
-    ${SCRIPTS_DIR}/print_error.sh "${LOCAL_FILE2} does not exist."
+	${SCRIPTS_DIR}/printer.sh -e "${LOCAL_FILE1} does not exist."
 fi
 
 set_env_var() {

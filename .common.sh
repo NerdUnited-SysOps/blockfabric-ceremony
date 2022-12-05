@@ -32,8 +32,6 @@ export PATH="${HOME}/.local/bin:${PATH}" # python binary path
 
 # Interacting with AWS Secrets Manager
 # For simplicity, let's use this same Key in AWS Secrets Mgr for retrieving the SSH Key.
-export AWS_CONDUCTOR_SSH_KEY_PATH=${BASE_DIR}/id_rsa_conductor
-export AWS_NODES_SSH_KEY_PATH=${BASE_DIR}/id_rsa_nodes
 
 export SCP_USER=admin
 export INVENTORY_PATH=${ANSIBLE_DIR}/inventory

@@ -10,6 +10,7 @@
 # Find out names for variables to be kept in the secrets manager
 
 # TODO: (Nice to haves)
+# Make the .env file a parameter you pas to the script
 # Create templates of all the ansible artifacts (genesis.json, brand vars, etc)
 # consistent formatting
 # sensible error checking
@@ -23,6 +24,9 @@
 
 set -e
 
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source $SCRIPT_DIR/../.common.sh
+
 usage() {
   echo "This script sets up the validator nodes..."
   echo "Usage: $0 (options) ..."
@@ -33,28 +37,29 @@ usage() {
   echo "Example: "
 }
 
-while getopts 'b:d:h' option; do
-  case "$option" in
-    b)
-        BRAND_NAME="${OPTARG}"
-        ;;
-    d)
-        DESTINATION_DIR="${OPTARG}"
-        ;;
-    h)
-      usage
-	  exit 0
-      ;;
-    ?)
-      usage
-      exit 1
-      ;;
-  esac
+while getopts 'b:d:hi' option; do
+	case "$option" in
+		i)
+			${SCRIPTS_DIR}/install_dependencies.sh
+			exit 0
+			;;
+		b)
+			BRAND_NAME="${OPTARG}"
+			;;
+		d)
+			DESTINATION_DIR="${OPTARG}"
+			;;
+		h)
+			usage
+			exit 0
+			;;
+		?)
+			usage
+			exit 1
+			;;
+	esac
 done
 shift $((OPTIND-1))
-
-SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source $SCRIPT_DIR/../.common.sh
 
 get_list_of_validator_ips () {
     ansible validator \
@@ -157,7 +162,6 @@ create_directories() {
 ${SCRIPTS_DIR}/printer.sh -t "Starting key ceremony"
 
 create_directories
-# ${SCRIPTS_DIR}/install_dependencies.sh
 
 configure_aws
 

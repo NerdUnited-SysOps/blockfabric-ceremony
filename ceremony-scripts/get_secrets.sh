@@ -45,11 +45,12 @@ set_env_var() {
 	VAR_VAL=$2
 	FILE_NAME=$ENV_FILE
 
-	if grep -q "${VAR_NAME}" "${FILE_NAME}"
+	if grep -q "export ${VAR_NAME}" "${FILE_NAME}"
 	then
 		sed -i "s/^export ${VAR_NAME}=.*/export ${VAR_NAME}=${VAR_VAL}/g" "${FILE_NAME}"
 	else
-		echo "export ${VAR_NAME}=${VAR_VAL}" >> "${FILE_NAME}"
+		sed -i "1iexport ${VAR_NAME}=${VAR_VAL}" "${FILE_NAME}"
+		# echo "export ${VAR_NAME}=${VAR_VAL}" >> "${FILE_NAME}"
 	fi
 }
 
@@ -58,22 +59,22 @@ LOCAL_SYSOPS_TOKEN=$(aws secretsmanager get-secret-value \
     --output text \
     --query SecretString)
 
-if [ ! $? -eq 0 ]; then
-   ${SCRIPTS_DIR}/printer.sh -e "Failed to retrieve sysops github token"
+if [ -n "${LOCAL_SYSOPS_TOKEN}" ]; then
+   ${SCRIPTS_DIR}/printer.sh -s "Retrieved sysops pat"
+	 set_env_var "GITHUB_SYSOPS_TOKEN" "${LOCAL_SYSOPS_TOKEN}"
+else
+   ${SCRIPTS_DIR}/printer.sh -e "Failed to retrieve sysops pat"
 fi
-
-set_env_var "GITHUB_SYSOPS_TOKEN" "${LOCAL_SYSOPS_TOKEN}"
-# echo "export GITHUB_SYSOPS_TOKEN=${LOCAL_SYSOPS_TOKEN}" >> ${ENV_FILE}
 
 LOCAL_CORESDK_TOKEN=$(aws secretsmanager get-secret-value \
     --secret-id ${AWS_GITHUB_CORESDK_TOKEN_NAME} \
     --output text \
     --query SecretString)
 
-if [ ! $? -eq 0 ]; then
-   ${SCRIPTS_DIR}/printer.sh -e "Failed to retrieve coresdk github token"
+if [ -n "${LOCAL_CORESDK_TOKEN}" ]; then
+   ${SCRIPTS_DIR}/printer.sh -s "Retrieved coresdk pat"
+	 set_env_var "GITHUB_CORESDK_TOKEN" "${LOCAL_CORESDK_TOKEN}"
+else
+   ${SCRIPTS_DIR}/printer.sh -e "Failed to retrieve pat"
 fi
-
-	# echo "export GITHUB_CORESDK_TOKEN=${LOCAL_CORESDK_TOKEN}" >> ${ENV_FILE}
-set_env_var "GITHUB_CORESDK_TOKEN" "${LOCAL_CORESDK_TOKEN}"
 

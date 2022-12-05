@@ -14,8 +14,8 @@ function print_status() {
   fi
 }
 
-${SCRIPTS_DIR}/printer.sh -t "Installing dependencies" | tee ${LOG_FILE}
-${SCRIPTS_DIR}/printer.sh -n "This may take a minute..." | tee ${LOG_FILE}
+${SCRIPTS_DIR}/printer.sh -t "Installing dependencies" | -a tee ${LOG_FILE}
+${SCRIPTS_DIR}/printer.sh -n "This may take a minute..." | -a tee ${LOG_FILE}
 
 sudo apt-get update &>> ${LOG_FILE}
 print_status "Updates"
@@ -46,4 +46,6 @@ print_status "geth"
 
 python3 -m pip install --user ansible &>> ${LOG_FILE}
 print_status "ansible"
+
+${SCRIPTS_DIR}/printer.sh -s "Installed dependencies" | -a tee ${LOG_FILE}
 

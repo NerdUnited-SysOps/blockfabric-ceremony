@@ -83,7 +83,7 @@ generate_enode_list() {
 		# Set the comma to an empty sting for the last line.
 		[ -z "${IP/$LAST_IP}" ] && COMMA=''
 		public_key=$(cat ${BASE_KEYS_DIR}/${IP}/nodekey_pub)
-		echo -n "\"enode://${public_key}@${IP}:40110\"${COMMA}"
+		echo -n "\"enode://${public_key}@${IP}:40111\"${COMMA}"
 	done
 }
 

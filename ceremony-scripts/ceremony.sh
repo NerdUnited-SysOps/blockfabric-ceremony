@@ -111,7 +111,10 @@ get_ansible_vars() {
 get_inventory() {
 	printer -t "Downloading inventory file"
 
-	scp -i ${AWS_CONDUCTOR_SSH_KEY_PATH} "${SCP_USER}"@"${CONDUCTOR_NODE_URL}":"${REMOTE_INVENTORY_PATH}" "${INVENTORY_PATH}"
+	scp -o StrictHostKeyChecking=no \
+		-i ${AWS_CONDUCTOR_SSH_KEY_PATH} \
+		"${SCP_USER}"@"${CONDUCTOR_NODE_URL}":"${REMOTE_INVENTORY_PATH}" \
+		"${INVENTORY_PATH}"
 
 	if [ -n "${$?}" ] && [ -f "$INVENTORY_PATH" ]; then
 		printer -s "$INVENTORY_PATH exists."

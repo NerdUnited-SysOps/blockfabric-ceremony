@@ -7,8 +7,9 @@ source ${SCRIPT_DIR}/../.common.sh
 
 ${SCRIPTS_DIR}/printer.sh -t "Generating validator and account wallets"
 
-for ip in ${IP_ADDRESS_LIST}
-do
+generate_keys() {
+	ip=$1
+
 	${SCRIPT_DIR}/printer.sh -n "Setting up keys for ip: ${ip}"
 
 	VOLUME_DIR=${VOLUMES_DIR}/volume1/${ip}
@@ -42,7 +43,14 @@ do
 	echo $password2 > ${WORKING_DIR}/account_password
 
 	echo -n "0x$(cat ${WORKING_DIR}/account_keystore | jq -r ".address" | tr -d '\n')" > ${KEY_DIR}/account_address
+}
+
+for ip in ${IP_ADDRESS_LIST}
+do
+	generate_keys $ip &
 done
+
+wait
 
 ${SCRIPTS_DIR}/printer.sh -s "Generated validator and account wallet"
 

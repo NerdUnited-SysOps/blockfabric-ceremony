@@ -67,10 +67,13 @@ put_all_quorum_var() {
 	touch ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 
 	FILE_NAME=${ANSIBLE_DIR}/group_vars/all_quorum.yml
-	if grep -q "${VAR_NAME}" "${FILE_NAME}"
+	# echo $(grep "${VAR_NAME}" "${FILE_NAME}")
+	if grep -q "^${VAR_NAME}" "${FILE_NAME}"
 	then
+		# echo "if $VAR_NAME $VAR_VAL"
 		sed -i "s/${VAR_NAME}:.*/${VAR_NAME}: ${VAR_VAL}/g" "${FILE_NAME}"
 	else
+		# echo "else $VAR_NAME $VAR_VAL"
 		echo "${VAR_NAME}: ${VAR_VAL}" >> "${FILE_NAME}"
 	fi
 }
@@ -94,6 +97,9 @@ all_quorum_vars() {
 	put_all_quorum_var "goquorum_genesis_timestamp" "\"${NOW}\""
 	put_all_quorum_var "lace_genesis_lockup_owner_address" "\"$(cat $LOCKUP_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${NOW_IN_HEX#0x}\""
+	echo "BASE_DIR: $BASE_DIR"
+	echo "DIST_OWNER_ADDRESS_FILE: $DIST_OWNER_ADDRESS_FILE"
+	echo "the value:  \"$(cat $DIST_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_owner_address" "\"$(cat $DIST_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${ISSUER_GAS_SEED_WEI}"
 
@@ -103,7 +109,7 @@ all_quorum_vars() {
 	put_all_quorum_var "goquorum_genesis_sc_lockup_balance" "${LOCKUP_SC_BALANCE}"
 
 	enode_list=$(generate_enode_list)
-	echo "enode_list $enode_list"
+	# echo "enode_list $enode_list"
 	sed -i '/goquorum_enode_list/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 	echo "goquorum_enode_list: [${enode_list}]" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 

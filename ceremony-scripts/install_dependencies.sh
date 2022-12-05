@@ -2,8 +2,8 @@
 
 set -e
 
-BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source .common.sh
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source ${SCRIPT_DIR}/../.common.sh
 
 function print_status() {
   package=$1
@@ -14,8 +14,8 @@ function print_status() {
   fi
 }
 
-${SCRIPTS_DIR}/print_title.sh "Installing dependencies" | tee ${LOG_FILE}
-echo "This may take a minute..." | tee ${LOG_FILE}
+${SCRIPTS_DIR}/printer.sh -t "Installing dependencies" | tee ${LOG_FILE}
+${SCRIPTS_DIR}/printer.sh -n "This may take a minute..." | tee ${LOG_FILE}
 
 sudo apt-get update &>> ${LOG_FILE}
 print_status "Updates"
@@ -46,5 +46,4 @@ print_status "geth"
 
 python3 -m pip install --user ansible &>> ${LOG_FILE}
 print_status "ansible"
-
 

@@ -57,11 +57,10 @@ SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source $SCRIPT_DIR/../.common.sh
 
 get_list_of_validator_ips () {
-    ansible validator --list-hosts -i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
-}
-
-get_list_of_rpc_ips () {
-    ansible rpc --list-hosts -i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
+    ansible validator \
+			--limit validator \
+			--list-hosts \
+			-i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
 }
 
 # validate required params
@@ -81,17 +80,44 @@ fi
 get_ansible_vars() {
 	${SCRIPTS_DIR}/printer.sh -t "Fetching ansible variables"
 
-	# git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR}
+	if [ ! -d "${ANSIBLE_DIR}" ]; then
+		git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR}
 
-	# [ ! $? -eq 0 ] && ${SCRIPTS_DIR}/printer.sh -e "Failed to clone brand repo ${BRAND_ANSIBLE_URL}"
+		if [ ! $? -eq 0 ]; then
+			${SCRIPTS_DIR}/printer.sh -e "Failed to fetch variables"
+		else
+			${SCRIPTS_DIR}/printer.sh -s "Fetched variables"
+		fi
+	else
+		${SCRIPTS_DIR}/printer.sh -n "Ansible variables present, skipping"
+	fi
+}
+
+get_inventory() {
+	${SCRIPTS_DIR}/printer.sh -t "Downloading inventory file"
+
+	scp -i ${AWS_CONDUCTOR_SSH_KEY_PATH} "${SCP_USER}"@"${CONDUCTOR_NODE_URL}":"${REMOTE_INVENTORY_PATH}" "${INVENTORY_PATH}"
+
+	if [ -n "${$?}" ] && [ -f "$INVENTORY_PATH" ]; then
+		${SCRIPTS_DIR}/printer.sh -s "$INVENTORY_PATH exists."
+	else 
+		${SCRIPTS_DIR}/printer.sh -e "Failed to retrieve ${local_file}"
+	fi
 }
 
 install_ansible_role() {
 	${SCRIPTS_DIR}/printer.sh -t "Installing Ansible role"
 
-	ansible-galaxy install ${ANSIBLE_ROLE_PATH}
-
-	[ ! $? -eq 0 ] && ${SCRIPTS_DIR}/printer.sh -e "Failed to install ansible role"
+	if [ ! -f "${ANSIBLE_ROLE_INSTALL_PATH}" ]; then
+		ansible-galaxy install ${ANSIBLE_ROLE_INSTALL_URL}
+		if [ ! $? -eq 0 ]; then
+			${SCRIPTS_DIR}/printer.sh -e "Failed to install ansible role"
+		else
+			${SCRIPTS_DIR}/printer.sh -s "Installed role"
+		fi
+	else
+		${SCRIPTS_DIR}/printer.sh -n "Ansible role present, skipping"
+	fi
 }
 
 run_ansible() {
@@ -102,15 +128,38 @@ run_ansible() {
 	[ ! $? -eq 0 ] && ${SCRIPTS_DIR}/printer.sh -e "Failed to execute ansible playbook"
 }
 
+configure_aws() {
+	${SCRIPTS_DIR}/printer.sh -n "Collecting credentials\n"
+
+	aws configure
+
+	if [ $? -eq 0 ]; then
+		${SCRIPTS_DIR}/printer.sh -s "Collected credentials"
+	else
+		${SCRIPTS_DIR}/printer.sh -e "Failed to collect credentials"
+	fi
+}
+
+create_directories() {
+	${SCRIPTS_DIR}/printer.sh -t "Creating project structure"
+
+	mkdir -p ${KEYS_DIR}/distributionOwner \
+		${KEYS_DIR}/lockupOwner \
+		${CONTRACTS_DIR} \
+		${VOLUMES_DIR}/volume1 \
+		${VOLUMES_DIR}/volume2 \
+		${VOLUMES_DIR}/volume3 \
+		${VOLUMES_DIR}/volume4
+			# ${ANSIBLE_DIR} \
+		}
+
 # All required params present, run the script.
 ${SCRIPTS_DIR}/printer.sh -t "Starting key ceremony"
 
-${SCRIPTS_DIR}/create_directories.sh
-${SCRIPTS_DIR}/install_dependencies.sh
+create_directories
+# ${SCRIPTS_DIR}/install_dependencies.sh
 
-echo -e "\nVerify credentials\n"
-
-aws configure
+configure_aws
 
 ${SCRIPTS_DIR}/get_secrets.sh \
   $AWS_CONDUCTOR_SSH_KEY \
@@ -119,21 +168,19 @@ ${SCRIPTS_DIR}/get_secrets.sh \
   $AWS_NODES_SSH_KEY_PATH
 
 get_ansible_vars
-
-${SCRIPTS_DIR}/get_inventory.sh ${SCP_USER} ${CONDUCTOR_NODE_URL} ${REMOTE_INVENTORY_PATH} ${INVENTORY_PATH}
-
-VALIDATOR_IPS=$(get_list_of_validator_ips)
-RPC_IPS=$(get_list_of_rpc_ips)
+install_ansible_role
+get_inventory
 
 ${SCRIPTS_DIR}/get_contract_bytecode.sh
 ${SCRIPTS_DIR}/create_lockup_owner_wallet.sh
 ${SCRIPTS_DIR}/create_distribution_owner_wallet.sh
 ${SCRIPTS_DIR}/create_distribution_issuer_wallet.sh
 ${SCRIPTS_DIR}/create_lockup_admin_wallet.sh
+
+VALIDATOR_IPS=$(get_list_of_validator_ips)
 ${SCRIPTS_DIR}/create_validator_and_account_wallets.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_dao_storage.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_ansible_playbook2.sh -v "$VALIDATOR_IPS"
-# install_ansible_role
 cp -r ${KEYS_DIR} ${ANSIBLE_DIR}/
 run_ansible
 ${SCRIPTS_DIR}/push_ansible_artifacts.sh

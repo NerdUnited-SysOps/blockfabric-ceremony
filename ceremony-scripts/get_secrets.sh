@@ -50,7 +50,6 @@ set_env_var() {
 		sed -i "s/^export ${VAR_NAME}=.*/export ${VAR_NAME}=${VAR_VAL}/g" "${FILE_NAME}"
 	else
 		sed -i "1iexport ${VAR_NAME}=${VAR_VAL}" "${FILE_NAME}"
-		# echo "export ${VAR_NAME}=${VAR_VAL}" >> "${FILE_NAME}"
 	fi
 }
 

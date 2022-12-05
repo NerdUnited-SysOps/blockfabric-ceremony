@@ -45,7 +45,7 @@ print_status "ethkey"
 go install github.com/ethereum/go-ethereum/cmd/geth@${GETH_VERSION} &>> ${LOG_FILE}
 print_status "geth"
 
-python3 -m pip install --user ansible &>> ${LOG_FILE}
+python3 -m pip install ansible &>> ${LOG_FILE}
 print_status "ansible"
 
 ${SCRIPTS_DIR}/printer.sh -s "Installed dependencies" | tee -a ${LOG_FILE}

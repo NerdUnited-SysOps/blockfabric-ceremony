@@ -9,6 +9,8 @@ set -e
 SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source $SCRIPT_DIR/../.common.sh
 
+${SCRIPTS_DIR}/printer.sh -t "Creating ansible vars"
+
 NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX="0x4563918244f40000"
 NETWORK_ISSUER_GAS_SEED_WEI_HEX="0x5d21dba00"
 
@@ -97,9 +99,6 @@ all_quorum_vars() {
 	put_all_quorum_var "goquorum_genesis_timestamp" "\"${NOW}\""
 	put_all_quorum_var "lace_genesis_lockup_owner_address" "\"$(cat $LOCKUP_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${NOW_IN_HEX#0x}\""
-	echo "BASE_DIR: $BASE_DIR"
-	echo "DIST_OWNER_ADDRESS_FILE: $DIST_OWNER_ADDRESS_FILE"
-	echo "the value:  \"$(cat $DIST_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_owner_address" "\"$(cat $DIST_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${ISSUER_GAS_SEED_WEI}"
 
@@ -119,13 +118,13 @@ all_quorum_vars() {
 	echo "goquorum_genesis_sc_dao_storage: {${var}}" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 }
 
-cp -r ${BASE_DIR}/keys ${ANSIBLE_DIR}/keys
+cp -r ${BASE_DIR}/keys ${ANSIBLE_DIR}/
 
 all_quorum_vars
 
 if [ $? -eq 0 ]; then
-   ${SCRIPTS_DIR}/printer.sh -s "Generated playbook"
+   ${SCRIPTS_DIR}/printer.sh -s "Generated variables"
 else
-   ${SCRIPTS_DIR}/printer.sh -e "Failed to generate playbook"
+   ${SCRIPTS_DIR}/printer.sh -e "Failed to generate variables"
 fi
 

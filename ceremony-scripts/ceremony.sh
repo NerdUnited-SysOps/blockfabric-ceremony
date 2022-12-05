@@ -8,8 +8,11 @@
 
 # Pull in brand specific variables for network (chainid, brand name, etc)
 # Find out names for variables to be kept in the secrets manager
+# Change SSL cert path to /etc/ssl/certs
 
 # TODO: (Nice to haves)
+# Change name away from "ansible" inside the templates for ansible dir
+# Make the .env file a parameter you pas to the script
 # Create templates of all the ansible artifacts (genesis.json, brand vars, etc)
 # consistent formatting
 # sensible error checking
@@ -23,38 +26,48 @@
 
 set -e
 
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source $SCRIPT_DIR/../.common.sh
+
 usage() {
   echo "This script sets up the validator nodes..."
   echo "Usage: $0 (options) ..."
   echo "  -b : Brand name"
   echo "  -d : Data directory on external volume"
+  echo "  -i : Install dependencies"
+  echo "  -r : Reset the ceremony"
   echo "  -h : Help"
   echo ""
   echo "Example: "
 }
 
-while getopts 'b:d:h' option; do
-  case "$option" in
-    b)
-        BRAND_NAME="${OPTARG}"
-        ;;
-    d)
-        DESTINATION_DIR="${OPTARG}"
-        ;;
-    h)
-      usage
-	  exit 0
-      ;;
-    ?)
-      usage
-      exit 1
-      ;;
-  esac
+while getopts 'b:d:hi' option; do
+	case "$option" in
+		b)
+			BRAND_NAME="${OPTARG}"
+			;;
+		d)
+			DESTINATION_DIR="${OPTARG}"
+			;;
+		h)
+			usage
+			exit 0
+			;;
+		i)
+			${SCRIPTS_DIR}/install_dependencies.sh
+			exit 0
+			;;
+		r)
+			${SCRIPTS_DIR}/reset.sh
+			exit 0
+			;;
+		?)
+			usage
+			exit 1
+			;;
+	esac
 done
 shift $((OPTIND-1))
-
-SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source $SCRIPT_DIR/../.common.sh
 
 get_list_of_validator_ips () {
     ansible validator \
@@ -77,71 +90,79 @@ then
     exit 1
 fi
 
+printer() {
+	${SCRIPTS_DIR}/printer.sh "$@"
+}
+
 get_ansible_vars() {
-	${SCRIPTS_DIR}/printer.sh -t "Fetching ansible variables"
+	printer -t "Fetching ansible variables"
 
 	if [ ! -d "${ANSIBLE_DIR}" ]; then
 		git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR}
 
 		if [ ! $? -eq 0 ]; then
-			${SCRIPTS_DIR}/printer.sh -e "Failed to fetch variables"
+			printer -e "Failed to fetch variables"
 		else
-			${SCRIPTS_DIR}/printer.sh -s "Fetched variables"
+			printer -s "Fetched variables"
 		fi
 	else
-		${SCRIPTS_DIR}/printer.sh -n "Ansible variables present, skipping"
+		printer -n "Ansible variables present, skipping"
 	fi
 }
 
 get_inventory() {
-	${SCRIPTS_DIR}/printer.sh -t "Downloading inventory file"
+	printer -t "Downloading inventory file"
 
 	scp -i ${AWS_CONDUCTOR_SSH_KEY_PATH} "${SCP_USER}"@"${CONDUCTOR_NODE_URL}":"${REMOTE_INVENTORY_PATH}" "${INVENTORY_PATH}"
 
 	if [ -n "${$?}" ] && [ -f "$INVENTORY_PATH" ]; then
-		${SCRIPTS_DIR}/printer.sh -s "$INVENTORY_PATH exists."
+		printer -s "$INVENTORY_PATH exists."
 	else 
-		${SCRIPTS_DIR}/printer.sh -e "Failed to retrieve ${local_file}"
+		printer -e "Failed to retrieve ${local_file}"
 	fi
 }
 
 install_ansible_role() {
-	${SCRIPTS_DIR}/printer.sh -t "Installing Ansible role"
+	printer -t "Installing Ansible role"
 
-	if [ ! -f "${ANSIBLE_ROLE_INSTALL_PATH}" ]; then
-		ansible-galaxy install ${ANSIBLE_ROLE_INSTALL_URL}
+	if [ ! -d "${ANSIBLE_ROLE_INSTALL_PATH}" ]; then
+		mkdir -p ${ANSIBLE_ROLE_INSTALL_PATH}
+		git clone --depth 1 --branch ${ANSIBLE_ROLE_VERSION} ${ANSIBLE_ROLE_INSTALL_URL} ${ANSIBLE_ROLE_INSTALL_PATH}
+
+		# ansible-galaxy install ${ANSIBLE_ROLE_INSTALL_URL}
 		if [ ! $? -eq 0 ]; then
-			${SCRIPTS_DIR}/printer.sh -e "Failed to install ansible role"
+			printer -e "Failed to install ansible role"
 		else
-			${SCRIPTS_DIR}/printer.sh -s "Installed role"
+			printer -s "Installed role"
 		fi
 	else
-		${SCRIPTS_DIR}/printer.sh -n "Ansible role present, skipping"
+		printer -n "Ansible role present, skipping"
 	fi
 }
 
 run_ansible() {
-	${SCRIPTS_DIR}/printer.sh -t "Executing Ansible Playbook"
+	printer -t "Executing Ansible Playbook"
 
-	ansible-playbook --limit all_quorum -i ${INVENTORY_PATH} ${ANSIBLE_DIR}/goquorum.yaml --private-key=${AWS_NODES_SSH_KEY_PATH}
+	# ansible-playbook --limit all_quorum -i ${INVENTORY_PATH} ${ANSIBLE_DIR}/goquorum.yaml --private-key=${AWS_NODES_SSH_KEY_PATH}
+	${SCRIPTS_DIR}/run_ansible.sh
 
-	[ ! $? -eq 0 ] && ${SCRIPTS_DIR}/printer.sh -e "Failed to execute ansible playbook"
+	[ ! $? -eq 0 ] && printer -e "Failed to execute ansible playbook"
 }
 
 configure_aws() {
-	${SCRIPTS_DIR}/printer.sh -n "Collecting credentials\n"
+	printer -n "Collecting credentials\n"
 
 	aws configure
 
 	if [ $? -eq 0 ]; then
-		${SCRIPTS_DIR}/printer.sh -s "Collected credentials"
+		printer -s "Collected credentials"
 	else
-		${SCRIPTS_DIR}/printer.sh -e "Failed to collect credentials"
+		printer -e "Failed to collect credentials"
 	fi
 }
 
 create_directories() {
-	${SCRIPTS_DIR}/printer.sh -t "Creating project structure"
+	printer -t "Creating project structure"
 
 	mkdir -p ${KEYS_DIR}/distributionOwner \
 		${KEYS_DIR}/lockupOwner \
@@ -154,10 +175,9 @@ create_directories() {
 		}
 
 # All required params present, run the script.
-${SCRIPTS_DIR}/printer.sh -t "Starting key ceremony"
+printer -t "Starting key ceremony"
 
 create_directories
-# ${SCRIPTS_DIR}/install_dependencies.sh
 
 configure_aws
 
@@ -181,8 +201,9 @@ VALIDATOR_IPS=$(get_list_of_validator_ips)
 ${SCRIPTS_DIR}/create_validator_and_account_wallets.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_dao_storage.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_ansible_playbook2.sh -v "$VALIDATOR_IPS"
-cp -r ${KEYS_DIR} ${ANSIBLE_DIR}/
-run_ansible
+# cp -r ${KEYS_DIR} ${ANSIBLE_DIR}/
+# run_ansible
+
 ${SCRIPTS_DIR}/push_ansible_artifacts.sh
 
 # Move sensitive things to the volumes

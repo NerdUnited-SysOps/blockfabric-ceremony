@@ -57,6 +57,7 @@ shift "$(( OPTIND - 1 ))"
 [ -z "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] && LOCKUP_CONTRACT_ARCHIVE_DIR="$BASE_DIR/contracts/sc_lockup/$LOCKUP_VERSION"
 [ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/Distribution.bin-runtime"
 [ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$BASE_DIR/keys/distributionOwner/address"
+[ -z "${DIST_ISSUER_ADDRESS_FILE}" ] && DIST_ISSUER_ADDRESS_FILE="$BASE_DIR/keys/distributionIssuer/address"
 [ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="$BASE_DIR/keys/lockupOwner/address"
 [ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/Lockup.bin-runtime"
 [ -z "${ANSIBLE_INSTALL_SCRIPT}" ] && ANSIBLE_INSTALL_SCRIPT="$BASE_DIR/ansible/install"
@@ -101,6 +102,8 @@ all_quorum_vars() {
   put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${NOW_IN_HEX#0x}\""
   put_all_quorum_var "lace_genesis_distribution_owner_address" "\"$(cat $DIST_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${ISSUER_GAS_SEED_WEI}"
+  put_all_quorum_var "lace_genesis_distribution_issuer_address: "\"$(cat $DIST_ISSUER_ADDRESS_FILE)\""
+KEY_DIR=${KEYS_DIR}/distributionIssuer
 
 	put_all_quorum_var "goquorum_genesis_sc_dao_code" "\"0x$(cat ${DAO_RUNTIME_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_lockup_code" "\"0x$(cat ${LOCKUP_RUNTIME_BIN_FILE})\""

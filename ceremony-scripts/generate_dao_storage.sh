@@ -12,7 +12,7 @@ ${SCRIPTS_DIR}/printer.sh -t "Generating the Validator DAO Storage"
 DAO_DIR=${CONTRACTS_DIR}/sc_dao/${DAO_VERSION}
 mkdir -p ${DAO_DIR}
 
-curl -L -H "Authorization: Bearer ${GITHUB_CORESDK_TOKEN}" ${GITHUB_DAO_URL} --output ${DAO_DIR}/repo.zip &>> ${LOG_FILE}
+curl -L -H "Authorization: Bearer ${GITHUB_PAT}" ${GITHUB_DAO_URL} --output ${DAO_DIR}/repo.zip &>> ${LOG_FILE}
 
 if [ $? -eq 0 ]; then
 	${SCRIPTS_DIR}/printer.sh -s "Retrieved Validator DAO code"

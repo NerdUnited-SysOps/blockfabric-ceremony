@@ -95,6 +95,7 @@ get_ansible_vars() {
 	printer -t "Fetching ansible variables"
 
 	if [ ! -d "${ANSIBLE_DIR}" ]; then
+		source ${ENV_FILE}
 		git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR}
 
 		if [ ! $? -eq 0 ]; then

@@ -20,7 +20,6 @@ KEY=$(aws secretsmanager \
 	--secret-id ${AWS_CONDUCTOR_SSH_KEY} \
 	--output text \
 	--query SecretString | jq .private_key | tr -d '"')
-echo ${KEY}
 
 if [ -n "${KEY}" ]; then
 	echo -e ${KEY} > ${LOCAL_FILE1}

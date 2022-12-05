@@ -9,6 +9,7 @@
 # Pull in brand specific variables for network (chainid, brand name, etc)
 # Find out names for variables to be kept in the secrets manager
 # Change SSL cert path to /etc/ssl/certs
+# Remo `aws configure` from script as it will be run outside script.
 
 # TODO: (Nice to haves)
 # Change name away from "ansible" inside the templates for ansible dir

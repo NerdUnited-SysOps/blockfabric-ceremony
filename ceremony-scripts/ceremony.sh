@@ -196,7 +196,9 @@ configure_aws
 
 ${SCRIPTS_DIR}/get_secrets.sh \
   $AWS_CONDUCTOR_SSH_KEY \
-  $AWS_CONDUCTOR_SSH_KEY_PATH
+  $AWS_CONDUCTOR_SSH_KEY_PATH \
+  $AWS_NODES_SSH_KEY \
+  $AWS_NODES_SSH_KEY_PATH
 
 get_ansible_vars
 install_ansible_role

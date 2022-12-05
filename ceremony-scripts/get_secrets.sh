@@ -25,7 +25,7 @@ KEY1=$(aws secretsmanager \
 	--query SecretString)
 
 if [ -n "${KEY1}" ]; then
-	echo -e ${KEY1} > ${LOCAL_FILE1}
+	echo -e "${KEY1}" > ${LOCAL_FILE1}
 	chmod 0600 ${LOCAL_FILE1}
 
 	${SCRIPTS_DIR}/printer.sh -s "Retrieved ${LOCAL_FILE1}."
@@ -40,7 +40,7 @@ KEY2=$(aws secretsmanager \
 	--query SecretString)
 
 if [ -n "${KEY2}" ]; then
-	echo -e ${KEY2} > ${LOCAL_FILE2}
+	echo -e "${KEY2}" > ${LOCAL_FILE2}
 	chmod 0600 ${LOCAL_FILE2}
 
 	${SCRIPTS_DIR}/printer.sh -s "Retrieved ${LOCAL_FILE2}."
@@ -62,26 +62,14 @@ set_env_var() {
 }
 
 LOCAL_SYSOPS_TOKEN=$(aws secretsmanager get-secret-value \
-    --secret-id ${AWS_GITHUB_SYSOPS_TOKEN_NAME} \
+    --secret-id ${AWS_GITHUB_CEREMONY_PAT} \
     --output text \
     --query SecretString)
 
 if [ -n "${LOCAL_SYSOPS_TOKEN}" ]; then
    ${SCRIPTS_DIR}/printer.sh -s "Retrieved sysops pat"
-	 set_env_var "GITHUB_SYSOPS_TOKEN" "${LOCAL_SYSOPS_TOKEN}"
+	 set_env_var "GITHUB_PAT" "${LOCAL_SYSOPS_TOKEN}"
 else
    ${SCRIPTS_DIR}/printer.sh -e "Failed to retrieve sysops pat"
-fi
-
-LOCAL_CORESDK_TOKEN=$(aws secretsmanager get-secret-value \
-    --secret-id ${AWS_GITHUB_CORESDK_TOKEN_NAME} \
-    --output text \
-    --query SecretString)
-
-if [ -n "${LOCAL_CORESDK_TOKEN}" ]; then
-   ${SCRIPTS_DIR}/printer.sh -s "Retrieved coresdk pat"
-	 set_env_var "GITHUB_CORESDK_TOKEN" "${LOCAL_CORESDK_TOKEN}"
-else
-   ${SCRIPTS_DIR}/printer.sh -e "Failed to retrieve pat"
 fi
 

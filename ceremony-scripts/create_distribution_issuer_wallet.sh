@@ -24,12 +24,13 @@ echo $password > ${VOL2}/password
 
 PRIVATE_KEY=$(ethkey inspect --private --passwordfile ${WORKING_DIR}/password ${WORKING_DIR}/keystore | grep Private | sed 's/Private key\:\s*//')
 
-aws secretsmanager \
+secret=$(aws secretsmanager \
 	put-secret-value \
 	--secret-id ${AWS_DISTIRBUTION_ISSUER_KEY_NAME} \
-	--secret-string ${PRIVATE_KEY} &>> ${LOG_FILE}
+	--secret-string ${PRIVATE_KEY} &)
+wait
 
-if [ $? -eq 0 ]; then
+if [ -n "${secret}" ]; then
 	${SCRIPTS_DIR}/printer.sh -s "Generated distribution wallet"
 else
 	aws secretsmanager \

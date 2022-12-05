@@ -44,6 +44,4 @@ rm -rf ${KEYS_DIR} \
 	${AWS_NODES_SSH_KEY_PATH} \
 	${ANSIBLE_ROLE_INSTALL_PATH}
 
-ansible-galaxy remove ansible-role-lace
-
 # git push origin --delete ceremony-artifacts

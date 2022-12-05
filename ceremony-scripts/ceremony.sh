@@ -143,8 +143,10 @@ install_ansible_role() {
 run_ansible() {
 	printer -t "Executing Ansible Playbook"
 
-	# ansible-playbook --limit all_quorum -i ${INVENTORY_PATH} ${ANSIBLE_DIR}/goquorum.yaml --private-key=${AWS_NODES_SSH_KEY_PATH}
-	${SCRIPTS_DIR}/run_ansible.sh
+	ansible-playbook --limit all_quorum \
+		-i ${INVENTORY_PATH} \
+		--private-key=${AWS_NODES_SSH_KEY_PATH} \
+		${ANSIBLE_DIR}/goquorum.yaml
 
 	[ ! $? -eq 0 ] && printer -e "Failed to execute ansible playbook"
 }
@@ -174,6 +176,17 @@ create_directories() {
 			# ${ANSIBLE_DIR} \
 		}
 
+push_ansible_artifacts() {
+	printer -t "Pushing Ansible artifacts"
+
+	git -C ${ANSIBLE_DIR}/ checkout -b ceremony-artifacts
+	git -C ${ANSIBLE_DIR}/ add ${ANSIBLE_DIR}/
+	git -C ${ANSIBLE_DIR}/ commit -m "Committing produced artifacts"
+	git -C ${ANSIBLE_DIR}/ push origin HEAD --force &>> ${LOG_FILE}
+
+	printer -s "Pushed ansible code to remote repo"
+}
+
 # All required params present, run the script.
 printer -t "Starting key ceremony"
 
@@ -202,9 +215,10 @@ ${SCRIPTS_DIR}/create_validator_and_account_wallets.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_dao_storage.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_ansible_playbook2.sh -v "$VALIDATOR_IPS"
 # cp -r ${KEYS_DIR} ${ANSIBLE_DIR}/
-# run_ansible
+run_ansible &
+wait
 
-${SCRIPTS_DIR}/push_ansible_artifacts.sh
+push_ansible_artifacts
 
 # Move sensitive things to the volumes
 for volume in $VOLUMES_DIR/*/ ; do

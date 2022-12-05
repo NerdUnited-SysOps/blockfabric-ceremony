@@ -8,7 +8,7 @@ source ${SCRIPT_DIR}/../.common.sh
 function print_status() {
   package=$1
   if [ $? -eq 0 ]; then
-    ${SCRIPTS_DIR}/printer.sh -s "Installed ${package}"
+    ${SCRIPTS_DIR}/printer.sh -n "Installed ${package}"
   else
     ${SCRIPTS_DIR}/printer.sh -e "Failed to install ${package}"
   fi

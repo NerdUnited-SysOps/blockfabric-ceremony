@@ -29,7 +29,6 @@ source $SCRIPT_DIR/../.common.sh
 usage() {
   echo "This script sets up the validator nodes..."
   echo "Usage: $0 (options) ..."
-  echo "  -b : Brand name"
   echo "  -d : Data directory on external volume"
   echo "  -i : Install dependencies"
   echo "  -r : Reset the ceremony"
@@ -40,12 +39,6 @@ usage() {
 
 while getopts 'b:d:hi' option; do
 	case "$option" in
-		b)
-			BRAND_NAME="${OPTARG}"
-			;;
-		d)
-			DESTINATION_DIR="${OPTARG}"
-			;;
 		h)
 			usage
 			exit 0
@@ -73,19 +66,6 @@ get_list_of_validator_ips () {
 			-i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
 }
 
-# validate required params
-if [ ! "$DESTINATION_DIR" ]
-then
-    echo "ERROR: Missing d param"
-    usage
-    exit 1
-fi
-if [ ! "$BRAND_NAME" ]
-then
-    echo "ERROR: Missing b param"
-    usage
-    exit 1
-fi
 
 printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"
@@ -224,14 +204,6 @@ run_ansible &
 wait
 
 push_ansible_artifacts
-
-# Copy sensitive things to the volumes
-for volume in $VOLUMES_DIR/*/ ; do
-    for count in 1 2
-    do
-        ${SCRIPTS_DIR}/copy_keys_to_volume.sh $DESTINATION_DIR $volume
-    done
-done
 
 ${SCRIPTS_DIR}/finished.sh
 

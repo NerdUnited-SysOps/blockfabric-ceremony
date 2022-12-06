@@ -13,8 +13,6 @@ export ANSIBLE_ROLE_LACE_VERSION=1.0.0.5-test
 export DAO_VERSION=v0.0.1
 export LOCKUP_VERSION=v0.1.0
 
-export CONDUCTOR_NODE_URL=conductor.mainnet.${BRAND_NAME:-nerd}.blockfabric.net
-
 # Common paths to be used throughout the various scripts
 export BASE_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 export SCRIPTS_DIR=${BASE_DIR}/ceremony-scripts

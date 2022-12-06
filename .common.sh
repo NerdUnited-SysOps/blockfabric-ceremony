@@ -7,7 +7,7 @@ export UTIL_SCRIPTS_DIR=${BASE_DIR}/ceremony-scripts/util
 export KEYS_DIR=${BASE_DIR}/keys
 export CONTRACTS_DIR=${BASE_DIR}/contracts
 export VOLUMES_DIR=${BASE_DIR}/volumes
-export ANSIBLE_DIR=${BASE_DIR}/../ansible
+export ANSIBLE_DIR=${BASE_DIR}/ansible
 export LOG_FILE=${BASE_DIR}/log
 export ENV_FILE=${BASE_DIR}/.env
 
@@ -16,9 +16,9 @@ export SCP_USER=admin
 export INVENTORY_PATH=${ANSIBLE_DIR}/inventory
 
 # Overrides based on the environment
-if [ -f .env ]
+if [ -f $BASE_DIR/.env ]
 then
-  source .env
+  source $BASE_DIR/.env
 else
 	echo "Missing .env file"
 	echo "This program requires a .env file to run"

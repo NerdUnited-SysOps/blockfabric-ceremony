@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 # USAGE: generate_ansible_goquorum_laybook.sh -v [Validator IP String] -r [RPC IP String]
 #
@@ -11,8 +11,9 @@ source $SCRIPT_DIR/../.common.sh
 
 ${SCRIPTS_DIR}/printer.sh -t "Creating ansible vars"
 
+NETWORK_LAUNCH_DATE="221001"
 NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX="0x4563918244f40000"
-NETWORK_ISSUER_GAS_SEED_WEI_HEX="0x5d21dba00"
+NETWORK_ISSUER_GAS_SEED_WEI_HEX="0x27f4283400"
 
 LOCKUP_SC_BALANCE=$(($NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX-${NETWORK_ISSUER_GAS_SEED_WEI_HEX}))
 ISSUER_GAS_SEED_WEI=$(printf '%d\n' ${NETWORK_ISSUER_GAS_SEED_WEI_HEX})
@@ -95,11 +96,13 @@ generate_enode_list() {
 
 all_quorum_vars() {
 	NOW=$(date +%s)
-	NOW_IN_HEX="$(printf '0x%x\n' ${NOW})"
+    LAUNCH_DATE_UNIX_TIMESTAMP_UTC=$(date -u --date="${NETWORK_LAUNCH_DATE}" +%s)
+    LAUNCH_DATE_UNIX_TIMESTAMP_UTC_HEX=$(printf '0x%x\n' ${LAUNCH_DATE_UNIX_TIMESTAMP_UTC})
+
 
 	put_all_quorum_var "goquorum_genesis_timestamp" "\"${NOW}\""
 	put_all_quorum_var "lace_genesis_lockup_owner_address" "\"$(cat $LOCKUP_OWNER_ADDRESS_FILE)\""
-  put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${NOW_IN_HEX#0x}\""
+  put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${LAUNCH_DATE_UNIX_TIMESTAMP_UTC_HEX#0x}\""
   put_all_quorum_var "lace_genesis_distribution_owner_address" "\"$(cat $DIST_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${ISSUER_GAS_SEED_WEI}"
   put_all_quorum_var "lace_genesis_distribution_issuer_address" "\"$(cat $DIST_ISSUER_ADDRESS_FILE)\""

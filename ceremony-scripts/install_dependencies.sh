@@ -49,8 +49,21 @@ print_status "go" "golang" ${APT_GO_VERSION}
 print_status "ansible" "ansible" ""
 print_status "curl" "curl" ""
 
-go install github.com/ethereum/go-ethereum/cmd/ethkey@${ETHKEY_VERSION} &>> ${LOG_FILE}
-go install github.com/ethereum/go-ethereum/cmd/geth@${GETH_VERSION} &>> ${LOG_FILE}
+
+if which geth &>> ${LOG_FILE}; then
+	${SCRIPTS_DIR}/printer.sh -n "geth Already installed, skipping..."
+else
+	${SCRIPTS_DIR}/printer.sh -n "geth not found, installing"
+	go install github.com/ethereum/go-ethereum/cmd/geth@${GETH_VERSION} &>> ${LOG_FILE}
+fi
+
+if which ethkey &>> ${LOG_FILE}; then
+	${SCRIPTS_DIR}/printer.sh -n "ethkey Already installed, skipping..."
+else
+	${SCRIPTS_DIR}/printer.sh -n "ethkey not found, installing"
+	go install github.com/ethereum/go-ethereum/cmd/ethkey@${ETHKEY_VERSION} &>> ${LOG_FILE}
+fi
+
 
 ${SCRIPTS_DIR}/printer.sh -s "Installed dependencies" | tee -a ${LOG_FILE}
 

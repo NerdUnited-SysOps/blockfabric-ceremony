@@ -4,10 +4,11 @@ usage() {
   echo "This script is a helper for printing text"
   echo "Only one argument will be respected"
   echo "Usage: $0 (options) ..."
-  echo "  -e : Error message"
+  echo "  -e : Error message - this will exit with a non-zero code"
   echo "  -s : Success message"
   echo "  -t : Title message"
   echo "  -n : Note message"
+  echo "  -w : Warning message"
   echo "  -h : Help"
   echo ""
   echo "Example: printer.sh -t \"This is a title\""
@@ -19,14 +20,9 @@ NC='\033[0m'
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 LIGHT_CYAN='\033[1;36m'
-
-while getopts 'e:s:t:n:' option; do
+YELLOW='\033[1;33m'
+while getopts 'e:s:t:n:w:' option; do
 	case "$option" in
-		s)
-			SUCCESS="${OPTARG}"
-			printf "${GREEN}${SUCCESS}${NC}\n"
-			exit 0
-			;;
 		e)
 			ERROR="${OPTARG}"
 			printf "${RED}${ERROR}${NC}\n" >&2
@@ -35,6 +31,11 @@ while getopts 'e:s:t:n:' option; do
 		n)
 			NOTE="${OPTARG}"
 			printf "${LIGHT_CYAN}${NOTE}${NC}\n" >&2
+			exit 0
+			;;
+		s)
+			SUCCESS="${OPTARG}"
+			printf "${GREEN}${SUCCESS}${NC}\n"
 			exit 0
 			;;
 		t)
@@ -46,6 +47,11 @@ while getopts 'e:s:t:n:' option; do
 			printf "\n${TITLE} : "
 			printf -- "*%.0s" $(seq 1 $CHARACTERS_TO_PRINT)
 			printf "\n"
+			exit 0
+			;;
+		w)
+			SUCCESS="${OPTARG}"
+			printf "${YELLOW}${SUCCESS}${NC}\n"
 			exit 0
 			;;
 		?)

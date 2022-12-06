@@ -60,10 +60,15 @@ done
 shift $((OPTIND-1))
 
 get_list_of_validator_ips () {
-    ansible validator \
-			--limit validator \
-			--list-hosts \
-			-i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
+	ansible validator \
+		--list-hosts \
+		-i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
+}
+
+get_single_rpc_ip () {
+	ansible rpc \
+		--list-hosts \
+		-i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | head -n 1
 }
 
 
@@ -134,6 +139,39 @@ run_ansible() {
 	[ ! $? -eq 0 ] && printer -e "Failed to execute ansible playbook"
 }
 
+exec_chain() {
+	RPC_HOST=$1
+	COMMAND=$2
+
+	geth attach --exec "${COMMAND}" ${RPC_HOST}
+}
+
+verify_blockchain() {
+	RPC_IP=$1
+
+	printer -t "Verifying blockchain"
+	RPC_HOST="https://${RPC_IP}:8669"
+	if geth attach --exec eth.blockNumber ${RPC_HOST} &>> ${LOG_FILE}; then
+		printer -n "HTTPS Enabled"
+	else
+		printer -w "Cannot connect with tls. Attempting http"
+
+		RPC_HOST="http://${RPC_IP}:8669"
+		if geth attach --exec eth.blockNumber ${RPC_HOST} &>> ${LOG_FILE}; then
+			printer -n "Connection established, continuing verification with http."
+		else
+			printer -w "Unable to establish connection with network"
+		fi
+	fi
+
+	echo -e "\nChainCreationDate: $(exec_chain $RPC_HOST 'parseInt(eth.getBlockByNumber(0).timestamp,16)')"
+	echo "ChainID $(exec_chain $RPC_HOST 'parseInt(eth.chainId(),16)')"
+	echo "Network ID:  $(exec_chain $RPC_HOST net.version)"
+	echo "Gas Price:  $(exec_chain $RPC_HOST eth.gasPrice)"
+	echo "Block Number: $(geth attach --exec eth.blockNumber ${RPC_HOST})"
+	echo "Peer Count: $(geth attach --exec net.peerCount ${RPC_HOST})"
+}
+
 push_ansible_artifacts() {
 	printer -t "Saving artifacts"
 
@@ -171,9 +209,13 @@ VALIDATOR_IPS=$(get_list_of_validator_ips)
 ${SCRIPTS_DIR}/create_validator_and_account_wallets.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_dao_storage.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_ansible_playbook2.sh -v "$VALIDATOR_IPS"
-# cp -r ${KEYS_DIR} ${ANSIBLE_DIR}/
+
+# Executing ansible returns a non-zero code even when it's successful.
+# Backgrounding the task stops the script from existing.
 run_ansible &
 wait
+
+verify_blockchain $(get_single_rpc_ip)
 
 push_ansible_artifacts
 

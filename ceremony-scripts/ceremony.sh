@@ -76,12 +76,11 @@ get_ansible_vars() {
 
 	if [ ! -d "${ANSIBLE_DIR}" ]; then
 		source ${ENV_FILE}
-		git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR}
-
-		if [ ! $? -eq 0 ]; then
-			printer -e "Failed to fetch variables"
-		else
+		
+		if git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR}; then
 			printer -s "Fetched variables"
+		else
+			printer -e "Failed to fetch variables"
 		fi
 	else
 		printer -n "Ansible variables present, skipping"
@@ -108,13 +107,15 @@ install_ansible_role() {
 
 	if [ ! -d "${ANSIBLE_ROLE_INSTALL_PATH}" ]; then
 		mkdir -p ${ANSIBLE_ROLE_INSTALL_PATH}
-		git clone --depth 1 --branch ${ANSIBLE_ROLE_VERSION} ${ANSIBLE_ROLE_INSTALL_URL} ${ANSIBLE_ROLE_INSTALL_PATH}
 
-		# ansible-galaxy install ${ANSIBLE_ROLE_INSTALL_URL}
-		if [ ! $? -eq 0 ]; then
-			printer -e "Failed to install ansible role"
-		else
+		if git clone \
+			--depth 1 \
+			--branch ${ANSIBLE_ROLE_VERSION} \
+			${ANSIBLE_ROLE_INSTALL_URL} ${ANSIBLE_ROLE_INSTALL_PATH}
+		then
 			printer -s "Installed role"
+		else
+			printer -e "Failed to install ansible role"
 		fi
 	else
 		printer -n "Ansible role present, skipping"
@@ -133,51 +134,22 @@ run_ansible() {
 	[ ! $? -eq 0 ] && printer -e "Failed to execute ansible playbook"
 }
 
-configure_aws() {
-	printer -n "Collecting credentials\n"
-
-	aws configure
-
-	if [ $? -eq 0 ]; then
-		printer -s "Collected credentials"
-	else
-		printer -e "Failed to collect credentials"
-	fi
-}
-
-create_directories() {
-	printer -t "Creating project structure"
-
-	mkdir -p ${KEYS_DIR}/distributionOwner \
-		${KEYS_DIR}/lockupOwner \
-		${CONTRACTS_DIR} \
-		${VOLUMES_DIR}/volume1 \
-		${VOLUMES_DIR}/volume2 \
-		${VOLUMES_DIR}/volume3 \
-		${VOLUMES_DIR}/volume4
-			# ${ANSIBLE_DIR} \
-		}
-
 push_ansible_artifacts() {
-	printer -t "Pushing Ansible artifacts"
+	printer -t "Saving artifacts"
 
 	git config --global user.name "ceremony-script"
 	git config --global user.email "ceremony@email.com"
 	git -C ${ANSIBLE_DIR}/ checkout -b ceremony-artifacts
-	git -C ${ANSIBLE_DIR}/ add ${ANSIBLE_DIR}/
+	git -C ${ANSIBLE_DIR}/ add ${ANSIBLE_DIR}/ &>> ${LOG_FILE}
 	git -C ${ANSIBLE_DIR}/ commit -m "Committing produced artifacts"
 	git -C ${ANSIBLE_DIR}/ push origin HEAD --force &>> ${LOG_FILE}
 
-	printer -s "Pushed ansible code to remote repo"
+	printer -s "Persisted artifacts"
 }
 
-# All required params present, run the script.
 printer -t "Starting key ceremony"
 
 ${SCRIPTS_DIR}/install_dependencies.sh
-create_directories
-
-# configure_aws
 
 ${SCRIPTS_DIR}/get_secrets.sh \
   $AWS_CONDUCTOR_SSH_KEY \

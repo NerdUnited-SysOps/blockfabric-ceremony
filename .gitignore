@@ -1,0 +1,13 @@
+# Vagrant build files
+.vagrant
+*.swp
+.env
+volumes
+log
+keys
+contracts
+ansible
+id_rsa
+id_rsa_conductor
+id_rsa_nodes
+

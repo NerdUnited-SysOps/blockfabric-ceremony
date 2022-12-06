@@ -14,7 +14,6 @@ export ENV_FILE=${BASE_DIR}/.env
 export PATH="${HOME}/go/bin:${PATH}"	 # Go binary path
 export SCP_USER=admin
 export INVENTORY_PATH=${ANSIBLE_DIR}/inventory
-export REMOTE_INVENTORY_PATH=/opt/blockfabric/inventory
 
 # Overrides based on the environment
 if [ -f .env ]

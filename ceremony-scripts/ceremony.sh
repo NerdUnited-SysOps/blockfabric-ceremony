@@ -164,12 +164,31 @@ verify_blockchain() {
 		fi
 	fi
 
-	echo -e "\nChainCreationDate: $(exec_chain $RPC_HOST 'parseInt(eth.getBlockByNumber(0).timestamp,16)')"
-	echo "ChainID $(exec_chain $RPC_HOST 'parseInt(eth.chainId(),16)')"
-	echo "Network ID:  $(exec_chain $RPC_HOST net.version)"
-	echo "Gas Price:  $(exec_chain $RPC_HOST eth.gasPrice)"
-	echo "Block Number: $(geth attach --exec eth.blockNumber ${RPC_HOST})"
-	echo "Peer Count: $(geth attach --exec net.peerCount ${RPC_HOST})"
+	script_local_path=${SCRIPTS_DIR}/remoteValidate.js
+	script_remote_path="~/remoteValidate.js"
+
+	geth attach --exec 'basicValidation()' --preload ${SCRIPTS_DIR}/validate.js ${RPC_HOST}
+
+	scp \
+		-o StrictHostKeyChecking=no \
+		-i ${AWS_NODES_SSH_KEY_PATH} \
+		$script_local_path \
+		"${NODE_USER}"@"${RPC_IP}":"${script_remote_path}"
+
+	lcAddress="0x47e9fbef8c83a1714f1951f142132e6e90f5fa5d"
+	dcAddress="0x8be503bcded90ed42eff31f56199399b2b0154ca"
+	diAddress="0x561913d96dc4317118fe43421242f67128784fba"
+	call="validation(${lcAddress}, ${dcAddress}, ${diAddress})"
+
+	ssh \
+		-o StrictHostKeyChecking=no \
+		-i ${AWS_NODES_SSH_KEY_PATH} \
+		"${NODE_USER}"@"${RPC_IP}" \
+		"sudo /var/.lace/current/geth \
+			--preload ~/remoteValidate.js \
+			--exec ${call} \
+			--datadir /var/.lace/data attach"
+
 }
 
 push_ansible_artifacts() {

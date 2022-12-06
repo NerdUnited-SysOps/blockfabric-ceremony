@@ -11,7 +11,7 @@ source $SCRIPT_DIR/../.common.sh
 
 ${SCRIPTS_DIR}/printer.sh -t "Creating ansible vars"
 
-NETWORK_LAUNCH_DATE="221001"
+NETWORK_LAUNCH_DATE="220217"
 NETWORK_TOTAL_COIN_SUPPLY_WEI_HEX="0x4563918244f40000"
 NETWORK_ISSUER_GAS_SEED_WEI_HEX="0x27f4283400"
 
@@ -119,7 +119,7 @@ all_quorum_vars() {
 	echo "goquorum_enode_list: [${enode_list}]" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 
 	# Kinda janky, but gets the job done - grabs the contents of Storage.txt and puts it in a variable
-	var="$(tail -n+6 ./contracts/sc_dao/v0.0.1/Storage.txt | head -n -2 | tr -d "[:blank:]\n")"
+	var="$(tail -n+6 ./contracts/sc_dao/$DAO_VERSION/Storage.txt | head -n -2 | tr -d "[:blank:]\n")"
 	sed -i '/goquorum_genesis_sc_dao_storage/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 	echo "goquorum_genesis_sc_dao_storage: {${var}}" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 }

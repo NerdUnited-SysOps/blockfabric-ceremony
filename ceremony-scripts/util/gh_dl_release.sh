@@ -3,7 +3,7 @@
 SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 [ -f $SCRIPT_DIR/../.common.sh ] && source $SCRIPT_DIR/../.common.sh
 
-GITHUB_API_TOKEN=$GITHUB_CORESDK_TOKEN
+GITHUB_API_TOKEN=$GITHUB_PAT
 [ "$GITHUB_API_TOKEN" ] || { echo "Error: Please define GITHUB_API_TOKEN variable." >&2; exit 1; }
 [ $# -ne 4 ] && { echo "Usage: $0 [owner] [repo] [tag] [name]"; exit 1; }
 [ "$TRACE" ] && set -x

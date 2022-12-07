@@ -178,6 +178,7 @@ ${SCRIPTS_DIR}/create_validator_and_account_wallets.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_dao_storage.sh "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_ansible_playbook2.sh -v "$VALIDATOR_IPS"
 
+${SCRIPTS_DIR}/copy_ceremony_log_to_volumes.sh
 # Executing ansible returns a non-zero code even when it's successful.
 # Backgrounding the task stops the script from existing.
 run_ansible &

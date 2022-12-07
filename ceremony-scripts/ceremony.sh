@@ -171,7 +171,7 @@ ${SCRIPTS_DIR}/get_contract_bytecode.sh
 ${SCRIPTS_DIR}/create_lockup_owner_wallet.sh
 ${SCRIPTS_DIR}/create_distribution_owner_wallet.sh
 ${SCRIPTS_DIR}/create_distribution_issuer_wallet.sh
-${SCRIPTS_DIR}/create_lockup_admin_wallet.sh
+${SCRIPTS_DIR}/create_lockup_admin_wallets.sh
 
 VALIDATOR_IPS=$(get_list_of_validator_ips)
 ${SCRIPTS_DIR}/create_validator_and_account_wallets.sh "$VALIDATOR_IPS"

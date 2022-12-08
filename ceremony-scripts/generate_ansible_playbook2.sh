@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 
 # USAGE: generate_ansible_goquorum_laybook.sh -v [Validator IP String] -r [RPC IP String]
 #
@@ -112,6 +112,13 @@ all_quorum_vars() {
 	put_all_quorum_var "goquorum_genesis_sc_lockup_code" "\"0x$(cat ${LOCKUP_RUNTIME_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_distribution_code" "\"0x$(cat ${DIST_RUNTIME_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_lockup_balance" "${LOCKUP_SC_BALANCE}"
+
+	admin_addresses=$(${SCRIPTS_DIR}/create_lockup_storage/create_lockup_storage.sh)
+	storage=$(echo "{ \"0x0000000000000000000000000000000000000000000000000000000000000000\": \"{{ lace_genesis_lockup_owner_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000002\": \"{{ lace_genesis_lockup_issuer_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000004\": \"{{ lace_genesis_lockup_daily_limit }}\", \"0x0000000000000000000000000000000000000000000000000000000000000005\": \"{{ lace_genesis_lockup_last_dist_timestamp }}\", ${admin_addresses} }")
+	echo "storage: $storage"
+	# put_all_quorum_var "goquorum_genesis_sc_lockup_storage" "${storage}"
+	sed -i '/goquorum_genesis_sc_lockup_storage/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	echo "goquorum_genesis_sc_lockup_storage: ${storage}" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 
 	enode_list=$(generate_enode_list)
 	# echo "enode_list $enode_list"

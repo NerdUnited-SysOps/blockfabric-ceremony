@@ -9,6 +9,7 @@ usage() {
   echo "  -k : Path to the private key"
   echo "  -p : RPC Port"
   echo "  -r : Path to the RPC node"
+  echo "  -u : User to ssh with"
 }
 
 while getopts b:n:hi: flag; do
@@ -34,6 +35,9 @@ while getopts b:n:hi: flag; do
             ;;
         r) 
             RPC_PATH=${OPTARG}
+            ;;
+        u)
+            USER=${OPTARG}
             ;;
         *) 
             usage

@@ -30,12 +30,12 @@ while getopts 'e:s:t:n:w:' option; do
 			;;
 		n)
 			NOTE="${OPTARG}"
-			printf "${LIGHT_CYAN}${NOTE}${NC}\n" >&2
+			printf "${LIGHT_CYAN}${NOTE}${NC}\n" >&2 | tee -a $LOG_FILE
 			exit 0
 			;;
 		s)
 			SUCCESS="${OPTARG}"
-			printf "${GREEN}${SUCCESS}${NC}\n"
+			printf "${GREEN}${SUCCESS}${NC}\n" | tee -a $LOG_FILE
 			exit 0
 			;;
 		t)
@@ -44,14 +44,14 @@ while getopts 'e:s:t:n:w:' option; do
 			LINE_LENGTH=$(tput cols)
 			CHARACTERS_TO_PRINT=$(($LINE_LENGTH - $STRING_LENGTH - 3))
 
-			printf "\n${TITLE} : "
-			printf -- "*%.0s" $(seq 1 $CHARACTERS_TO_PRINT)
-			printf "\n"
+			printf "\n${TITLE} : " | tee -a $LOG_FILE
+			printf -- "*%.0s" $(seq 1 $CHARACTERS_TO_PRINT) | tee -a $LOG_FILE
+			printf "\n" | tee -a $LOG_FILE
 			exit 0
 			;;
 		w)
 			SUCCESS="${OPTARG}"
-			printf "${YELLOW}${SUCCESS}${NC}\n"
+			printf "${YELLOW}${SUCCESS}${NC}\n" | tee -a $LOG_FILE
 			exit 0
 			;;
 		?)

@@ -26,7 +26,7 @@ do
     rm $WORKING_DIR/UTC*
     rm $WORKING_DIR/password
 
-    if (( $number % 10 == 0 ))
+    if (( $i % 10 == 0 ))
     then
         ${SCRIPTS_DIR}/printer.sh -n "Generated ${i} lockup admin wallets so far"
     fi

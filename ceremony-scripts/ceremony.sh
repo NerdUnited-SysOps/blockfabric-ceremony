@@ -152,7 +152,7 @@ push_ansible_artifacts() {
 	then
 		printer -s "Persisted artifacts"
 	else
-		printer -e "error persisting artifacts"
+		printer -e "Error persisting artifacts"
 	fi
 }
 

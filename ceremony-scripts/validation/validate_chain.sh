@@ -12,8 +12,8 @@ usage() {
   echo "  -u : User to ssh with"
 }
 
-while getopts d:g:i:k:p:r:u: flag; do
-    case "${flag}" in
+while getopts d:g:i:k:p:r:u: option; do
+    case "${option}" in
         d) 
             DATADIR=${OPTARG}
             ;;
@@ -38,10 +38,6 @@ while getopts d:g:i:k:p:r:u: flag; do
             ;;
         u)
             USER=${OPTARG}
-            ;;
-        *) 
-            usage
-            exit 1
             ;;
     esac
 done
@@ -105,7 +101,7 @@ EOM
       -o ConnectTimeout=10 \
       -o StrictHostKeyChecking=no \
       -i ${KEY_PATH} \
-      "blockadmin@${HOST}" "
+      "${USER}@${HOST}" "
           sudo ${GETH_PATH} attach \
             --datadir ${DATADIR} \
             --exec ${exec_cmd}" | grep -v null | sed "s/^/ IP:\ ${HOST}\t/"

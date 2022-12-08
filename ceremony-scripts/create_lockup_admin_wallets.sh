@@ -11,8 +11,7 @@ VOL2=${VOLUMES_DIR}/volume2/lockupAdmins
 mkdir -p ${VOL1} ${VOL2}
 WORKING_DIR=${VOL1}
 
-for i in {1..100}
-do
+create_key() {
     password=$(pwgen -c 25 -n 1)
     echo $password > ${WORKING_DIR}/password
 
@@ -30,7 +29,14 @@ do
     then
         ${SCRIPTS_DIR}/printer.sh -n "Generated ${i} lockup admin wallets so far"
     fi
+}
+
+# for i in {1..100}
+for i in {1..10}
+				create_key &
+do
 done
+wait
 
 ${SCRIPTS_DIR}/printer.sh -s "Generated lockup admin wallets"
 

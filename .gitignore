@@ -4,6 +4,7 @@
 .env
 volumes
 log
+ceremony_log
 keys
 contracts
 ansible

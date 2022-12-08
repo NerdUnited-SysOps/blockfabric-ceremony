@@ -7,7 +7,11 @@ VOL=${VOLUMES_DIR}/volume1/lockupAdmins
 
 addresses=$(ls $VOL)
 
-npm --prefix ${SCRIPT_DIR}/package.json i &>> ${LOG_FILE}
+cd ${SCRIPT_DIR} > /dev/null
 
-node ${SCRIPTS_DIR}/create_lockup_storage/createStorage.js $addresses
+npm i &>> ${LOG_FILE}
+
+node ${SCRIPT_DIR}/createStorage.js $addresses
+
+cd - > /dev/null
 

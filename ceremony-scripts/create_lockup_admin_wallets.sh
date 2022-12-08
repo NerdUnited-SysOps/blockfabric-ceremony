@@ -8,11 +8,11 @@ ${SCRIPTS_DIR}/printer.sh -t "Generating lockup admin wallets"
 VOL1=${VOLUMES_DIR}/volume1/lockupAdmins
 VOL2=${VOLUMES_DIR}/volume2/lockupAdmins
 
+mkdir -p ${VOL1} ${VOL2}
+WORKING_DIR=${VOL1}
+
 for i in {1..100}
 do
-    mkdir -p ${VOL1} ${VOL2}
-    WORKING_DIR=${VOL1}
-
     password=$(pwgen -c 25 -n 1)
     echo $password > ${WORKING_DIR}/password
 

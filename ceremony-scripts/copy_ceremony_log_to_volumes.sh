@@ -10,4 +10,4 @@ cp $LOG_FILE ${VOLUMES_DIR}/volume2
 cp $LOG_FILE ${VOLUMES_DIR}/volume3
 cp $LOG_FILE ${VOLUMES_DIR}/volume4
 
-${SCRIPTS_DIR}/printer.sh -t "Successfully moved ceremony_log file to all volumes"
+${SCRIPTS_DIR}/printer.sh -s "Successfully moved ceremony_log file to all volumes"

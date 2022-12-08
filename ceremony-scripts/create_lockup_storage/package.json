@@ -1,0 +1,16 @@
+{
+  "name": "create lockup storage",
+  "version": "1.0.0",
+  "description": "Creates account storage",
+  "main": "createStorage.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "sha3": "^2.1.4",
+    "web3-utils": "^1.8.1"
+  }
+}
+

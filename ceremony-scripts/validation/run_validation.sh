@@ -3,7 +3,7 @@
 SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 source ${SCRIPT_DIR}/../../.common.sh
 
-./validation_chain.sh \
+./validate_chain.sh \
   -d $DATADIR \
   -g $GETH_PATH \
   -i $INVENTORY_PATH \ #fill this in

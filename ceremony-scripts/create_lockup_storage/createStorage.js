@@ -8,7 +8,7 @@ function createStorage(listOfAddresses) {
         const paddedAccount = padLeft(address.toLowerCase(), 64)
         const slot = sha3(`0x${paddedAccount}${storageSlot}`).substring(2).toLowerCase();
 				return `"0x${slot}": "01",`
-    }).join(' ')
+    }).join(' ').slice(0, -1)
 }
 
 console.log(createStorage(args))

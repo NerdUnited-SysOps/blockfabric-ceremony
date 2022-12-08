@@ -12,7 +12,7 @@ usage() {
   echo "  -u : User to ssh with"
 }
 
-while getopts b:n:hi: flag; do
+while getopts d:g:i:k:p:r:u: flag; do
     case "${flag}" in
         d) 
             DATADIR=${OPTARG}

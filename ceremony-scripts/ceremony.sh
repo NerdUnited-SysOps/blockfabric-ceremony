@@ -148,7 +148,7 @@ push_ansible_artifacts() {
 	git -C ${ANSIBLE_DIR}/ add ${ANSIBLE_DIR}/ &>> ${LOG_FILE}
 	git -C ${ANSIBLE_DIR}/ commit -m "Committing produced artifacts"
 	
-	if [[ "$(git -C ${ANSIBLE_DIR}/ push origin HEAD --force &>> ${LOG_FILE})" == *"Done"* ]]
+	if [[ "$(git -C ${ANSIBLE_DIR}/ push origin HEAD --force --porcelain &>> ${LOG_FILE})" == *"Done"* ]]
 	then
 		printer -s "Persisted artifacts"
 	else

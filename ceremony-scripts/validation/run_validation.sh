@@ -2,6 +2,8 @@
 
 source ../../.common.sh
 
+cd ceremony-scripts/validation
+
 ./validate_chain.sh \
   -d $DATADIR \
   -g $GETH_PATH \

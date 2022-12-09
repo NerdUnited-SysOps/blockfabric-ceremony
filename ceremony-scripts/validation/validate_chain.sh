@@ -1,4 +1,4 @@
-#!/bin/env sh
+#!/usr/bin/zsh
 
 usage() {
   echo "Options"
@@ -28,7 +28,7 @@ while getopts d:g:i:k:p:r:u: option; do
             INVENTORY_PATH=${OPTARG}
             ;;
         k) 
-            PRIVATE_KEY_PATH=${OPTARG}
+            KEY_PATH=${OPTARG}
             ;;
         p) 
             RPC_PORT=${OPTARG}
@@ -66,7 +66,7 @@ curl_check() {
     curl \
         --max-time 5.5 \
         https://${RPC_PATH}/ \
-        --connect-to ${RPC_PATH}:${RPC_PORT}:${ip}:${RPC_PORT} &>> ${LOG_FILE}
+        --connect-to "${RPC_PATH}:${RPC_PORT}:${ip}:${RPC_PORT}" &>> ${LOG_FILE}
 }
 
 check_https() {
@@ -78,7 +78,7 @@ check_https() {
 
     title "HTTPS Status"
 
-    for IP in ${IP_LIST}; do
+		for IP in $(echo $IP_LIST | tr ' ' ' ') ; do
         result="Checking SSL for ${IP}\t"
         if curl_check ${IP}; then
             result+="${GREEN}Success${NC}"
@@ -91,9 +91,7 @@ check_https() {
 
 verify_each() {
     HOST=$1
-    read -r -d '' exec_cmd <<- EOM
-    'console.log("Gas: " + eth.gasPrice + " Block: " + eth.blockNumber + " Peers: " + net.peerCount)'
-EOM
+		exec_cmd=$(echo 'console.log("Gas: " + eth.gasPrice + " Block: " + eth.blockNumber + " Peers: " + net.peerCount)')
 
 	ssh \
       -q \

@@ -1,8 +1,7 @@
 #!/bin/bash
 
 source ../../.common.sh
-
-cd ceremony-scripts/validation
+cd $(dirname "${BASH_SOURCE[0]}")
 
 ./validate_chain.sh \
   -d $DATADIR \

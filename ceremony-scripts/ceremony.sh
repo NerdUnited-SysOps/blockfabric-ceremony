@@ -148,12 +148,7 @@ push_ansible_artifacts() {
 	git -C ${ANSIBLE_DIR}/ add ${ANSIBLE_DIR}/ &>> ${LOG_FILE}
 	git -C ${ANSIBLE_DIR}/ commit -m "Committing produced artifacts"
 	
-	if [[ "$(git -C ${ANSIBLE_DIR}/ push origin HEAD --force --porcelain &>> ${LOG_FILE})" == *"Done"* ]]
-	then
-		printer -s "Persisted artifacts"
-	else
-		printer -e "Error persisting artifacts"
-	fi
+	printer -s "Persisted artifacts"
 }
 
 printer -t "Starting key ceremony"

@@ -147,7 +147,7 @@ push_ansible_artifacts() {
 	git -C ${ANSIBLE_DIR}/ checkout -b ceremony-artifacts
 	git -C ${ANSIBLE_DIR}/ add ${ANSIBLE_DIR}/ &>> ${LOG_FILE}
 	git -C ${ANSIBLE_DIR}/ commit -m "Committing produced artifacts"
-	git -C ${ANSIBLE_DIR}/ push origin HEAD --force &>> ${LOG_FILE}
+	git -C ${ANSIBLE_DIR}/ push origin HEAD --force --porcelain &>> ${LOG_FILE}
 
 	printer -s "Persisted artifacts"
 }

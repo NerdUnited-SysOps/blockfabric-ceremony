@@ -42,7 +42,7 @@ function validation() {
 
 	distributionIssuerAddress = getDistributionIssuerAddress()
 
-	template = "" + "\n" +
+	template = "" + "" +
 " Lockup Contract:\t" + lockupContractAddress + "\n" + 
 " Distribution Contract:\t" + distributionContractAddress + "\n" + 
 " Distribution Issuer:\t" + distributionIssuerAddress + "\n\n" + 
@@ -63,7 +63,7 @@ function validation() {
 ""
 	console.log(template)
 
-	return 'validation'
+	return 'Chain Validation'
 }
 
 validation()

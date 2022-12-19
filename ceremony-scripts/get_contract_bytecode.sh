@@ -4,7 +4,6 @@ set -e
 
 SCRIPTS_DIR=$(dirname ${(%):-%N})
 ENV_FILE="${SCRIPTS_DIR}/../.env"
-LOG_FILE="${SCRIPTS_DIR}/../ceremony.log"
 
 BASE_DIR=${SCRIPTS_DIR}/..
 CONTRACTS_DIR=${BASE_DIR}/contracts
@@ -18,9 +17,9 @@ usage() {
 	echo "Example: "
 }
 
-while getopts 'f:h' option; do
+while getopts 'e:h' option; do
 	case "$option" in
-		f)
+		e)
 			ENV_FILE=${OPTARG}
 			;;
 		h)

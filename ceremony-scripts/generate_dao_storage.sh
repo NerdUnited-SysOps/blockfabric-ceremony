@@ -40,7 +40,11 @@ while getopts 'f:hi:l:' option; do
 	esac
 done
 
-source ${ENV_FILE}
+if [ ! -f "${ENV_FILE}" ]; then
+	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+else
+	source ${ENV_FILE}
+fi
 
 printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"

@@ -7,7 +7,7 @@ ENV_FILE="${SCRIPTS_DIR}/../.env"
 
 usage() {
 	echo "Options"
-	echo "  -f : Path to .env file"
+	echo "  -e : Path to .env file"
 	echo "  -h : This help message"
 	echo "  -s : Script directory to reference other scripts"
 }

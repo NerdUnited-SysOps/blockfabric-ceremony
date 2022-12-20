@@ -147,7 +147,7 @@ copy_logs() {
 	cp $LOG_FILE ${VOLUMES_DIR}/volume3
 	cp $LOG_FILE ${VOLUMES_DIR}/volume4
 
-	printer -s "Successfully moved ceremony_log file to all volumes"
+	printer -s "Successfully moved ${LOG_FILE} file to all volumes"
 }
 
 clear -x

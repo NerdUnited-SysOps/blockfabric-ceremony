@@ -5,7 +5,6 @@ set -e
 # Directory of this file
 SCRIPTS_DIR=$(dirname ${(%):-%N})
 ENV_FILE="${SCRIPTS_DIR}/../.env"
-LOG_FILE=$(realpath "${SCRIPTS_DIR}/../ceremony.log")
 
 BASE_DIR=${SCRIPTS_DIR}/..
 CONTRACTS_DIR=${BASE_DIR}/contracts

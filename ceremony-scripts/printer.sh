@@ -37,6 +37,18 @@ gradient() {
 	printf "\n"
 }
 
+print_date() {
+	year=$(date +'%y')
+	printed_year=""
+	if (( "${year}" == "22" )); then
+		printed_year="twenty two"
+	else
+		printed_year="twenty three"
+	fi
+
+	printf "two thousand ${printed_year}"
+}
+
 while getopts 'be:f:g:s:t:n:w:' option; do
 	case "$option" in
 		b)
@@ -47,7 +59,9 @@ while getopts 'be:f:g:s:t:n:w:' option; do
 			printf " ___/ / /_/ /_/ / /  / /_  \n"
 			printf "/____/\__/\__,_/_/   \__/  \n\n\n\n"
 
-			printf "The ceremony has begun on this year of our Lord, two thousand twenty three.\n\n"
+			printed_date=$(print_date)
+
+			printf "The ceremony has begun on this year of our Lord, ${printed_date}.\n\n"
 
 			exit 0
 			;;

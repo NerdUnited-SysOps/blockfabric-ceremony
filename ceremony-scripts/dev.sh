@@ -71,8 +71,6 @@ run_ansible_playbook() {
 		${ANSIBLE_DIR}/goquorum.yaml
 }
 
-COLUMNS=1
-
 items=(
 	"Reset files"
 	"Reset chain"
@@ -89,6 +87,7 @@ usage
 NC='\033[0m'
 RED='\033[0;31m'
 while true; do
+	COLUMNS=1
 	PS3=$'\n'"Select option: "
 	select item in "${items[@]}" 
 		case $REPLY in

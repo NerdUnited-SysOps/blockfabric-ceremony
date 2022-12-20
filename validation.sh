@@ -102,8 +102,6 @@ usage() {
 	printf "You may select from the options below\n\n"
 }
 
-COLUMNS=1
-
 items=(
 	"Validate chain"
 	"List volume contents"
@@ -121,6 +119,7 @@ usage
 NC='\033[0m'
 RED='\033[0;31m'
 while true; do
+	COLUMNS=1
 	PS3=$'\n'"Select option: "
 	select item in "${items[@]}" 
 		case $REPLY in

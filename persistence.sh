@@ -80,8 +80,6 @@ persist_distribution_issuer() {
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_PASSWORD} ${VOLUMES_DIR}/volume1/distributionIssuer/password
 }
 
-COLUMNS=1
-
 items=(
 	"Persist distribution issuer wallet"
 	"Persist chain variables (cli args, genesis, addresses, etc)"
@@ -95,13 +93,13 @@ usage
 NC='\033[0m'
 RED='\033[0;31m'
 while true; do
+	COLUMNS=1
 	PS3=$'\n'"Select option: "
 	select item in "${items[@]}" 
 		case $REPLY in
 			1) persist_distribution_issuer; break;;
 			2) save_ansible_vars; break;;
-			5) printf "Closing\n\n"; exit 1;;
-			6) clear -x; dev; break;;
+			3) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

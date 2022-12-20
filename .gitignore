@@ -5,6 +5,7 @@
 volumes
 log
 ceremony_log
+*log
 keys
 contracts
 ansible

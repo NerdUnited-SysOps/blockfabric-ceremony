@@ -10,7 +10,6 @@ VOLUMES_DIR=${BASE_DIR}/volumes
 ANSIBLE_DIR=${BASE_DIR}/ansible
 INVENTORY_PATH=${ANSIBLE_DIR}/inventory
 SCP_USER=admin
-LOG_FILE=${BASE_DIR}/ceremony_log
 ENV_FILE=${BASE_DIR}/.env
 
 usage() {

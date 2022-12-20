@@ -55,8 +55,6 @@ find_dir() {
 	if [[ -f "${dir_path}/password" ]] && [[ -f "${dir_path}/keystore" ]]; then
 		inspect_content=$(inspect "${dir_path}")
 		address=$(echo "${inspect_content}" | sed -n -e 's/.*Address:\ *//p')
-		# public_key=$(echo "${inspect_content}" | sed -n -e 's/.*Public key:\ *//p')
-		# print_line "${dir_path}" "${address}\t${public_key}" "${line_length}"
 		print_line "${dir_path}" "${address}" "${line_length}"
 	fi
 }
@@ -76,7 +74,6 @@ key_count=$(find ${FIND_PATH} -type d | wc -l)
 
 line_length=$(longest_entry "${all_paths}")
 printf "Inspecting $(($key_count - 1)) Keys\n"
-# print_line "Directory" "Address\t\t\t\t\t\tPublic Key\n" "${line_length}"
 print_line "Directory" "Address\n" "${line_length}"
 printf -- "-%.0s" $(seq 0 $(($line_length + $line_length)))
 printf "\n"

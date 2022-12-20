@@ -9,9 +9,7 @@ set -e
 SCRIPTS_DIR=$(dirname ${(%):-%N})
 BASE_DIR=$(realpath ${SCRIPTS_DIR}/..)
 ENV_FILE="${BASE_DIR}/.env"
-LOG_FILE="${BASE_DIR}/ceremony_log"
 ETHKEY=${HOME}/go/bin/ethkey
-ANSIBLE_DIR=${BASE_DIR}/ansible
 
 BOLD='\e[1;31m'         # Bold Red
 REV='\e[1;32m'       # Bold Green
@@ -101,7 +99,6 @@ put_all_quorum_var() {
 
 inspect() {
 	inspect_path=$1
-	# echo "inspect_path: ${inspect_path}"
 
 	${ETHKEY} inspect \
 		--private \
@@ -111,10 +108,7 @@ inspect() {
 
 get_private_key() {
 	inspect_path=$1
-	# echo "path: ${inspect_path}"
-	# inspect "${inspect_path}"
 	inspected_content=$(inspect "${inspect_path}")
-	# echo "content: ${inspect_content}"
 	echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
 }
 

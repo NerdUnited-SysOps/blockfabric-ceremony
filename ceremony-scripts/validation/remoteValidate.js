@@ -60,10 +60,10 @@ function validation() {
 
 	// Printing
 
+	console.log("")
 	console.log(repeat('-', rowLength))
 	console.log(' Balances')
 	console.log(repeat('-', rowLength))
-	console.log("")
 
 	console.log(tab(" Lockup Daily Unlock", parseInt(lockupDailyUnlock,16).toString(), rowLength))
 	console.log(tab(" Lockup Balance", accounts[lockupContractAddress].balance, rowLength))
@@ -77,7 +77,6 @@ function validation() {
 	console.log(repeat('-', rowLength))
 	console.log(' Addresses')
 	console.log(repeat('-', rowLength))
-	console.log("")
 
 	console.log(tab(" Lockup Contract", lockupContractAddress, rowLength))
 	console.log(tab(" Distribution Contract", distributionContractAddress, rowLength))
@@ -87,7 +86,6 @@ function validation() {
 	console.log(repeat('-', rowLength))
 	console.log(' General Metrics')
 	console.log(repeat('-', rowLength))
-	console.log("")
 
 	console.log(tab(" Distribution Started", new Date(parseInt(lockupTimestamp,16) * 1000).toString(), rowLength))
 	console.log(tab(" Days Since Unlock", daysSinceUnlock(lockupTimestamp), rowLength))
@@ -98,7 +96,6 @@ function validation() {
 	console.log(repeat('-', rowLength))
 	console.log(' Contract Routing')
 	console.log(repeat('-', rowLength))
-	console.log("")
 	
 	console.log(tab(" Lockup Issuer Address == Distribution Contract", (lockupIssuer == distributionContractAddress.substring(2)).toString(), rowLength))
 	console.log(tab(" Distribution Lockup Address == Lockup Contract", (distributionLockup == lockupContractAddress.substring(2)).toString(), rowLength))

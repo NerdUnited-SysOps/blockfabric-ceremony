@@ -119,8 +119,6 @@ verify_group() {
 }
 
 verify_blockchain() {
-    title "Status of Chain"
-
     geth_exec_command=$(cat "${VALIDATION_FILE}" | sed 's/\"/\\"/g')
 
     ssh \

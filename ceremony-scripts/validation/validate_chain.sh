@@ -82,7 +82,7 @@ check_https() {
     title "HTTPS Status"
 
 		for IP in $(echo $IP_LIST | tr ' ' ' '); do
-        result="Checking SSL for ${IP}\t"
+        result="Checking TLS for ${IP}\t"
         if curl_check ${IP}; then
             result+="${GREEN}Success${NC}"
         else

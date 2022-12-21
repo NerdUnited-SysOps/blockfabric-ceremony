@@ -88,7 +88,7 @@ function validation() {
 	console.log(repeat('-', rowLength))
 
 	console.log(tab(" Distribution Started", new Date(parseInt(lockupTimestamp,16) * 1000).toString(), rowLength))
-	console.log(tab(" Days Since Unlock", daysSinceUnlock(lockupTimestamp), rowLength))
+	console.log(tab(" Days Since Unlock", daysSinceUnlock(lockupTimestamp).toString(), rowLength))
 	console.log(tab(" Network Version", net.version, rowLength).toString())
 	console.log(tab(" Chain ID", parseInt(eth.chainId()).toString(), rowLength))
 

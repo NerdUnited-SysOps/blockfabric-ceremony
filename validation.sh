@@ -1,6 +1,7 @@
 #!/usr/bin/zsh
 
 ENV_FILE=./.env
+SCRIPTS_DIR=$(realpath ./ceremony-scripts)
 
 usage() {
 	echo "Options"
@@ -52,7 +53,7 @@ inspect_volumes() {
 	volume=$(volume_prompt)
 
 	printf "\n"
-	ceremony-scripts/validation/validate_accounts.sh -p ${VOLUMES_DIR}/${volume}
+	${SCRIPTS_DIR}/validation/validate_accounts.sh -p ${VOLUMES_DIR}/${volume}
 	printf "\n\n"
 }
 
@@ -88,7 +89,7 @@ count_volume_files() {
 
 run_validation() {
 	printf "Validating chain...\n\n"
-	ceremony-scripts/validation/run_validation.sh
+	${SCRIPTS_DIR}/validation/run_validation.sh
 	printf "\n\nNote: It takes a minute for all nodes to catch up with their peers.\n\n"
 }
 

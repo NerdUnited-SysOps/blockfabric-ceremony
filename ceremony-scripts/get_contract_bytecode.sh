@@ -7,7 +7,7 @@ ENV_FILE="${SCRIPTS_DIR}/../.env"
 
 BASE_DIR=${SCRIPTS_DIR}/..
 CONTRACTS_DIR=${BASE_DIR}/contracts
-UTIL_SCRIPTS_DIR=${BASE_DIR}/ceremony-scripts/util
+UTIL_SCRIPTS_DIR=${SCRIPTS_DIR}/util
 
 usage() {
 	echo "Usage: $0 (options) ..."

@@ -85,7 +85,7 @@ KEY1=$(get_key "${AWS_CONDUCTOR_SSH_KEY}")
 write_key "${KEY1}" "${AWS_CONDUCTOR_SSH_KEY_PATH}"
 
 KEY2=$(get_key "${AWS_NODES_SSH_KEY}")
-write_key "${KEY1}" "${AWS_NODES_SSH_KEY_PATH}"
+write_key "${KEY2}" "${AWS_NODES_SSH_KEY_PATH}"
 
 GITHUB_PAT=$(get_key "${AWS_GITHUB_CEREMONY_PAT}")
 set_env_var "GITHUB_PAT" "${GITHUB_PAT}"

@@ -1,10 +1,11 @@
 # Vagrant build files
 .vagrant
 *.swp
-.env
+*.env
 volumes
 log
 ceremony_log
+*log
 keys
 contracts
 ansible

@@ -1,5 +1,7 @@
 #!/usr/bin/zsh
 
+set -e
+
 usage() {
   echo "Options"
   echo "  -d : Datadir for the remote geth node"
@@ -10,9 +12,10 @@ usage() {
   echo "  -p : RPC Port"
   echo "  -r : Path to the RPC node"
   echo "  -u : User to ssh with"
+  echo "  -v : path to validation file"
 }
 
-while getopts d:g:i:k:p:r:u: option; do
+while getopts d:g:i:k:p:r:u:v: option; do
     case "${option}" in
         d) 
             DATADIR=${OPTARG}
@@ -39,26 +42,27 @@ while getopts d:g:i:k:p:r:u: option; do
         u)
             USER=${OPTARG}
             ;;
+        v)
+            VALIDATION_FILE=${OPTARG}
+            ;;
     esac
 done
 
 title() {
     title=$1
 
-    echo -e "---------------------------------------------";
+    echo -e "------------------------------------------------------------------";
     echo -e "${title}";
-    echo -e "---------------------------------------------";
+    printf "------------------------------------------------------------------\n\n";
 }
 
 get_ips() {
     group=${1:-rpc}
-
     ansible \
-        ${group} \
-        --list-hosts \
-        -i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
+			--list-hosts \
+			-i ${INVENTORY_PATH} \
+			${group} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
 }
-
 
 curl_check() {
     ip=$1
@@ -78,7 +82,7 @@ check_https() {
     title "HTTPS Status"
 
 		for IP in $(echo $IP_LIST | tr ' ' ' '); do
-        result="Checking SSL for ${IP}\t"
+        result="Checking TLS for ${IP}\t"
         if curl_check ${IP}; then
             result+="${GREEN}Success${NC}"
         else
@@ -89,21 +93,18 @@ check_https() {
 }
 
 verify_each() {
-    HOST=$1
-		read -r -d '' exec_cmd <<- EOM
-		'console.log("Gas: " + eth.gasPrice + " Block: " + eth.blockNumber + " Peers: " + net.peerCount)'
-EOM
+	HOST=$1
+	exec_cmd=$(echo 'console.log("Gas: " + eth.gasPrice + " Block: " + eth.blockNumber + " Peers: " + net.peerCount)' | sed 's/\"/\\"/g')
 
 	ssh \
-      -q \
-      -o LogLevel=quiet \
-      -o ConnectTimeout=10 \
-      -o StrictHostKeyChecking=no \
-      -i ${KEY_PATH} \
-      "${USER}@${HOST}" "
-          sudo ${GETH_PATH} attach \
-            --datadir ${DATADIR} \
-            --exec ${exec_cmd}" | grep -v null | sed "s/^/ IP:\ ${HOST}\t/"
+		-q \
+		-o LogLevel=quiet \
+		-o ConnectTimeout=10 \
+		-o StrictHostKeyChecking=no \
+		-i ${KEY_PATH} \
+		"${USER}@${HOST}" "sudo ${GETH_PATH} attach \
+			--datadir ${DATADIR} \
+			--exec \"${exec_cmd}\"" | grep -v null | sed "s/^/ IP:\ ${HOST}\t/"
 }
 
 verify_group() {
@@ -112,15 +113,13 @@ verify_group() {
     title "Status of ${GROUP}s"
 
     for ip in $(get_ips ${GROUP}); do
-        verify_each $ip &
+			verify_each $ip &
     done
     wait
 }
 
 verify_blockchain() {
-    title "Status of Chain"
-
-    geth_exec_command=$(cat ./remoteValidate.js | sed 's/\"/\\"/g') 
+    geth_exec_command=$(cat "${VALIDATION_FILE}" | sed 's/\"/\\"/g')
 
     ssh \
         -o ConnectTimeout=20 \

@@ -1,13 +1,57 @@
-#!/bin/bash
+#!/usr/bin/zsh
 
 set -e
 
-IP_ADDRESS_LIST=${1:?ERROR: Missing IP Address list}
+# Directory of this file
+SCRIPTS_DIR=$(dirname ${(%):-%N})
+ENV_FILE="${SCRIPTS_DIR}/../.env"
 
-SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source $SCRIPT_DIR/../.common.sh
+BASE_DIR=${SCRIPTS_DIR}/..
+CONTRACTS_DIR=${BASE_DIR}/contracts
+UTIL_SCRIPTS_DIR=${SCRIPTS_DIR}/util
+VOLUMES_DIR=${SCRIPTS_DIR}/../volumes
 
-${SCRIPTS_DIR}/printer.sh -t "Generating the Validator DAO Storage"
+usage() {
+  echo "Usage: $0 (options) ..."
+  echo "  -f : Path to .env file"
+  echo "  -h : Help"
+  echo "  -i : List of IP addresses"
+	echo "  -l : Path to log file"
+  echo ""
+  echo "Example: "
+}
+
+while getopts 'f:hi:l:' option; do
+	case "$option" in
+		f)
+			ENV_FILE=${OPTARG}
+			;;
+		h)
+			usage
+			exit 0
+			;;
+		i)
+			IP_ADDRESS_LIST=${OPTARG}
+			;;
+		l)
+			LOG_FILE=${OPTARG}
+			;;
+	esac
+done
+
+if [ ! -f "${ENV_FILE}" ]; then
+	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+else
+	source ${ENV_FILE}
+fi
+
+printer() {
+	${SCRIPTS_DIR}/printer.sh "$@"
+}
+
+[ -z "${IP_ADDRESS_LIST}" ] && printer -e "No vaildator IPs"
+
+printer -t "Generating the Validator DAO Storage"
 
 DAO_DIR=${CONTRACTS_DIR}/sc_dao/${DAO_VERSION}
 mkdir -p ${DAO_DIR}
@@ -15,42 +59,50 @@ mkdir -p ${DAO_DIR}
 curl -L -H "Authorization: Bearer ${GITHUB_PAT}" ${GITHUB_DAO_URL} --output ${DAO_DIR}/repo.zip &>> ${LOG_FILE}
 
 if [ $? -eq 0 ]; then
-	${SCRIPTS_DIR}/printer.sh -s "Retrieved Validator DAO code"
+	printer -n "Retrieved Validator DAO code"
 else
-	${SCRIPTS_DIR}/printer.sh -e "Failed retrieve Validator DAO code"
+	printer -e "Failed retrieve Validator DAO code"
 fi
 
 rm -rf ${DAO_DIR}/repo
 unzip -o ${DAO_DIR}/repo.zip -d ${DAO_DIR} &>> ${LOG_FILE}
 
 if [ $? -eq 0 ]; then
-	${SCRIPTS_DIR}/printer.sh -s "Unpacked DAO code"
+	printer -n "Unpacked DAO code"
 else
-	${SCRIPTS_DIR}/printer.sh -e "Failed to unpack DAO code"
+	printer -e "Failed to unpack DAO code"
 fi
 
 mv ${DAO_DIR}/Nerd* ${DAO_DIR}/repo
 
 WORKING_DIR=${DAO_DIR}/repo/genesisContent
-cd $WORKING_DIR
 
 # Create the allowList
-
 ALLOWED_ACCOUNTS_FILE=${WORKING_DIR}/allowedAccountsAndValidators.txt
+
+
 echo -n > $ALLOWED_ACCOUNTS_FILE
-for ip in ${IP_ADDRESS_LIST}
+
+get_address() {
+	key_file=$1
+
+	grep -o '"address": *"[^"]*"' "${key_file}" | grep -o '"[^"]*"$' | sed 's/"//g'
+}
+
+ips=(${(@s: :)IP_ADDRESS_LIST})
+for ip in ${ips}
 do
-	IP_DIR=${KEYS_DIR}/${ip}
-	ACCOUNT_ADDRESS=$(cat ${IP_DIR}/account_address | tr -d '\n')
-	NODEKEY_ADDRESS=$(cat ${IP_DIR}/nodekey_address | tr -d '\n')
-	echo "$ACCOUNT_ADDRESS, $NODEKEY_ADDRESS" >> $ALLOWED_ACCOUNTS_FILE
+	IP_DIR=${VOLUMES_DIR}/volume1/${ip}
+	ACCOUNT_ADDRESS=$(get_address ${IP_DIR}/account/keystore)
+	NODEKEY_ADDRESS=$(get_address ${IP_DIR}/node/keystore)
+	echo "0x$ACCOUNT_ADDRESS, 0x$NODEKEY_ADDRESS" >> $ALLOWED_ACCOUNTS_FILE
 done
 
+cd $WORKING_DIR
 npm i &>> ${LOG_FILE}
 node ./createContent.js
+cd -
 mv ${WORKING_DIR}/Storage.txt ${DAO_DIR}
 
-cd -
-
-${SCRIPTS_DIR}/printer.sh -s "Completed storage generation"
+printer -s "Completed storage generation"
 

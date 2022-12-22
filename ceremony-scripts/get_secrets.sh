@@ -1,75 +1,92 @@
-#!/bin/bash
+#!/usr/bin/zsh
 
 set -e
 
-# Helper function to download files from AWS Secrets Manager
-# We'll have an SSH key inside AWS Secrets Manager to be used by Ansible
-# Example call: download_file_from_aws "my-secret-aws-key" "../privatekey.pem"
-# Use `aws secretsmanager create-secret --name $SECRET_ID --secret-binary fileb://../test_secret_file.txt` to create a test file.
+SCRIPTS_DIR=$(dirname ${(%):-%N})
+ENV_FILE="${SCRIPTS_DIR}/../.env"
 
-SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source $SCRIPT_DIR/../.common.sh
+usage() {
+	echo "Options"
+	echo "  -e : Path to .env file"
+	echo "  -h : This help message"
+	echo "  -s : Script directory to reference other scripts"
+}
 
-${SCRIPTS_DIR}/printer.sh -t "Retrieving secrets"
+while getopts e:f:g:hl:s: option; do
+	case "${option}" in
+		f)
+			ENV_FILE=${OPTARG}
+			;;
+		h)
+			usage
+			exit 0
+			;;
+		s)
+			SCRIPTS_DIR=${OPTARG}
+			;;
+	esac
+done
 
-SECRET_ID1=${1:-$AWS_CONDUCTOR_SSH_KEY}
-LOCAL_FILE1=${2:-$AWS_CONDUCTOR_SSH_KEY_PATH}
+source ${ENV_FILE}
 
-SECRET_ID2=${3:-$AWS_NODES_SSH_KEY}
-LOCAL_FILE2=${4:-$AWS_NODES_SSH_KEY_PATH}
+printer() {
+	${SCRIPTS_DIR}/printer.sh "$@"
+}
 
-KEY1=$(aws secretsmanager \
-	get-secret-value \
-	--secret-id ${SECRET_ID1} \
-	--output text \
-	--query SecretString)
+get_key() {
+	secret_id=$1
 
-if [ -n "${KEY1}" ]; then
-	echo -e "${KEY1}" > ${LOCAL_FILE1}
-	chmod 0600 ${LOCAL_FILE1}
+	if [ -n "${secret_id}" ]; then
+		aws secretsmanager \
+			get-secret-value \
+			--secret-id "${secret_id}" \
+			--output text \
+			--query SecretString
+	else
+		printer -e "Missing secret key id."
+	fi
+}
 
-	${SCRIPTS_DIR}/printer.sh -s "Retrieved ${LOCAL_FILE1}."
-else 
-	${SCRIPTS_DIR}/printer.sh -e "${LOCAL_FILE1} does not exist."
-fi
+write_key() {
+	value=$1
+	file_path=$2
 
-KEY2=$(aws secretsmanager \
-	get-secret-value \
-	--secret-id ${SECRET_ID2} \
-	--output text \
-	--query SecretString)
+	if [ -n "${value}" ] && [ -n "${file_path}" ]; then
+		echo -e "${value}" > "${file_path}"
+		chmod 0600 "${file_path}"
 
-if [ -n "${KEY2}" ]; then
-	echo -e "${KEY2}" > ${LOCAL_FILE2}
-	chmod 0600 ${LOCAL_FILE2}
-
-	${SCRIPTS_DIR}/printer.sh -s "Retrieved ${LOCAL_FILE2}."
-else
-	${SCRIPTS_DIR}/printer.sh -e "${LOCAL_FILE2} does not exist."
-fi
+		printer -s "Wrote to ${file_path}."
+	else
+		printer -e "Missing value to write to file: ${file_path}."
+	fi
+}
 
 set_env_var() {
 	VAR_NAME=$1
 	VAR_VAL=$2
 	FILE_NAME=$ENV_FILE
 
-	if grep -q "export ${VAR_NAME}" "${FILE_NAME}"
-	then
-		sed -i "s/^export ${VAR_NAME}=.*/export ${VAR_NAME}=${VAR_VAL}/g" "${FILE_NAME}"
+	if [ -n "${VAR_VAL}" ]; then
+		if grep -q "export ${VAR_NAME}" "${FILE_NAME}"
+		then
+			sed -i "s/^export ${VAR_NAME}=.*/export ${VAR_NAME}=${VAR_VAL}/g" "${FILE_NAME}"
+		else
+			sed -i "1iexport ${VAR_NAME}=${VAR_VAL}" "${FILE_NAME}"
+		fi
+		printer -s "Persisted ${VAR_NAME}."
 	else
-		sed -i "1iexport ${VAR_NAME}=${VAR_VAL}" "${FILE_NAME}"
+		printer -e "Missing ${VAR_NAME}"
 	fi
 }
 
-LOCAL_SYSOPS_TOKEN=$(aws secretsmanager get-secret-value \
-    --secret-id ${AWS_GITHUB_CEREMONY_PAT} \
-    --output text \
-    --query SecretString)
+printer -t "Retrieving secrets"
 
-if [ -n "${LOCAL_SYSOPS_TOKEN}" ]; then
-   ${SCRIPTS_DIR}/printer.sh -s "Retrieved sysops pat"
-	 set_env_var "GITHUB_PAT" "${LOCAL_SYSOPS_TOKEN}"
-else
-   ${SCRIPTS_DIR}/printer.sh -e "Failed to retrieve sysops pat"
-fi
+KEY1=$(get_key "${AWS_CONDUCTOR_SSH_KEY}")
+write_key "${KEY1}" "${AWS_CONDUCTOR_SSH_KEY_PATH}"
+
+KEY2=$(get_key "${AWS_NODES_SSH_KEY}")
+write_key "${KEY2}" "${AWS_NODES_SSH_KEY_PATH}"
+
+GITHUB_PAT=$(get_key "${AWS_GITHUB_CEREMONY_PAT}")
+set_env_var "GITHUB_PAT" "${GITHUB_PAT}"
 

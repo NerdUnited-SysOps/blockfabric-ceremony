@@ -44,3 +44,9 @@ dig Brand website domain name (i.e. google.com)
 ```
 
 ## Distribute secrets to custodians
+
+## Validate the chain
+
+You can validate that all approprate files were created in the `volumes` directory with `find volumes -type f`
+
+You can further validate that each `keystore` and `password` file are valid with `ceremony-scripts/validation/validate_accounts.sh -p volumes`

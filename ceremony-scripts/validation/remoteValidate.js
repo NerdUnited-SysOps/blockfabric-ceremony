@@ -26,8 +26,24 @@ function currentUnlocked(lockupTimestamp, lockupDailyUnlock) {
 	return Math.floor(((Date.now()/1000) - parseInt(lockupTimestamp,16))/60/60/24) * parseInt(lockupDailyUnlock,16)
 }
 
+function repeat(c, len) {
+	item = ''
+	for (i = 0; i < len; i++) {
+		item += c
+	}
+	return item
+}
+
+function tab(first, second, maxLength) {
+	space = maxLength - (first.length + second.length)
+	return first + repeat(' ', space) + second
+}
+
 function validation() {
 	accounts = debug.accountRange().accounts
+
+	rowLength = 66
+
 	lockupContractAddress = "0x47e9fbef8c83a1714f1951f142132e6e90f5fa5d"
 	lockupStorage = accounts[lockupContractAddress].storage
 	lockupIssuer = lockupStorage["0x0000000000000000000000000000000000000000000000000000000000000002"]
@@ -42,28 +58,51 @@ function validation() {
 
 	distributionIssuerAddress = getDistributionIssuerAddress()
 
-	template = "" + "\n" +
-" Lockup Contract:\t" + lockupContractAddress + "\n" + 
-" Distribution Contract:\t" + distributionContractAddress + "\n" + 
-" Distribution Issuer:\t" + distributionIssuerAddress + "\n\n" + 
+	// Printing
 
-" Distribution Started: " + new Date(parseInt(lockupTimestamp,16) * 1000).toString() + "\n" +
-" Days Since Unlock: " + daysSinceUnlock(lockupTimestamp) + "\n\n" +
-" Network Version: " + net.version + "\n" +
-" Chain ID:\t  " + parseInt(eth.chainId()) + "\n\n" +
-" Lockup Balance:\t" + accounts[lockupContractAddress].balance + "\n" +
-" Lockup Daily_Unlock:\t   " + parseInt(lockupDailyUnlock,16) + "\n" +
-" Current Unlocked:\t" + currentUnlocked(lockupTimestamp, lockupDailyUnlock) + "\n" +
-" Distribution Contract:\t\t\t  " + debug.accountRange().accounts[distributionContractAddress].balance + "\n" +
-" Distribution Issuer:\t       " + eth.getBalance(distributionIssuerAddress) + "\n\n" +
-" Total Chain Balance:\t" + chainBalance() + "\n\n" +
-" Lockup Issuer Address == Distribution Contract:  " + (lockupIssuer == distributionContractAddress.substring(2)) + "\n" +
-" Distribution Lockup Address == Lockup Contract:  " + (distributionLockup == lockupContractAddress.substring(2)) + "\n" +
-" DistributionIssuer == DistributionIssuerAddress: " + (distributionIssuer == distributionIssuerAddress.substring(2)) + "\n" +
-""
-	console.log(template)
+	console.log("")
+	console.log(repeat('-', rowLength))
+	console.log(' Balances')
+	console.log(repeat('-', rowLength))
 
-	return 'validation'
+	console.log(tab(" Lockup Daily Unlock", parseInt(lockupDailyUnlock,16).toString(), rowLength))
+	console.log(tab(" Lockup Balance", accounts[lockupContractAddress].balance, rowLength))
+	console.log(tab(" Current Unlocked", currentUnlocked(lockupTimestamp, lockupDailyUnlock).toString(), rowLength))
+	console.log(tab(" Distribution Contract", debug.accountRange().accounts[distributionContractAddress].balance, rowLength))
+	console.log(tab(" Distribution Issuer", eth.getBalance(distributionIssuerAddress).toString(), rowLength))
+	console.log("")
+	console.log(tab(" Total Chain Balance", chainBalance().toString(), rowLength))
+
+	console.log("")
+	console.log(repeat('-', rowLength))
+	console.log(' Addresses')
+	console.log(repeat('-', rowLength))
+
+	console.log(tab(" Lockup Contract", lockupContractAddress, rowLength))
+	console.log(tab(" Distribution Contract", distributionContractAddress, rowLength))
+	console.log(tab(" Distribution Issuer", distributionIssuerAddress, rowLength))
+
+	console.log("")
+	console.log(repeat('-', rowLength))
+	console.log(' General Metrics')
+	console.log(repeat('-', rowLength))
+
+	console.log(tab(" Distribution Started", new Date(parseInt(lockupTimestamp,16) * 1000).toString(), rowLength))
+	console.log(tab(" Days Since Unlock", daysSinceUnlock(lockupTimestamp).toString(), rowLength))
+	console.log(tab(" Network Version", net.version, rowLength).toString())
+	console.log(tab(" Chain ID", parseInt(eth.chainId()).toString(), rowLength))
+
+	console.log("")
+	console.log(repeat('-', rowLength))
+	console.log(' Contract Routing')
+	console.log(repeat('-', rowLength))
+	
+	console.log(tab(" Lockup Issuer Address == Distribution Contract", (lockupIssuer == distributionContractAddress.substring(2)).toString(), rowLength))
+	console.log(tab(" Distribution Lockup Address == Lockup Contract", (distributionLockup == lockupContractAddress.substring(2)).toString(), rowLength))
+	console.log(tab(" DistributionIssuer == DistributionIssuerAddress", (distributionIssuer == distributionIssuerAddress.substring(2)).toString(), rowLength))
+	console.log("")
+
+	return 'Validation Complete'
 }
 
 validation()

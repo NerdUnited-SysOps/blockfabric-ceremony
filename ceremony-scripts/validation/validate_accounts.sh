@@ -55,7 +55,7 @@ find_dir() {
 	if [[ -f "${dir_path}/password" ]] && [[ -f "${dir_path}/keystore" ]]; then
 		inspect_content=$(inspect "${dir_path}")
 		address=$(echo "${inspect_content}" | sed -n -e 's/.*Address:\ *//p')
-		print_line "${dir_path}" "${address}" "${line_length}"
+		print_line "${dir_path}" "√" "${line_length}"
 	fi
 }
 
@@ -74,8 +74,9 @@ key_count=$(find ${FIND_PATH} -type d | wc -l)
 
 line_length=$(longest_entry "${all_paths}")
 printf "Inspecting $(($key_count - 1)) Keys\n"
-print_line "Directory" "Address\n" "${line_length}"
-printf -- "-%.0s" $(seq 0 $(($line_length + $line_length)))
+printf "Executing: ethkey inspect <path_to_keystore> --passwordfile <path_to_password>\n"
+print_line "Directory" "Valid Keystore\n" "${line_length}"
+printf -- "-%.0s" $(seq 0 $(($line_length + 20)))
 printf "\n"
 
 m=0

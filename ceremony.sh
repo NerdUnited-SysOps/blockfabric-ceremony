@@ -29,7 +29,7 @@ else
 fi
 
 usage() {
-	printf "This is an interface for validation of the ceremony.\n"
+	printf "Welcome! This is an interface for working with the ceremony.\n"
 	printf "You may select from the options below\n\n"
 }
 
@@ -45,16 +45,6 @@ persistence() {
 	./persistence.sh
 }
 
-# #############################
-# Fun
-# #############################
-
-print_logo() {
-	gradient=$(shuf -i 1-100 -n 1)
-	ceremony-scripts/printer.sh -f "${gradient}"
-	printf "\n\n"
-}
-
 dev() {
 	${SCRIPTS_DIR}/dev.sh
 }
@@ -63,7 +53,6 @@ items=(
 	"Create blockchain"
 	"Run validation"
 	"Persist assets"
-	"Print beautiful logo"
 	"Exit"
 )
 
@@ -83,9 +72,8 @@ while true; do
 			1) clear -x; create_blockchain; break;;
 			2) clear -x; run_validation; break;;
 			3) clear -x; persistence; break;;
-			4) clear -x; print_logo; break;;
-			5) printf "Closing\n\n"; exit 1;;
-			6) clear -x; dev; break;;
+			4) printf "Closing\n\n"; exit 1;;
+			5) clear -x; dev; break;;
 			*) 
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

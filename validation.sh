@@ -79,10 +79,6 @@ list_addreses() {
 	printf "\n\n"
 }
 
-count_volume_files() {
-	echo "implement me"
-}
-
 # #############################
 # Reaching out to the chain
 # #############################
@@ -104,11 +100,10 @@ usage() {
 }
 
 items=(
-	"Validate chain"
+	"General health"
 	"List volume contents"
 	"List addresses"
-	"Count files in volumes"
-	"Inspect volumes"
+	"Validate keystore and password"
 	"Print chain accounts"
 	"Exit"
 )
@@ -127,10 +122,9 @@ while true; do
 			1) clear -x; run_validation; break;;
 			2) clear -x; list_volume_content; break;;
 			3) clear -x; list_addreses; break;;
-			4) clear -x; count_volume_files; break;;
-			5) clear -x; inspect_volumes; break;;
-			6) clear -x; print_account_range; break;;
-			7) printf "Closing.\n\n"; exit 0;;
+			4) clear -x; inspect_volumes; break;;
+			5) clear -x; print_account_range; break;;
+			6) printf "Closing.\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

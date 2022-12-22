@@ -71,10 +71,17 @@ run_ansible_playbook() {
 		${ANSIBLE_DIR}/goquorum.yaml
 }
 
+print_logo() {
+	gradient=$(shuf -i 1-100 -n 1)
+	${SCRIPTS_DIR}/printer.sh -f "${gradient}"
+	printf "\n\n"
+}
+
 items=(
-	"Reset files"
 	"Reset chain"
+	"Reset files"
 	"Run ansible-playbook"
+	"Print logo"
 	"Exit"
 )
 
@@ -91,10 +98,11 @@ while true; do
 	PS3=$'\n'"Select option: "
 	select item in "${items[@]}" 
 		case $REPLY in
-			1) clear -x; reset_files; break;;
-			2) clear -x; reset_chain; break;;
+			1) clear -x; reset_chain; break;;
+			2) clear -x; reset_files; break;;
 			3) clear -x; run_ansible_playbook; break;;
-			4) printf "Closing\n\n"; exit 0;;
+			4) clear -x; print_logo; break;;
+			5) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

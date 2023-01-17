@@ -112,6 +112,46 @@ distribution_issuer_wallets() {
 	printer -n "Created distribution issuer wallets"
 }
 
+owner_wallet() {
+	vol1=${VOLUMES_DIR}/volume1/owner
+	
+	generate_wallet -o "${vol1}"
+
+	printer -n "Created owner wallet"
+}
+
+approver_wallet() {
+	vol2=${VOLUMES_DIR}/volume2/approver
+	
+	generate_wallet -o "${vol2}"
+
+	printer -n "Created approver wallet"
+}
+
+bridge_approver_wallet() {
+	vol2=${VOLUMES_DIR}/volume2/bridge_approver
+	
+	generate_wallet -o "${vol2}"
+
+	printer -n "Created bridge approver wallet"
+}
+
+notary_wallet() {
+	vol3=${VOLUMES_DIR}/volume3/notary
+	
+	generate_wallet -o "${vol3}"
+
+	printer -n "Created notary wallet"
+}
+
+fee_receiver_wallet() {
+	vol4=${VOLUMES_DIR}/volume3/fee_receiver
+	
+	generate_wallet -o "${vol4}"
+
+	printer -n "Created fee receiver wallet"
+}
+
 validator_account_wallet() {
 	ip=$1
 
@@ -145,6 +185,13 @@ lockup_admin_wallets
 lockup_owner_wallets &
 distribution_owner_wallets &
 distribution_issuer_wallets &
+
+# bridge wallets
+owner_wallet &
+approver_wallet &
+bridge_approver_wallet &
+notary_wallet &
+fee_receiver_wallet &
 wait
 
 validator_account_wallets "$VALIDATOR_IPS"

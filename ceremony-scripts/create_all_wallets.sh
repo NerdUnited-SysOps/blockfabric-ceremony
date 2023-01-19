@@ -121,25 +121,25 @@ owner_wallet() {
 }
 
 approver_wallet() {
-	vol2=${VOLUMES_DIR}/volume2/approver
+	vol1=${VOLUMES_DIR}/volume2/approver
 	
-	generate_wallet -o "${vol2}"
+	generate_wallet -o "${vol1}"
 
 	printer -n "Created approver wallet"
 }
 
 notary_wallet() {
-	vol3=${VOLUMES_DIR}/volume3/notary
+	vol1=${VOLUMES_DIR}/volume3/notary
 	
-	generate_wallet -o "${vol3}"
+	generate_wallet -o "${vol1}"
 
 	printer -n "Created notary wallet"
 }
 
 fee_receiver_wallet() {
-	vol4=${VOLUMES_DIR}/volume3/fee_receiver
+	vol1=${VOLUMES_DIR}/volume3/fee_receiver
 	
-	generate_wallet -o "${vol4}"
+	generate_wallet -o "${vol1}"
 
 	printer -n "Created fee receiver wallet"
 }

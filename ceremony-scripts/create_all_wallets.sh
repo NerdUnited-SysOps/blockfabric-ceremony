@@ -128,14 +128,6 @@ approver_wallet() {
 	printer -n "Created approver wallet"
 }
 
-bridge_approver_wallet() {
-	vol2=${VOLUMES_DIR}/volume2/bridge_approver
-	
-	generate_wallet -o "${vol2}"
-
-	printer -n "Created bridge approver wallet"
-}
-
 notary_wallet() {
 	vol3=${VOLUMES_DIR}/volume3/notary
 	
@@ -189,7 +181,6 @@ distribution_issuer_wallets &
 # bridge wallets
 owner_wallet &
 approver_wallet &
-bridge_approver_wallet &
 notary_wallet &
 fee_receiver_wallet &
 wait

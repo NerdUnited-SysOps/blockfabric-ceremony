@@ -15,8 +15,7 @@ ENV_FILE=${BASE_DIR}/.env
 usage() {
   echo "This script sets up the validator nodes..."
   echo "Usage: $0 (options) ..."
-  echo "  -d : Data directory on external volume"
-	echo "  -f : Path to .env file"
+  echo "  -f : Path to .env file"
   echo "  -i : Install dependencies"
   echo "  -r : Reset the ceremony"
   echo "  -h : Help"

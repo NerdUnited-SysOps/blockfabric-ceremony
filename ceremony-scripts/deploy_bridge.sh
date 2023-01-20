@@ -7,49 +7,94 @@ SCRIPTS_DIR=$(realpath ./ceremony-scripts)
 
 usage() {
 	echo "This script is a helper for deploying bridge smart contracts"
-	echo "Options"
-	echo "  -e : Error message - this will exit with a non-zero code"
-	echo "  -f : Print finally"
-	echo "  -h : Help"
-	echo "  -n : Note message"
-	echo "  -s : Success message"
-	echo "  -t : Title message"
-	echo "  -w : Warning message"
-	echo ""
-	echo "Example: printer.sh -t \"This is a title\""
-	echo "Example: printer.sh -e \"This is an error\""
-	echo "Example: printer.sh -s \"This is a success\""
+    echo "Usage: $0 (options) ..."
+    echo "  -f : Path to .env file"
+    echo "  -i : Install dependencies"
+    echo "  -r : Reset the ceremony"
+    echo "  -h : Help"
+    echo ""
+    echo "Example: "
 }
 
-export GOPRIVATE=github.com/elevate-blockchain/*
+while getopts 'b:d:f:hi' option; do
+	case "$option" in
+		f)
+			ENV_FILE=${OPTARG}
+			;;
+		h)
+			usage
+			exit 0
+			;;
+		i)
+			${SCRIPTS_DIR}/install_dependencies.sh
+			exit 0
+			;;
+		r)
+			${SCRIPTS_DIR}/reset.sh
+			exit 0
+			;;
+		?)
+			usage
+			exit 1
+			;;
+	esac
+done
+shift $((OPTIND-1))
 
-cd ../bridge_deployer
+if [ ! -f "${ENV_FILE}" ]; then
+	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+else
+	source ${ENV_FILE}
+fi
 
-go get github.com/elevate-blockchain/neptune/pkg/contracts
+printer() {
+	${SCRIPTS_DIR}/printer.sh "$@"
+}
 
-go run ../bridge_deployer/cmd/main.go
-    http://127.0.0.1:7545
-    502c2cac7df7a73197b06e70b5ae1e0f02dfc9edd32aabe8c3c59e58aa4ff52f
-    0x306bf6Ea79E4B45713251c9d5e989C987feB8DAb
-    0x3A9932f3D23e7991EBC93178e4d4c75C5284d637
-    0xA3cA95b98225013b5Ef2804330F40CAA04a4327F
-    0xf06360ddAE137941723806131F69f68196b16704
-    0x6592c955f86C0539415438Fcd52cF5091FeBB285
-    "JBToken"
-    "JBT"
+create_bridge_wallets() {
+    printer -t "Creating bridge wallets"
+	${SCRIPTS_DIR}/create_bridge_wallets.sh &>> ${LOG_FILE}
+    printer -s "Finished creating bridge wallets"
+}
 
+deploy_smart_contracts() {
+    printer -t "Deploying bridge smart contracts"
+    printer -w "TODO: Fixup smart contract deployment with updated go app"
+    printer -s "Finished deploying bridge smart contracts"
+    exit
+    export GOPRIVATE=github.com/elevate-blockchain/*
 
-# TODO: Read bridge/bridge_minter/token addresses and insert them into constructor args
-#
-#[ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/distributionOwner"
-#[ -z "${DIST_ISSUER_ADDRESS_FILE}" ] && DIST_ISSUER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/distributionIssuer"
+    cd bridge_deployer
 
-#vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_approver
-#vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_notary
-#vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_fee_receiver
-#vol${vol}=${VOLUMES_DIR}/volume${vol}/token_owner
-#vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_minter_notary
-#vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_minter_approver
+    go get github.com/elevate-blockchain/neptune/pkg/contracts
+
+    go run ../bridge_deployer/cmd/main.go
+        http://127.0.0.1:7545
+        502c2cac7df7a73197b06e70b5ae1e0f02dfc9edd32aabe8c3c59e58aa4ff52f
+        0x306bf6Ea79E4B45713251c9d5e989C987feB8DAb
+        0x3A9932f3D23e7991EBC93178e4d4c75C5284d637
+        0xA3cA95b98225013b5Ef2804330F40CAA04a4327F
+        0xf06360ddAE137941723806131F69f68196b16704
+        0x6592c955f86C0539415438Fcd52cF5091FeBB285
+        "JBToken"
+        "JBT"
+
+    # TODO: Read bridge/bridge_minter/token addresses and insert them into constructor args
+    #
+    #[ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/distributionOwner"
+    #[ -z "${DIST_ISSUER_ADDRESS_FILE}" ] && DIST_ISSUER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/distributionIssuer"
+
+    #vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_approver
+    #vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_notary
+    #vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_fee_receiver
+    #vol${vol}=${VOLUMES_DIR}/volume${vol}/token_owner
+    #vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_minter_notary
+    #vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_minter_approver
+}
+
+create_bridge_wallets
+deploy_smart_contracts
+
 
 
 # EOF

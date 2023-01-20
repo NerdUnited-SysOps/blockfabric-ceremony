@@ -28,25 +28,28 @@ else
 	source ${ENV_FILE}
 fi
 
+printer() {
+	${SCRIPTS_DIR}/printer.sh "$@" | tee -a ${LOG_FILE}
+}
+
+
 usage() {
 	printf "Welcome! This is an interface for working with the ceremony.\n"
 	printf "You may select from the options below\n\n"
 }
 
-create_blockchain() {
-	${SCRIPTS_DIR}/create_blockchain.sh
+deploy_bridge() {
+	${SCRIPTS_DIR}/deploy_bridge.sh
 }
 
 run_validation() {
-	./validation.sh
+    printer -e "TODO: Implement bridge validation"
+	#./validation.sh
 }
 
 persistence() {
-	./persistence.sh
-}
-
-deploy_bridge() {
-	./bridge.sh
+    printer -e "TODO: Implement bridge persistence"
+	#./persistence.sh
 }
 
 dev() {
@@ -54,10 +57,9 @@ dev() {
 }
 
 items=(
-	"Create blockchain"
+	"Deploy Bridge"
 	"Run validation"
 	"Persist assets"
-	"Deploy Bridge"
 	"Exit"
 )
 
@@ -74,17 +76,18 @@ while true; do
 	PS3=$'\n'"Select option: "
 	select item in "${items[@]}"
 		case $REPLY in
-			1) clear -x; create_blockchain; break;;
+			1) clear -x; deploy_bridge; break;;
 			2) clear -x; run_validation; break;;
 			3) clear -x; persistence; break;;
-			4) clear -x; deploy_bridge; break;;
-			5) printf "Closing\n\n"; exit 1;;
-			6) clear -x; dev; break;;
+			4) printf "Closing\n\n"; exit 1;;
+			#6) clear -x; dev; break;;
 			*)
-				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
+				printf "\n\nOops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage
 				break;
 		esac
 	done
 done
 
+
+# EOF

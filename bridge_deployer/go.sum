@@ -9,6 +9,8 @@ github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 h1:YLtO71vCjJRCBcrPMtQ9nqBsqpA1
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1/go.mod h1:hyedUtir6IdtD/7lIxGeCxkaw7y45JueMRL4DIyJDKs=
 github.com/elevate-blockchain/neptune v0.0.0-20230119222657-af0df217dad0 h1:99FV51JINT/MHIsCOhe/EbdsAqG3de8AyIetD4MnK3A=
 github.com/elevate-blockchain/neptune v0.0.0-20230119222657-af0df217dad0/go.mod h1:CfHZbCqyL9X15PmRaCKu/zD8hbUz1CLosC8OK26xmaI=
+github.com/elevate-blockchain/neptune v0.0.0-20230120165404-ae5f2ed3ccb5 h1:2O5AnC0Qhiguxr0G/Z/smxCiS1d1phnWaVjX+PtbW6g=
+github.com/elevate-blockchain/neptune v0.0.0-20230120165404-ae5f2ed3ccb5/go.mod h1:CfHZbCqyL9X15PmRaCKu/zD8hbUz1CLosC8OK26xmaI=
 github.com/ethereum/go-ethereum v1.10.26 h1:i/7d9RBBwiXCEuyduBQzJw/mKmnvzsN14jqBmytw72s=
 github.com/ethereum/go-ethereum v1.10.26/go.mod h1:EYFyF19u3ezGLD4RqOkLq+ZCXzYbLoNDdZlMt7kyKFg=
 github.com/go-ole/go-ole v1.2.1 h1:2lOsA72HgjxAuMlKpFiCbHTvu44PIVkZ5hqm3RSdI/E=

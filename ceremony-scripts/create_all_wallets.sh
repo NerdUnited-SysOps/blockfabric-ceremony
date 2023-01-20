@@ -144,7 +144,7 @@ fee_receiver_wallet() {
 	printer -n "Created fee receiver wallet"
 }
 
-bridge_validator_account_wallet() {
+validator_account_wallet() {
 	ip=$1
 
 	account=${VOLUMES_DIR}/volume1/${ip}/account

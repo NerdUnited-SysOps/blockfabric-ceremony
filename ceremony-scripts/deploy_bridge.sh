@@ -79,6 +79,32 @@ deploy_smart_contracts() {
         "JBToken"
         "JBT"
 
+    // Deploy bridge
+    go run bridge/main.go
+        http://127.0.0.1:7545
+        f4a6dbc1ca457ad22a9f96c945764f73c10c8cf99320d1344ad5e3107a968b62
+        0xc672D7aa15d4FD09A20b830435294C2B4895D122
+        0xf4871Ac2898121B71ec21E82d3ecada7bE1EEEB9
+        0xDe5364DAc6a533212042A066Dfb8c37FA48F6223
+
+    // Deploy Token
+    go run token/main.go
+        http://127.0.0.1:7545
+        f4a6dbc1ca457ad22a9f96c945764f73c10c8cf99320d1344ad5e3107a968b62
+        0xc672D7aa15d4FD09A20b830435294C2B4895D122
+        0xf4871Ac2898121B71ec21E82d3ecada7bE1EEEB9
+        0xDe5364DAc6a533212042A066Dfb8c37FA48F6223
+        0xC5280e85d1b896b0Fbe26dC369CfFa7788817ac1
+
+    // Deploy Bridge Minter
+    go run bridge_minter/main.go
+        http://127.0.0.1:7545
+        f4a6dbc1ca457ad22a9f96c945764f73c10c8cf99320d1344ad5e3107a968b62
+        0xc672D7aa15d4FD09A20b830435294C2B4895D122
+        0xf4871Ac2898121B71ec21E82d3ecada7bE1EEEB9
+        0xDe5364DAc6a533212042A066Dfb8c37FA48F6223
+        0xC5280e85d1b896b0Fbe26dC369CfFa7788817ac1
+
     # TODO: Read bridge/bridge_minter/token addresses and insert them into constructor args
     #
     #[ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/distributionOwner"

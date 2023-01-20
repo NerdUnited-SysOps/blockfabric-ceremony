@@ -80,7 +80,7 @@ get_ansible_vars() {
 
 	if [ ! -d "${ANSIBLE_DIR}" ]; then
 		source ${ENV_FILE}
-		
+
 		if git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} &>> ${LOG_FILE}; then
 			printer -s "Fetched variables"
 		else
@@ -146,6 +146,7 @@ copy_logs() {
 	cp $LOG_FILE ${VOLUMES_DIR}/volume2
 	cp $LOG_FILE ${VOLUMES_DIR}/volume3
 	cp $LOG_FILE ${VOLUMES_DIR}/volume4
+	cp $LOG_FILE ${VOLUMES_DIR}/volume5
 
 	printer -s "Successfully moved ${LOG_FILE} file to all volumes"
 }

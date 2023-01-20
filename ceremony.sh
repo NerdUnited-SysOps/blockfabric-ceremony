@@ -45,6 +45,10 @@ persistence() {
 	./persistence.sh
 }
 
+deploy_bridge() {
+	${SCRIPTS_DIR}/deploy_bridge.sh
+}
+
 dev() {
 	${SCRIPTS_DIR}/dev.sh
 }
@@ -53,6 +57,7 @@ items=(
 	"Create blockchain"
 	"Run validation"
 	"Persist assets"
+	"Deploy Bridge"
 	"Exit"
 )
 
@@ -67,14 +72,15 @@ RED='\033[0;31m'
 while true; do
 	COLUMNS=1
 	PS3=$'\n'"Select option: "
-	select item in "${items[@]}" 
+	select item in "${items[@]}"
 		case $REPLY in
 			1) clear -x; create_blockchain; break;;
 			2) clear -x; run_validation; break;;
 			3) clear -x; persistence; break;;
-			4) printf "Closing\n\n"; exit 1;;
-			5) clear -x; dev; break;;
-			*) 
+			4) clear -x; deploy_bridge; break;;
+			5) printf "Closing\n\n"; exit 1;;
+			6) clear -x; dev; break;;
+			*)
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage
 				break;

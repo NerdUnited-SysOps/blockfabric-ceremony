@@ -97,7 +97,7 @@ distribution_owner_wallets() {
 	vol1=${VOLUMES_DIR}/volume1/distributionOwner
 	vol3=${VOLUMES_DIR}/volume3/distributionOwner
 	vol4=${VOLUMES_DIR}/volume4/distributionOwner
-	
+
 	generate_wallet -o "${vol1} ${vol3} ${vol4}"
 
 	printer -n "Created distribution owner wallets"
@@ -106,43 +106,12 @@ distribution_owner_wallets() {
 distribution_issuer_wallets() {
 	vol1=${VOLUMES_DIR}/volume1/distributionIssuer
 	vol2=${VOLUMES_DIR}/volume2/distributionIssuer
-	
+
 	generate_wallet -o "${vol1} ${vol2}"
 
 	printer -n "Created distribution issuer wallets"
 }
 
-bridge_owner_wallet() {
-	vol1=${VOLUMES_DIR}/volume1/owner
-	
-	generate_wallet -o "${vol1}"
-
-	printer -n "Created owner wallet"
-}
-
-bridge_approver_wallet() {
-	vol1=${VOLUMES_DIR}/volume2/approver
-	
-	generate_wallet -o "${vol1}"
-
-	printer -n "Created approver wallet"
-}
-
-bridge_notary_wallet() {
-	vol1=${VOLUMES_DIR}/volume3/notary
-	
-	generate_wallet -o "${vol1}"
-
-	printer -n "Created notary wallet"
-}
-
-fee_receiver_wallet() {
-	vol1=${VOLUMES_DIR}/volume3/fee_receiver
-	
-	generate_wallet -o "${vol1}"
-
-	printer -n "Created fee receiver wallet"
-}
 
 validator_account_wallet() {
 	ip=$1
@@ -168,6 +137,10 @@ validator_account_wallets() {
 	printer -n "Created validator and account wallets"
 }
 
+bridge_wallets() {
+	${SCRIPTS_DIR}/create_bridge_wallets.sh &>> ${LOG_FILE}
+}
+
 [ -z "${VALIDATOR_IPS}" ] && printer -e "No vaildator IPs"
 
 printer -t "Creating ceremony keys"
@@ -177,15 +150,10 @@ lockup_admin_wallets
 lockup_owner_wallets &
 distribution_owner_wallets &
 distribution_issuer_wallets &
-
-# bridge wallets
-bridge_owner_wallet &
-bridge_approver_wallet &
-bridge_notary_wallet &
-bridge_fee_receiver_wallet &
 wait
 
 validator_account_wallets "$VALIDATOR_IPS"
+bridge_wallets
 
 printer -s "Key creation complete"
 

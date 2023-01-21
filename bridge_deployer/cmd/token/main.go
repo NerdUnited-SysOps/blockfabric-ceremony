@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strconv"
 
 	bridge "github.com/elevate-blockchain/neptune/pkg/contracts"
 	"github.com/ethereum/go-ethereum/common"
@@ -16,8 +17,19 @@ func main() {
 	deployerPrivateKey := os.Args[2]
 	tokenName := os.Args[3]
 	tokenSymbol := os.Args[4]
-	tokenOwnerAddress := os.Args[5]
-	tokenIssuerAddress := os.Args[6]
+	tokenDecimalsArg := os.Args[5]
+	feeArg := os.Args[6]
+	tokenDecimalsResult, err := strconv.ParseInt(tokenDecimalsArg, 10, 32)
+	if err != nil {
+		panic(err)
+	}
+	tokenOwnerAddress := os.Args[7]
+	tokenIssuerAddress := os.Args[8]
+
+	feeResult, err := strconv.ParseInt(feeArg, 10, 32)
+	if err != nil {
+		panic(err)
+	}
 	client, err := ethclient.Dial(ethRpcUrl)
 
 	if err != nil {
@@ -30,15 +42,17 @@ func main() {
 	// Setup params
 	tokenOwner := common.HexToAddress(tokenOwnerAddress)
 	tokenIssuer := common.HexToAddress(tokenIssuerAddress)
-	fee := big.NewInt(10)
+	fee := big.NewInt(feeResult)
+	tokenDecimals := uint8(tokenDecimalsResult)
 
 	if err != nil {
 		panic(err)
 	}
 
 	// Deploy Token
-	deployedTokenContractAddress, _, _, err := bridge.DeployToken(auth, client, tokenName, tokenSymbol, 18, tokenOwner, tokenIssuer, fee)
+	deployedTokenContractAddress, _, _, err := bridge.DeployToken(auth, client, tokenName, tokenSymbol, tokenDecimals, tokenOwner, tokenIssuer, fee)
 	if err != nil {
+		fmt.Printf("Err: %s", err.Error())
 		panic(err)
 	}
 

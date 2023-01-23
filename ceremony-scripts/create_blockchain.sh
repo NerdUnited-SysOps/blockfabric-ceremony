@@ -80,7 +80,7 @@ get_ansible_vars() {
 
 	if [ ! -d "${ANSIBLE_DIR}" ]; then
 		source ${ENV_FILE}
-		
+
 		if git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} &>> ${LOG_FILE}; then
 			printer -s "Fetched variables"
 		else
@@ -159,13 +159,17 @@ else
 	source ${ENV_FILE}
 fi
 
-${SCRIPTS_DIR}/install_dependencies.sh
+#${SCRIPTS_DIR}/install_dependencies.sh
 
-${SCRIPTS_DIR}/get_secrets.sh -f ${ENV_FILE}
+if [ $ENV = "dev" ]; then
+    ${SCRIPTS_DIR}/get_secrets_local.sh -f ${ENV_FILE}
+else
+    ${SCRIPTS_DIR}/get_secrets.sh -f ${ENV_FILE}
+fi
 
 get_ansible_vars
 install_ansible_role
-get_inventory
+#get_inventory
 
 ${SCRIPTS_DIR}/get_contract_bytecode.sh
 

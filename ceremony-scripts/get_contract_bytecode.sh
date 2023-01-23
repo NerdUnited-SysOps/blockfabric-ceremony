@@ -71,19 +71,28 @@ download_dao_release () {
 	unzip $DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME -d ${DAO_DIR}/ &>> ${LOG_FILE}
 }
 
+download_bridge_release () {
+#	download_release ${GITHUB_BRIDGE_ORG} ${GITHUB_BRIDGE_REPO} $BRIDGE_VERSION $BRIDGE_RELEASE_ARCHIVE_FILENAME "$BRIDGE_DIR/$BRIDGE_RELEASE_ARCHIVE_FILENAME"
+#	unzip $BRIDGE_DIR/$BRIDGE_RELEASE_ARCHIVE_FILENAME -d ${BRIDGE_DIR}/ &>> ${LOG_FILE}
+	
+}
+
 DAO_DIR=${CONTRACTS_DIR}/${GITHUB_DAO_REPO}/${DAO_VERSION}
 LOCKUP_DIR=${CONTRACTS_DIR}/${GITHUB_LOCKUP_REPO}/${LOCKUP_VERSION}
+BRIDGE_DIR=${CONTRACTS_DIR}/${GITHUB_BRIDGE_REPO}/${BRIDGE_VERSION}
 
 DAO_RELEASE_ARCHIVE_FILENAME=$DAO_VERSION.zip
 LOCKUP_RELEASE_ARCHIVE_FILENAME=contracts_$LOCKUP_VERSION.tar.gz
+BRIDGE_RELEASE_ARCHIVE_FILENAME=contracts_$BRIDGE_VERSION.tar.gz
 
-if [ -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && [ -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] 
+if [ -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && [ -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] && [ -f "$BRIDGE_DIR/$BRIDGE_RELEASE_ARCHIVE_FILENAME" ]
 then
 	printer -n "Smart contract bytecode present, skipping"
 else
 	printer -t "Downloading smart contract bytecode"
 	[ ! -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${LOCKUP_DIR} && download_lockup_release
 	[ ! -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${DAO_DIR} && download_dao_release
+	#[ ! -f "$BRIDGE_DIR/$BRIDGE_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${BRIDGE_DIR} && download_bridge_release
 
 	printer -s "Retrieved contract bytecode"
 fi

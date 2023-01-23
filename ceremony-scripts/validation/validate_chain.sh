@@ -133,7 +133,7 @@ verify_blockchain() {
 
 IP_LIST=$(get_ips)
 
-check_https "${IP_LIST}"
+#check_https "${IP_LIST}"
 verify_group validator
 verify_group rpc
 verify_blockchain

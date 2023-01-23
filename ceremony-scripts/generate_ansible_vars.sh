@@ -58,15 +58,17 @@ printer -t "Creating ansible vars"
 [ -z "${DAO_CONTRACT_ARCHIVE_DIR}" ] && DAO_CONTRACT_ARCHIVE_DIR="$BASE_DIR/contracts/sc_dao/$DAO_VERSION"
 [ -z "${DAO_RUNTIME_BIN_FILE}" ] && DAO_RUNTIME_BIN_FILE="$DAO_CONTRACT_ARCHIVE_DIR/ValidatorSmartContractAllowList.bin-runtime"
 [ -z "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] && LOCKUP_CONTRACT_ARCHIVE_DIR="$BASE_DIR/contracts/sc_lockup/$LOCKUP_VERSION"
+[ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/Lockup.bin-runtime"
 [ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/Distribution.bin-runtime"
 [ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/distributionOwner"
 [ -z "${DIST_ISSUER_ADDRESS_FILE}" ] && DIST_ISSUER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/distributionIssuer"
 [ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/lockupOwner"
+[ -z "${BRIDGE_CONTRACT_ARCHIVE_DIR}" ] && BRIDGE_CONTRACT_ARCHIVE_DIR="$BASE_DIR/contracts/neptune/$BRIDGE_VERSION"
 [ -z "${BRIDGE_RUNTIME_BIN_FILE}" ] && BRIDGE_RUNTIME_BIN_FILE="$BRIDGE_CONTRACT_ARCHIVE_DIR/Bridge.bin-runtime"
-[ -z "${BRIDGE_OWNER_ADDRESS_FILE}" ] && BRIDGE_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/brdigeOwner"
+[ -z "${BRIDGE_OWNER_ADDRESS_FILE}" ] && BRIDGE_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/bridgeOwner"
 [ -z "${BRIDGE_APPROVER_ADDRESS_FILE}" ] && BRIDGE_APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/bridgeApprover"
-[ -z "${BRIDGE_NOTARY_ADDRESS_FILE}" ] && BRIDGE_NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume1/notary"
-[ -z "${BRIDGE_FEE_RECEIVER_ADDRESS_FILE}" ] && BRIDGE_FEE_RECEIVER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/feeReceiver"
+[ -z "${BRIDGE_NOTARY_ADDRESS_FILE}" ] && BRIDGE_NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume1/bridgeNotary"
+[ -z "${BRIDGE_FEE_RECEIVER_ADDRESS_FILE}" ] && BRIDGE_FEE_RECEIVER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/bridgeFeeReceiver"
 [ -z "${BRIDGE_FEE}" ] && BRIDGE_FEE="10"
 
 check_file() {
@@ -150,23 +152,26 @@ all_quorum_vars() {
 	if [ -n "${NODE_USER}" ]; then
 		put_all_quorum_var "ansible_user" "${NODE_USER}"
 	fi
+
 	put_all_quorum_var "lace_genesis_lockup_owner_address" "\"$(get_address $LOCKUP_OWNER_ADDRESS_FILE)\""
-    put_all_quorum_var "lace_genesis_distribution_owner_address" "\"$(get_address $DIST_OWNER_ADDRESS_FILE)\""
-    put_all_quorum_var "lace_genesis_distribution_issuer_address" "\"$(get_address $DIST_ISSUER_ADDRESS_FILE | cut -c3-)\""
+	put_all_quorum_var "lace_genesis_distribution_owner_address" "\"$(get_address $DIST_OWNER_ADDRESS_FILE)\""
+	put_all_quorum_var "lace_genesis_distribution_issuer_address" "\"$(get_address $DIST_ISSUER_ADDRESS_FILE | cut -c3-)\""
 	put_all_quorum_var "lace_genesis_bridge_owner_address" "\"$(get_address $BRIDGE_OWNER_ADDRESS_FILE)\""
-    put_all_quorum_var "lace_genesis_bridge_approver_address" "\"$(get_address $BRIDGE_APPROVER_ADDRESS_FILE)\""
-    put_all_quorum_var "lace_genesis_bridge_notary_address" "\"$(get_address $BRIDGE_NOTARY_ADDRESS_FILE)\""
-    put_all_quorum_var "lace_genesis_bridge_fee_receiver_address" "\"$(get_address $BRIDGE_FEE_RECEIVER_ADDRESS_FILE)\""
-    put_all_quorum_var "lace_genesis_bridge_fee" "\"$BRIDGE_FEE\""
+	put_all_quorum_var "lace_genesis_bridge_approver_address" "\"$(get_address $BRIDGE_APPROVER_ADDRESS_FILE)\""
+	put_all_quorum_var "lace_genesis_bridge_notary_address" "\"$(get_address $BRIDGE_NOTARY_ADDRESS_FILE)\""
+	put_all_quorum_var "lace_genesis_bridge_fee_receiver_address" "\"$(get_address $BRIDGE_FEE_RECEIVER_ADDRESS_FILE)\""
+	put_all_quorum_var "lace_genesis_bridge_fee" "\"$BRIDGE_FEE\""
 
 	put_all_quorum_var "goquorum_genesis_sc_dao_code" "\"0x$(cat ${DAO_RUNTIME_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_lockup_code" "\"0x$(cat ${LOCKUP_RUNTIME_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_distribution_code" "\"0x$(cat ${DIST_RUNTIME_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_bridge_code" "\"0x$(cat ${BRIDGE_RUNTIME_BIN_FILE})\""
-	put_all_quorum_var "goquorum_genesis_sc_bridge_notary_code" "\"0x$(cat ${BRIDGE_NOTARY_RUNTIME_BIN_FILE})\""
+	#put_all_quorum_var "goquorum_genesis_sc_bridge_notary_code" "\"0x$(cat ${BRIDGE_NOTARY_RUNTIME_BIN_FILE})\""
 
 	admin_addresses=$(${SCRIPTS_DIR}/create_lockup_storage/create_lockup_storage.sh)
+
 	sc_lockup_storage=$(echo "{ \"0x0000000000000000000000000000000000000000000000000000000000000000\": \"{{ lace_genesis_lockup_owner_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000002\": \"{{ lace_genesis_lockup_issuer_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000004\": \"{{ lace_genesis_lockup_daily_limit }}\", \"0x0000000000000000000000000000000000000000000000000000000000000005\": \"{{ lace_genesis_lockup_last_dist_timestamp }}\", ${admin_addresses} }")
+
 	sc_bridge_storage=$(echo "{ \"0x0000000000000000000000000000000000000000000000000000000000000000\": \"{{ lace_genesis_bridge_owner_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000001\": \"{{ lace_genesis_bridge_approver_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000002\": \"{{ lace_genesis_bridge_notary_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000003\": \"{{ lace_genesis_bridge_fee_receiver_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000004\": \"{{ lace_genesis_bridge_fee }}\" }")
 
 	sed -i '/goquorum_genesis_sc_lockup_storage/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
@@ -179,7 +184,7 @@ all_quorum_vars() {
 	sed -i '/goquorum_enode_list/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 	echo "goquorum_enode_list: [${enode_list}]" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 
-	# Kinda janky, but gets the job done - grabs the contents of Storage.txt and puts it in a variableude)
+	# Kinda janky, but gets the job done - grabs the contents of Storage.txt and puts it in a variable)
 	var="$(tail -n+6 ./contracts/sc_dao/$DAO_VERSION/Storage.txt | head -n -2 | tr -d "[:blank:]\n")"
 	sed -i '/goquorum_genesis_sc_dao_storage/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 	echo "goquorum_genesis_sc_dao_storage: {${var}}" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml

@@ -126,8 +126,6 @@ deploy_bridge_contracts() {
         ${DEPLOYMENT_FEE}
         ${CHAIN_ID}
 
-    token_issuer_address=0x3245342435345 # TODO - Determine this address
-
     // Deploy Token
     token_contract_address = $(go run token/main.go
         ${ETH_URL}
@@ -136,7 +134,7 @@ deploy_bridge_contracts() {
         ${TOKEN_SYMBOL}
         ${TOKEN_DECIMALS}
         ${token_owner_address}
-        ${token_issuer_address}
+        2
         ${DEPLOYMENT_FEE}
     )
 

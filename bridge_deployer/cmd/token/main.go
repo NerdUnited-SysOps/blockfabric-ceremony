@@ -20,8 +20,14 @@ func main() {
 	tokenDecimalsArg := os.Args[5]
 	feeArg := os.Args[6]
 	tokenOwnerAddress := os.Args[7]
-	tokenIssuerAddress := os.Args[8]
-
+	walletNonceArg := os.Args[8]
+	walletNonceResult, err := strconv.ParseInt(walletNonceArg, 10, 32)
+	if err != nil {
+		panic(err)
+	}
+	nonce := uint64(walletNonceResult)
+	deployerAddress := bridge_common.GetAddressFromPrivateKey(deployerPrivateKey)
+	tokenIssuer := bridge_common.GetDeterministicAddress(deployerAddress, &nonce)
 	client, err := ethclient.Dial(ethRpcUrl)
 
 	if err != nil {
@@ -33,7 +39,6 @@ func main() {
 
 	// Setup params
 	tokenOwner := common.HexToAddress(tokenOwnerAddress)
-	tokenIssuer := common.HexToAddress(tokenIssuerAddress)
 	feeResult, err := strconv.ParseInt(feeArg, 10, 32)
 	if err != nil {
 		panic(err)

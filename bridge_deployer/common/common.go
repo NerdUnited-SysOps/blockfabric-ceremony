@@ -7,12 +7,12 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func GetAccountAuth(client *ethclient.Client, addressPrivateKey string) *bind.TransactOpts {
-
 	privateKey, err := crypto.HexToECDSA(addressPrivateKey)
 	if err != nil {
 		panic(err)
@@ -47,4 +47,23 @@ func GetAccountAuth(client *ethclient.Client, addressPrivateKey string) *bind.Tr
 	auth.GasPrice = big.NewInt(1000000)
 
 	return auth
+}
+
+func GetAddressFromPrivateKey(addressPrivateKey string) (common.Address) {
+	privateKey, err := crypto.HexToECDSA(addressPrivateKey)
+	if err != nil {
+		panic(err)
+	}
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		panic("invalid key")
+	}
+
+	return crypto.PubkeyToAddress(*publicKeyECDSA)
+}
+
+func GetDeterministicAddress(address common.Address, nonce *uint64) (contractAddress common.Address) {
+	return crypto.CreateAddress(common.HexToAddress(address.Hex()), *nonce)
 }

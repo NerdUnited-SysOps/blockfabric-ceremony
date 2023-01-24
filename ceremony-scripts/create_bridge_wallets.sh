@@ -1,6 +1,6 @@
 #!/usr/bin/zsh
 
-set -e
+#set -e
 
 # ############################################################
 #	----------------- Bridge Key Generation
@@ -18,7 +18,6 @@ usage() {
 	echo "Options"
 	echo "  -e : Envifonment config file"
 	echo "  -h : This help message"
-	echo "  -i : List of IP addresses"
 	echo "  -l : Path to log file"
 	echo "  -v : Path where all keys will be generated"
 }
@@ -31,9 +30,6 @@ while getopts a:b:hi:v: option; do
 		h)
 			usage
 			exit 0
-			;;
-		i)
-			VALIDATOR_IPS=${OPTARG}
 			;;
 		l)
 			LOG_FILE=${OPTARG}
@@ -59,8 +55,7 @@ generate_wallet() {
 }
 
 bridge_approver_wallet() {
-    vol=5
-	vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_approver
+	vol5=${VOLUMES_DIR}/volume5/bridge_approver
 
 	generate_wallet -o "${vol5}"
 
@@ -68,8 +63,7 @@ bridge_approver_wallet() {
 }
 
 bridge_notary_wallet() {
-    vol=5
-	vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_notary
+	vol5=${VOLUMES_DIR}/volume5/bridge_notary
 
 	generate_wallet -o "${vol5}"
 
@@ -77,8 +71,7 @@ bridge_notary_wallet() {
 }
 
 bridge_fee_receiver_wallet() {
-    vol=5
-	vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_fee_receiver
+    vol5=${VOLUMES_DIR}/volume5/bridge_fee_receiver
 
 	generate_wallet -o "${vol5}"
 
@@ -86,8 +79,7 @@ bridge_fee_receiver_wallet() {
 }
 
 bridge_minter_approver_wallet() {
-    vol=5
-	vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_minter_approver
+    vol5=${VOLUMES_DIR}/volume5/bridge_minter_approver
 
 	generate_wallet -o "${vol5}"
 
@@ -95,8 +87,7 @@ bridge_minter_approver_wallet() {
 }
 
 bridge_minter_notary_wallet() {
-    vol=5
-	vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_minter_notary
+    vol5=${VOLUMES_DIR}/volume5/bridge_minter_notary
 
 	generate_wallet -o "${vol5}"
 
@@ -104,8 +95,7 @@ bridge_minter_notary_wallet() {
 }
 
 token_owner_wallet() {
-    vol=5
-	vol${vol}=${VOLUMES_DIR}/volume${vol}/token_owner
+    vol5=${VOLUMES_DIR}/volume5/token_owner
 
 	generate_wallet -o "${vol5}"
 
@@ -113,33 +103,30 @@ token_owner_wallet() {
 }
 
 bridge_wallets() {
-    printer -t "Creating bridge wallets"
-
-    bridge_owner_wallet
     bridge_approver_wallet
     bridge_notary_wallet
     bridge_fee_receiver_wallet
+
+    printer -n "Created bridge wallets"
 }
 
 bridge_minter_wallets() {
-    printer -t "Creating bridge wallets"
-
     bridge_minter_approver_wallet
     bridge_minter_notary_wallet
+    printer -n "Created bridge minter wallets"
 }
 
 token_wallets() {
-    printer -t "Creating token wallet(s)"
-
     token_owner_wallet
+    printer -n "Created token wallet(s)"
 }
 
-printer -t "Creating bridge ceremony keys"
 
 bridge_wallets &
 bridge_minter_wallets &
 token_wallets &
 wait
+
 
 printer -s "Bridge key creation complete"
 

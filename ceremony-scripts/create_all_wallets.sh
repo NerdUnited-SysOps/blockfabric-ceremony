@@ -150,10 +150,10 @@ lockup_admin_wallets
 lockup_owner_wallets &
 distribution_owner_wallets &
 distribution_issuer_wallets &
+bridge_wallets &
 wait
 
 validator_account_wallets "$VALIDATOR_IPS"
-bridge_wallets
 
 printer -s "Key creation complete"
 

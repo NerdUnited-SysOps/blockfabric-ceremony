@@ -1,9 +1,9 @@
 #!/usr/bin/zsh
-
 set -e
 
 ENV_FILE=./.env
 SCRIPTS_DIR=$(realpath ./ceremony-scripts)
+
 
 usage() {
 	echo "This script is a helper for deploying bridge smart contracts"
@@ -51,15 +51,56 @@ printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
 
+check_file() {
+	file_name=$1
+	file_path=$2
+
+	if [ ! -f "${file_path}" ]; then
+		printer -e "Missing ${file_name}. Expected it here: ${file_path}"
+	fi
+}
+
+check_wallet_files() {
+    check_file "Bridge approver address"  "${BRIDGE_APPROVER_ADDRESS_FILE}/keystore"
+    check_file "Bridge notary address"  "${BRIDGE_NOTARY_ADDRESS_FILE}/keystore"
+    check_file "Bridge fee receiver address"  "${BRIDGE_FEE_RECEIVER_ADDRESS_FILE}/keystore"
+    check_file "Token address"  "${TOKEN_OWNER_ADDRESS_FILE}/keystore"
+    check_file "Bridge minter approver address"  "${BRIDGE_MINTER_APPROVER_ADDRESS_FILE}/keystore"
+    check_file "Bridge minter notary address"  "${BRIDGE_MINTER_NOTARY_ADDRESS_FILE}/keystore"
+}
+
+get_address() {
+	inspect_path=$1
+	inspected_content=$(${ETHKEY} inspect \
+		--private \
+		--passwordfile ${inspect_path}/password \
+		${inspect_path}/keystore)
+	echo "${inspected_content}" | sed -n "s/Address:\s*\(.*\)/\1/p" | tr -d '\n'
+}
+
 create_bridge_wallets() {
     printer -t "Creating bridge wallets"
-	${SCRIPTS_DIR}/create_bridge_wallets.sh &>> ${LOG_FILE}
+	${SCRIPTS_DIR}/create_bridge_wallets.sh >> ${LOG_FILE}
     printer -s "Finished creating bridge wallets"
 }
 
 deploy_smart_contracts() {
     printer -t "Deploying bridge smart contracts"
     printer -w "TODO: Fixup smart contract deployment with updated go app"
+
+    bridge_approver_address=$(get_address $BRIDGE_APPROVER_ADDRESS_FILE)
+    bridge_notary_address=$(get_address $BRIDGE_NOTARY_ADDRESS_FILE)
+    bridge_fee_receiver_address=$(get_address $BRIDGE_FEE_RECEIVER_ADDRESS_FILE)
+    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE)
+    bridge_minter_approver_address=$(get_address $BRIDGE_MINTER_APPROVER_ADDRESS_FILE)
+    bridge_minter_notary_address=$(get_address $BRIDGE_MINTER_NOTARY_ADDRESS_FILE)
+
+    echo $bridge_approver_address
+    echo $bridge_notary_address
+    echo $bridge_fee_receiver_address
+    echo $token_owner_address
+    echo $bridge_minter_approver_address
+    echo $bridge_minter_notary_address
     printer -s "Finished deploying bridge smart contracts"
     exit
     export GOPRIVATE=github.com/elevate-blockchain/*
@@ -104,21 +145,20 @@ deploy_smart_contracts() {
         0xf4871Ac2898121B71ec21E82d3ecada7bE1EEEB9
         0xDe5364DAc6a533212042A066Dfb8c37FA48F6223
         0xC5280e85d1b896b0Fbe26dC369CfFa7788817ac1
-
-    # TODO: Read bridge/bridge_minter/token addresses and insert them into constructor args
-    #
-    #[ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/distributionOwner"
-    #[ -z "${DIST_ISSUER_ADDRESS_FILE}" ] && DIST_ISSUER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/distributionIssuer"
-
-    #vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_approver
-    #vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_notary
-    #vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_fee_receiver
-    #vol${vol}=${VOLUMES_DIR}/volume${vol}/token_owner
-    #vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_minter_notary
-    #vol${vol}=${VOLUMES_DIR}/volume${vol}/bridge_minter_approver
 }
 
+
 create_bridge_wallets
+
+[ -z "${BRIDGE_APPROVER_ADDRESS_FILE}" ] && BRIDGE_APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_approver"
+[ -z "${BRIDGE_NOTARY_ADDRESS_FILE}" ] && BRIDGE_NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_notary"
+[ -z "${BRIDGE_FEE_RECEIVER_ADDRESS_FILE}" ] && BRIDGE_FEE_RECEIVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_fee_receiver"
+[ -z "${TOKEN_OWNER_ADDRESS_FILE}" ] && TOKEN_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/token_owner"
+[ -z "${BRIDGE_MINTER_APPROVER_ADDRESS_FILE}" ] && BRIDGE_MINTER_APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_minter_approver"
+[ -z "${BRIDGE_MINTER_NOTARY_ADDRESS_FILE}"   ] && BRIDGE_MINTER_NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_minter_notary"
+
+check_wallet_files
+
 deploy_smart_contracts
 
 

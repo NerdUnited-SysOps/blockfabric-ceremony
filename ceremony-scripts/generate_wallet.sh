@@ -4,7 +4,6 @@ set -e
 
 SCRIPTS_DIR=$(dirname ${(%):-%N})
 ENV_FILE=${BASE_DIR}/.env
-GETH_PATH=${HOME}/go/bin/geth
 # This should be a directory, which is where the keystore and password files will go
 OUTPUT_DIRS="./"
 TITLE="generic wallet"
@@ -51,6 +50,9 @@ if [ ! -f "${ENV_FILE}" ]; then
 else
 	source ${ENV_FILE}
 fi
+
+# These environment variables have DEFAULT values if not set
+[ -z "${GETH_PATH}" ] && GETH_PATH="${HOME}/go/bin/geth"
 
 password=$(pwgen -c 25 -n 1)
 

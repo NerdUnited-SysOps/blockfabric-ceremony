@@ -134,7 +134,7 @@ deploy_bridge_contracts() {
         ${TOKEN_SYMBOL}
         ${TOKEN_DECIMALS}
         ${token_owner_address}
-        2
+        2 # Nonce will be for the deployer wallet when the bridge minter contract is deployed
         ${DEPLOYMENT_FEE}
     )
 

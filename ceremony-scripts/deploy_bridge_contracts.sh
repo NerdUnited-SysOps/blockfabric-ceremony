@@ -105,7 +105,7 @@ deploy_bridge_contracts() {
     echo $bridge_minter_approver_address
     echo $bridge_minter_notary_address
     printer -s "Finished deploying bridge smart contracts"
-    exit
+
     export GOPRIVATE=github.com/elevate-blockchain/*
 
     cd bridge_deployer

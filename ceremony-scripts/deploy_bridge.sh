@@ -52,15 +52,6 @@ printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
 
-get_address() {
-	inspect_path=$1
-	inspected_content=$(${ETHKEY} inspect \
-		--private \
-		--passwordfile ${inspect_path}/password \
-		${inspect_path}/keystore)
-	echo "${inspected_content}" | sed -n "s/Address:\s*\(.*\)/\1/p" | tr -d '\n'
-}
-
 create_bridge_wallets() {
     printer -t "Creating bridge wallets"
 	${SCRIPTS_DIR}/create_bridge_wallets.sh # >> ${LOG_FILE}

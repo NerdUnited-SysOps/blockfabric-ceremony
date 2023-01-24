@@ -130,7 +130,7 @@ deploy_bridge_contracts() {
 
     // Deploy Token
     token_contract_address = $(go run token/main.go
-        ${NERD_CHAIN_URL}
+        ${ETH_URL}
         ${DEPLOYER_PRIVATE_KEY}
         ${TOKEN_NAME}
         ${TOKEN_SYMBOL}

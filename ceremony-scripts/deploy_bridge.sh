@@ -109,44 +109,39 @@ deploy_smart_contracts() {
 
     go get github.com/elevate-blockchain/neptune/pkg/contracts
 
-    go run ../bridge_deployer/cmd/main.go
-        http://127.0.0.1:7545
-        502c2cac7df7a73197b06e70b5ae1e0f02dfc9edd32aabe8c3c59e58aa4ff52f
-        0x306bf6Ea79E4B45713251c9d5e989C987feB8DAb
-        0x3A9932f3D23e7991EBC93178e4d4c75C5284d637
-        0xA3cA95b98225013b5Ef2804330F40CAA04a4327F
-        0xf06360ddAE137941723806131F69f68196b16704
-        0x6592c955f86C0539415438Fcd52cF5091FeBB285
-        "JBToken"
-        "JBT"
-
     // Deploy bridge
     go run bridge/main.go
-        http://127.0.0.1:7545
-        f4a6dbc1ca457ad22a9f96c945764f73c10c8cf99320d1344ad5e3107a968b62
-        0xc672D7aa15d4FD09A20b830435294C2B4895D122
-        0xf4871Ac2898121B71ec21E82d3ecada7bE1EEEB9
-        0xDe5364DAc6a533212042A066Dfb8c37FA48F6223
+        ${NERD_CHAIN_URL}
+        ${DEPLOYER_PRIVATE_KEY}
+        ${bridge_approver_address}
+        ${bridge_notary_address}
+        ${bridge_fee_receiver_address}
+        ${DEPLOYMENT_FEE}
+        ${CHAIN_ID}
+
+    token_issuer_address=0x3245342435345
 
     // Deploy Token
-    go run token/main.go
-        http://127.0.0.1:7545
-        f4a6dbc1ca457ad22a9f96c945764f73c10c8cf99320d1344ad5e3107a968b62
-        0xc672D7aa15d4FD09A20b830435294C2B4895D122
-        0xf4871Ac2898121B71ec21E82d3ecada7bE1EEEB9
-        0xDe5364DAc6a533212042A066Dfb8c37FA48F6223
-        0xC5280e85d1b896b0Fbe26dC369CfFa7788817ac1
+    token_contract_address = $(go run token/main.go
+        ${NERD_CHAIN_URL}
+        ${DEPLOYER_PRIVATE_KEY}
+        ${TOKEN_NAME}
+        ${TOKEN_SYMBOL}
+        ${TOKEN_DECIMALS}
+        ${token_owner_address}
+        ${token_issuer_address} # TODO - Determine address for bridge minter contract
+        ${DEPLOYMENT_FEE}
+    )
 
     // Deploy Bridge Minter
     go run bridge_minter/main.go
-        http://127.0.0.1:7545
-        f4a6dbc1ca457ad22a9f96c945764f73c10c8cf99320d1344ad5e3107a968b62
-        0xc672D7aa15d4FD09A20b830435294C2B4895D122
-        0xf4871Ac2898121B71ec21E82d3ecada7bE1EEEB9
-        0xDe5364DAc6a533212042A066Dfb8c37FA48F6223
-        0xC5280e85d1b896b0Fbe26dC369CfFa7788817ac1
+        ${ETH_URL}
+        ${DEPLOYER_PRIVATE_KEY}
+        ${bridge_approver_address}
+        ${bridge_notary_address}
+        ${token_contract_address}
+        ${CHAIN_ID}
 }
-
 
 create_bridge_wallets
 

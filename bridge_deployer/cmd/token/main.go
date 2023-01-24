@@ -19,17 +19,9 @@ func main() {
 	tokenSymbol := os.Args[4]
 	tokenDecimalsArg := os.Args[5]
 	feeArg := os.Args[6]
-	tokenDecimalsResult, err := strconv.ParseInt(tokenDecimalsArg, 10, 32)
-	if err != nil {
-		panic(err)
-	}
 	tokenOwnerAddress := os.Args[7]
 	tokenIssuerAddress := os.Args[8]
 
-	feeResult, err := strconv.ParseInt(feeArg, 10, 32)
-	if err != nil {
-		panic(err)
-	}
 	client, err := ethclient.Dial(ethRpcUrl)
 
 	if err != nil {
@@ -42,7 +34,15 @@ func main() {
 	// Setup params
 	tokenOwner := common.HexToAddress(tokenOwnerAddress)
 	tokenIssuer := common.HexToAddress(tokenIssuerAddress)
+	feeResult, err := strconv.ParseInt(feeArg, 10, 32)
+	if err != nil {
+		panic(err)
+	}
 	fee := big.NewInt(feeResult)
+	tokenDecimalsResult, err := strconv.ParseInt(tokenDecimalsArg, 10, 32)
+	if err != nil {
+		panic(err)
+	}
 	tokenDecimals := uint8(tokenDecimalsResult)
 
 	if err != nil {

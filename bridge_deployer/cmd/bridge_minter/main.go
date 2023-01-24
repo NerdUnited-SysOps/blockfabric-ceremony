@@ -3,7 +3,9 @@ package main
 import (
 	bridge_common "bridge-deployer/common"
 	"fmt"
+	"math/big"
 	"os"
+	"strconv"
 
 	bridge "github.com/elevate-blockchain/neptune/pkg/contracts"
 	"github.com/ethereum/go-ethereum/common"
@@ -16,6 +18,8 @@ func main() {
 	approverAddress := os.Args[3]
 	notaryAddress := os.Args[4]
 	tokenAddress := os.Args[5]
+	chainArg := os.Args[6]
+
 	client, err := ethclient.Dial(ethRpcUrl)
 
 	if err != nil {
@@ -29,9 +33,14 @@ func main() {
 	bridgeApprover := common.HexToAddress(approverAddress)
 	bridgeNotary := common.HexToAddress(notaryAddress)
 	tokenContractAddress := common.HexToAddress(tokenAddress)
+	chainResult, err := strconv.ParseInt(chainArg, 10, 32)
+	if err != nil {
+		panic(err)
+	}
+	chainId := big.NewInt(chainResult)
 
 	// Deploy Bridge Minter
-	deployedBridgeMinterContractAddress, _, _, err := bridge.DeployBridgeMinter(auth, client, bridgeApprover, bridgeNotary, tokenContractAddress)
+	deployedBridgeMinterContractAddress, _, _, err := bridge.DeployBridgeMinter(auth, client, bridgeApprover, bridgeNotary, tokenContractAddress, chainId)
 	if err != nil {
 		panic(err)
 	}

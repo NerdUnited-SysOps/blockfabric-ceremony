@@ -119,7 +119,7 @@ deploy_smart_contracts() {
         ${DEPLOYMENT_FEE}
         ${CHAIN_ID}
 
-    token_issuer_address=0x3245342435345
+    token_issuer_address=0x3245342435345 # TODO - Determine this address
 
     // Deploy Token
     token_contract_address = $(go run token/main.go
@@ -129,7 +129,7 @@ deploy_smart_contracts() {
         ${TOKEN_SYMBOL}
         ${TOKEN_DECIMALS}
         ${token_owner_address}
-        ${token_issuer_address} # TODO - Determine address for bridge minter contract
+        ${token_issuer_address}
         ${DEPLOYMENT_FEE}
     )
 

@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"crypto/ecdsa"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -49,19 +50,20 @@ func GetAccountAuth(client *ethclient.Client, addressPrivateKey string) *bind.Tr
 	return auth
 }
 
-func GetAddressFromPrivateKey(addressPrivateKey string) (common.Address) {
+func GetAddressFromPrivateKey(addressPrivateKey string) (*common.Address, error) {
 	privateKey, err := crypto.HexToECDSA(addressPrivateKey)
 	if err != nil {
-		panic(err)
+		return nil, errors.New("rror with private key")
 	}
 
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
-		panic("invalid key")
+		return nil, errors.New("Eror generating public key")
 	}
 
-	return crypto.PubkeyToAddress(*publicKeyECDSA)
+	address := crypto.PubkeyToAddress(*publicKeyECDSA)
+	return  &address, nil
 }
 
 func GetDeterministicAddress(address common.Address, nonce *uint64) (contractAddress common.Address) {

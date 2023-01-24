@@ -57,7 +57,7 @@ fi
 password=$(pwgen -c 25 -n 1)
 
 new_account_output=$($GETH_PATH account new --password <(echo "${password}"))
-echo new_account_output >> ${LOG_FILE}
+echo ${new_account_output} >> ${LOG_FILE}
 
 new_keystore_file_path=$(echo ${new_account_output} | sed -n -e 's/.*secret.*:\ *//p')
 address=$(echo ${new_account_output} | sed -n -e 's/.*dress.*:\ *//p')

@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+
 set -e
 
 ENV_FILE=./.env
@@ -62,19 +63,19 @@ get_address() {
 
 create_bridge_wallets() {
     printer -t "Creating bridge wallets"
-	${SCRIPTS_DIR}/create_bridge_wallets.sh >> ${LOG_FILE}
+	${SCRIPTS_DIR}/create_bridge_wallets.sh # >> ${LOG_FILE}
     printer -s "Finished creating bridge wallets"
 }
 
 deploy_bridge_contracts() {
     printer -t "Deploying bridge contracts"
-	${SCRIPTS_DIR}/deploy_bridge_contracts.sh >> ${LOG_FILE}
+	${SCRIPTS_DIR}/deploy_bridge_contracts.sh #>> ${LOG_FILE}
     printer -s "Finished deploying bridge contracts"
 }
 
+
 create_bridge_wallets
 deploy_bridge_contracts
-
 
 
 # EOF

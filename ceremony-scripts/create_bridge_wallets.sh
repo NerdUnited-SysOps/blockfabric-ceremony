@@ -1,6 +1,6 @@
 #!/usr/bin/zsh
 
-#set -e
+set -e
 
 # ############################################################
 #	----------------- Bridge Key Generation
@@ -59,7 +59,7 @@ bridge_approver_wallet() {
 
 	generate_wallet -o "${vol5}"
 
-	printer -n "Created approver wallet"
+	printer -s "Created approver wallet"
 }
 
 bridge_notary_wallet() {
@@ -67,7 +67,7 @@ bridge_notary_wallet() {
 
 	generate_wallet -o "${vol5}"
 
-	printer -n "Created notary wallet"
+	printer -s "Created notary wallet"
 }
 
 bridge_fee_receiver_wallet() {
@@ -75,7 +75,7 @@ bridge_fee_receiver_wallet() {
 
 	generate_wallet -o "${vol5}"
 
-	printer -n "Created fee receiver wallet"
+	printer -s "Created fee receiver wallet"
 }
 
 bridge_minter_approver_wallet() {
@@ -83,7 +83,7 @@ bridge_minter_approver_wallet() {
 
 	generate_wallet -o "${vol5}"
 
-	printer -n "Created approver wallet"
+	printer -s "Created approver wallet"
 }
 
 bridge_minter_notary_wallet() {
@@ -91,7 +91,7 @@ bridge_minter_notary_wallet() {
 
 	generate_wallet -o "${vol5}"
 
-	printer -n "Created notary wallet"
+	printer -s "Created notary wallet"
 }
 
 token_owner_wallet() {
@@ -99,7 +99,7 @@ token_owner_wallet() {
 
 	generate_wallet -o "${vol5}"
 
-	printer -n "Created fee receiver wallet"
+	printer -s "Created fee receiver wallet"
 }
 
 bridge_wallets() {
@@ -107,18 +107,18 @@ bridge_wallets() {
     bridge_notary_wallet
     bridge_fee_receiver_wallet
 
-    printer -n "Created bridge wallets"
+    printer -s "Created bridge wallets"
 }
 
 bridge_minter_wallets() {
     bridge_minter_approver_wallet
     bridge_minter_notary_wallet
-    printer -n "Created bridge minter wallets"
+    printer -s "Created bridge minter wallets"
 }
 
 token_wallets() {
     token_owner_wallet
-    printer -n "Created token wallet(s)"
+    printer -s "Created token wallet(s)"
 }
 
 

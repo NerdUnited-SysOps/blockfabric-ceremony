@@ -42,15 +42,15 @@ while getopts 'b:d:f:hi' option; do
 done
 shift $((OPTIND-1))
 
+printer() {
+	${SCRIPTS_DIR}/printer.sh "$@"
+}
+
 if [ ! -f "${ENV_FILE}" ]; then
 	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
 else
 	source ${ENV_FILE}
 fi
-
-printer() {
-	${SCRIPTS_DIR}/printer.sh "$@"
-}
 
 [ -z "${BRIDGE_APPROVER_ADDRESS_FILE}" ] && BRIDGE_APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_approver"
 [ -z "${BRIDGE_NOTARY_ADDRESS_FILE}" ] && BRIDGE_NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_notary"
@@ -88,10 +88,6 @@ get_address() {
 
 
 deploy_bridge_contracts() {
-    printer -t "Deploying bridge contracts"
-	${SCRIPTS_DIR}/deploy_bridge_contracts.sh >> ${LOG_FILE}
-    printer -s "Finished deploying bridge contracts"
-
     printer -t "Deploying bridge smart contracts"
     printer -w "TODO: Fixup smart contract deployment with updated go app"
 

@@ -127,16 +127,6 @@ deploy_bridge_contracts() {
         ${CHAIN_ID}
 
     # Deploy Token
-    # go run ${DEPLOYER_CMD}/token/main.go \
-    #     ${ETH_URL} \
-    #     ${DEPLOYER_PRIVATE_KEY} \
-    #     ${TOKEN_NAME} \
-    #     ${TOKEN_SYMBOL} \
-    #     ${TOKEN_DECIMALS} \
-    #     ${TOKEN_MAX_SUPPLY} \
-    #     ${token_owner_address} \
-    #     ${bridge_minter_nonce}
-
     token_contract_address="$(go run ${DEPLOYER_CMD}/token/main.go \
         ${ETH_URL} \
         ${DEPLOYER_PRIVATE_KEY} \

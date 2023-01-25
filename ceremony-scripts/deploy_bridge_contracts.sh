@@ -127,24 +127,34 @@ deploy_bridge_contracts() {
         ${CHAIN_ID}
 
     # Deploy Token
-    token_contract_address="$(go run ${DEPLOYER_CMD}/token/main.go \
-        ${ETH_URL} \
-        ${DEPLOYER_PRIVATE_KEY} \
-        ${TOKEN_NAME} \
-        ${TOKEN_SYMBOL} \
-        ${TOKEN_DECIMALS} \
-        ${TOKEN_MAX_SUPPLY} \
-        ${token_owner_address} \
-        ${bridge_minter_nonce} | tail -n 1)"
+    # token_contract_address="$(go run ${DEPLOYER_CMD}/token/main.go \
+    #     ${ETH_URL} \
+    #     ${DEPLOYER_PRIVATE_KEY} \
+    #     ${TOKEN_NAME} \
+    #     ${TOKEN_SYMBOL} \
+    #     ${TOKEN_DECIMALS} \
+    #     ${TOKEN_MAX_SUPPLY} \
+    #     ${token_owner_address} \
+    #     ${bridge_minter_nonce} | tail -n 1)"
+
+    # go run ${DEPLOYER_CMD}/token/main.go \
+    #     ${ETH_URL} \
+    #     ${DEPLOYER_PRIVATE_KEY} \
+    #     ${TOKEN_NAME} \
+    #     ${TOKEN_SYMBOL} \
+    #     ${TOKEN_DECIMALS} \
+    #     ${TOKEN_MAX_SUPPLY} \
+    #     ${token_owner_address} \
+    #     ${bridge_minter_nonce}
 
     # Deploy Bridge Minter
-    go run ${DEPLOYER_CMD}/bridge_minter/main.go \
-        ${ETH_URL} \
-        ${DEPLOYER_PRIVATE_KEY} \
-        ${bridge_approver_address} \
-        ${bridge_notary_address} \
-        ${token_contract_address} \
-        ${CHAIN_ID}
+    # go run ${DEPLOYER_CMD}/bridge_minter/main.go \
+    #     ${ETH_URL} \
+    #     ${DEPLOYER_PRIVATE_KEY} \
+    #     ${bridge_approver_address} \
+    #     ${bridge_notary_address} \
+    #     ${token_contract_address} \
+    #     ${CHAIN_ID}
 }
 
 check_wallet_files

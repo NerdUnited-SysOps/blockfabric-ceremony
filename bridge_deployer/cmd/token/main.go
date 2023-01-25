@@ -39,7 +39,7 @@ func main() {
 	}
 
 	// create auth and transaction package for deploying smart contract
-	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey)
+	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey, uint64(30000), *big.NewInt(1000000))
 
 	// Setup params
 	tokenOwner := common.HexToAddress(strings.TrimSpace(tokenOwnerAddress))
@@ -62,7 +62,8 @@ func main() {
 	// Deploy Token
 	deployedTokenContractAddress, _, _, err := bridge.DeployToken(auth, client, tokenName, tokenSymbol, tokenDecimals, tokenOwner, tokenIssuer, maxSupply)
 	if err != nil {
-		fmt.Printf("Err: %s", err.Error())
+		// fmt.Println("transaction=", transaction.Data())
+		fmt.Println("Err=", err.Error())
 		panic(err)
 	}
 

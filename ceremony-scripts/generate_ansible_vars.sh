@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 
 # USAGE: generate_ansible_goquorum_laybook.sh -v [Validator IP String]
 #

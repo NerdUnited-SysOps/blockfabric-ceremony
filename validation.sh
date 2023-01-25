@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 
 ENV_FILE=./.env
 SCRIPTS_DIR=$(realpath ./ceremony-scripts)

@@ -50,22 +50,22 @@ func GetAccountAuth(client *ethclient.Client, addressPrivateKey string) *bind.Tr
 	return auth
 }
 
-func GetAddressFromPrivateKey(addressPrivateKey string) (*common.Address, error) {
+func GetAddressFromPrivateKey(addressPrivateKey string) (common.Address, error) {
 	privateKey, err := crypto.HexToECDSA(addressPrivateKey)
 	if err != nil {
-		return nil, errors.New("rror with private key")
+		return common.Address{0}, errors.New("error with private key")
 	}
 
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
-		return nil, errors.New("Eror generating public key")
+		return common.Address{0}, errors.New("error generating public key")
 	}
 
 	address := crypto.PubkeyToAddress(*publicKeyECDSA)
-	return  &address, nil
+	return  address, nil
 }
 
-func GetDeterministicAddress(address common.Address, nonce *uint64) (contractAddress common.Address) {
-	return crypto.CreateAddress(common.HexToAddress(address.Hex()), *nonce)
+func GetDeterministicAddress(address common.Address, nonce uint64) (contractAddress common.Address) {
+	return crypto.CreateAddress(common.HexToAddress(address.Hex()), nonce)
 }

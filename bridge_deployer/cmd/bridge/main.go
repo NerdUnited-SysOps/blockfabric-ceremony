@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+	fmt.Println("deploying bridge")
 	ethRpcUrl := os.Args[1]
 	deployerPrivateKey := os.Args[2]
 	approverAddress := os.Args[3]
@@ -51,5 +52,5 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(deployedBridgeContractAddress.Hex())
+	fmt.Println("Deployed bridge address: ", deployedBridgeContractAddress.Hex())
 }

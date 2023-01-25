@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"os"
 	"strconv"
+	"strings"
 
 	bridge "github.com/elevate-blockchain/neptune/pkg/contracts"
 	"github.com/ethereum/go-ethereum/common"
@@ -13,6 +14,7 @@ import (
 )
 
 func main() {
+	fmt.Println("Deploying token=")
 	ethRpcUrl := os.Args[1]
 	deployerPrivateKey := os.Args[2]
 	tokenName := os.Args[3]
@@ -30,7 +32,7 @@ func main() {
 	if (err != nil) {
 		panic(err)
 	}
-	tokenIssuer := bridge_common.GetDeterministicAddress(*deployerAddress, &nonce)
+	tokenIssuer := bridge_common.GetDeterministicAddress(deployerAddress, nonce)
 	client, err := ethclient.Dial(ethRpcUrl)
 	if err != nil {
 		panic(err)
@@ -40,7 +42,8 @@ func main() {
 	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey)
 
 	// Setup params
-	tokenOwner := common.HexToAddress(tokenOwnerAddress)
+	tokenOwner := common.HexToAddress(strings.TrimSpace(tokenOwnerAddress))
+
 	maxSupplyResult, err := strconv.ParseInt(tokenMaxSupplyArg, 10, 32)
 	if err != nil {
 		panic(err)
@@ -54,6 +57,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 
 	// Deploy Token
 	deployedTokenContractAddress, _, _, err := bridge.DeployToken(auth, client, tokenName, tokenSymbol, tokenDecimals, tokenOwner, tokenIssuer, maxSupply)

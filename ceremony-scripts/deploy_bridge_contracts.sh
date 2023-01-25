@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 set -e
 
 ENV_FILE=./.env
@@ -98,6 +98,8 @@ deploy_bridge_contracts() {
     bridge_minter_approver_address=$(get_address $BRIDGE_MINTER_APPROVER_ADDRESS_FILE)
     bridge_minter_notary_address=$(get_address $BRIDGE_MINTER_NOTARY_ADDRESS_FILE)
 
+    bridge_minter_nonce=2
+
     echo $bridge_approver_address
     echo $bridge_notary_address
     echo $bridge_fee_receiver_address
@@ -112,38 +114,48 @@ deploy_bridge_contracts() {
 
     go get github.com/elevate-blockchain/neptune/pkg/contracts
 
-    // Deploy bridge
-    go run bridge/main.go
-        ${NERD_CHAIN_URL}
-        ${DEPLOYER_PRIVATE_KEY}
-        ${bridge_approver_address}
-        ${bridge_notary_address}
-        ${bridge_fee_receiver_address}
-        ${DEPLOYMENT_FEE}
+    DEPLOYER_CMD=cmd
+
+    # Deploy bridge
+    go run ${DEPLOYER_CMD}/bridge/main.go \
+        ${NERD_CHAIN_URL} \
+        ${DEPLOYER_PRIVATE_KEY} \
+        ${bridge_approver_address} \
+        ${bridge_notary_address} \
+        ${bridge_fee_receiver_address} \
+        ${DEPLOYMENT_FEE} \
         ${CHAIN_ID}
 
-    // Deploy Token
-    token_contract_address = $(go run token/main.go
-        ${ETH_URL}
-        ${DEPLOYER_PRIVATE_KEY}
-        ${TOKEN_NAME}
-        ${TOKEN_SYMBOL}
-        ${TOKEN_DECIMALS}
-        ${TOKEN_MAX_SUPPLY}
-        ${token_owner_address}
-        2 # Nonce will be 2 for the deployer wallet when the bridge minter contract is deployed
-    )
+    # Deploy Token
+    # go run ${DEPLOYER_CMD}/token/main.go \
+    #     ${ETH_URL} \
+    #     ${DEPLOYER_PRIVATE_KEY} \
+    #     ${TOKEN_NAME} \
+    #     ${TOKEN_SYMBOL} \
+    #     ${TOKEN_DECIMALS} \
+    #     ${TOKEN_MAX_SUPPLY} \
+    #     ${token_owner_address} \
+    #     ${bridge_minter_nonce}
 
-    // Deploy Bridge Minter
-    go run bridge_minter/main.go
-        ${ETH_URL}
-        ${DEPLOYER_PRIVATE_KEY}
-        ${bridge_approver_address}
-        ${bridge_notary_address}
-        ${token_contract_address}
+    token_contract_address="$(go run ${DEPLOYER_CMD}/token/main.go \
+        ${ETH_URL} \
+        ${DEPLOYER_PRIVATE_KEY} \
+        ${TOKEN_NAME} \
+        ${TOKEN_SYMBOL} \
+        ${TOKEN_DECIMALS} \
+        ${TOKEN_MAX_SUPPLY} \
+        ${token_owner_address} \
+        ${bridge_minter_nonce} | tail -n 1)"
+
+    # Deploy Bridge Minter
+    go run ${DEPLOYER_CMD}/bridge_minter/main.go \
+        ${ETH_URL} \
+        ${DEPLOYER_PRIVATE_KEY} \
+        ${bridge_approver_address} \
+        ${bridge_notary_address} \
+        ${token_contract_address} \
         ${CHAIN_ID}
 }
-
 
 check_wallet_files
 deploy_bridge_contracts

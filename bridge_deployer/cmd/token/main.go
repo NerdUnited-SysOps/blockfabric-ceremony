@@ -2,6 +2,7 @@ package main
 
 import (
 	bridge_common "bridge-deployer/common"
+	"context"
 	"fmt"
 	"math/big"
 	"os"
@@ -22,21 +23,23 @@ func main() {
 	tokenDecimalsArg := os.Args[5]
 	tokenMaxSupplyArg := os.Args[6]
 	tokenOwnerAddress := os.Args[7]
-	walletNonceArg := os.Args[8]
-	walletNonceResult, err := strconv.ParseInt(walletNonceArg, 10, 32)
-	if err != nil {
-		panic(err)
-	}
-	nonce := uint64(walletNonceResult)
+
 	deployerAddress, err := bridge_common.GetAddressFromPrivateKey(deployerPrivateKey)
 	if (err != nil) {
 		panic(err)
 	}
-	tokenIssuer := bridge_common.GetDeterministicAddress(deployerAddress, nonce)
+
 	client, err := ethclient.Dial(ethRpcUrl)
 	if err != nil {
 		panic(err)
 	}
+
+	nonce, err := client.PendingNonceAt(context.Background(), deployerAddress)
+	if err != nil {
+		panic(err)
+	}
+
+	tokenIssuer := bridge_common.GetDeterministicAddress(deployerAddress, nonce)
 
 	// create auth and transaction package for deploying smart contract
 	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey, uint64(30000), *big.NewInt(1000000))
@@ -58,12 +61,9 @@ func main() {
 		panic(err)
 	}
 
-
 	// Deploy Token
 	deployedTokenContractAddress, _, _, err := bridge.DeployToken(auth, client, tokenName, tokenSymbol, tokenDecimals, tokenOwner, tokenIssuer, maxSupply)
 	if err != nil {
-		// fmt.Println("transaction=", transaction.Data())
-		fmt.Println("Err=", err.Error())
 		panic(err)
 	}
 

@@ -21,6 +21,11 @@ func main() {
 	feeReceiverAddress := os.Args[5]
 	feeArg := os.Args[6]
 	chainArg := os.Args[7]
+	chainResult, err := strconv.ParseInt(chainArg, 10, 32)
+	if err != nil {
+		panic(err)
+	}
+	chainId := big.NewInt(chainResult)
 
 	client, err := ethclient.Dial(ethRpcUrl)
 
@@ -40,12 +45,8 @@ func main() {
 		panic(err)
 	}
 	fee := big.NewInt(feeResult)
-	chainResult, err := strconv.ParseInt(chainArg, 10, 32)
-	if err != nil {
-		panic(err)
-	}
-	chainId := big.NewInt(chainResult)
 
+	
 	// Deploy Bridge
 	deployedBridgeContractAddress, txn, _, err := bridge.DeployBridge(auth, client, bridgeApprover, bridgeNotary, bridgeFeeReceiver, fee, chainId)
 	if err != nil {

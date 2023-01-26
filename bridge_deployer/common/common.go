@@ -27,7 +27,7 @@ func GetAccountAuth(client *ethclient.Client, addressPrivateKey string, gasLimit
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	fmt.Println("fromAddress=", fromAddress)
+	fmt.Println("Deployer address=", fromAddress)
 
 	//fetch the last use nonce of account
 	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)

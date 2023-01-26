@@ -125,16 +125,16 @@ deploy_bridge_contracts() {
     #     ${CHAIN_ID}
 
     # Deploy Token
-    token_contract_address="$(go run ${DEPLOYER_CMD}/token/main.go \
+    token_contract_output="$(go run ${DEPLOYER_CMD}/token/main.go \
         ${ETH_URL} \
         ${DEPLOYER_PRIVATE_KEY} \
         ${TOKEN_NAME} \
         ${TOKEN_SYMBOL} \
         ${TOKEN_DECIMALS} \
         ${TOKEN_MAX_SUPPLY} \
-        ${token_owner_address} | tail -n 1)"
-
-    echo "token contract address=" $token_contract_address
+        ${token_owner_address})"
+    echo "token contract address=" $token_contract_output
+    token_contract_address="$(echo $token_contract_output | tail -n1)"
 
     # go run ${DEPLOYER_CMD}/token/main.go \
     #     ${ETH_URL} \

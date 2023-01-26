@@ -15,7 +15,6 @@ import (
 )
 
 func main() {
-	fmt.Println("Deploying token=")
 	ethRpcUrl := os.Args[1]
 	deployerPrivateKey := os.Args[2]
 	tokenName := os.Args[3]
@@ -39,7 +38,10 @@ func main() {
 		panic(err)
 	}
 
+	nonce = nonce + 1
+
 	tokenIssuer := bridge_common.GetDeterministicAddress(deployerAddress, nonce)
+	fmt.Println("bridge minter address=", tokenIssuer)
 
 	// create auth and transaction package for deploying smart contract
 	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey, uint64(30000), *big.NewInt(1000000))
@@ -61,6 +63,12 @@ func main() {
 		panic(err)
 	}
 
+	fmt.Println("tokenName=", tokenName)
+	fmt.Println("tokenSymbol=", tokenSymbol)
+	fmt.Println("tokenDecimals=", tokenDecimals)
+	fmt.Println("tokenOwner=", tokenOwner)
+	fmt.Println("tokenIssuer=", tokenIssuer)
+	fmt.Println("maxSupply=", maxSupply)
 	// Deploy Token
 	deployedTokenContractAddress, _, _, err := bridge.DeployToken(auth, client, tokenName, tokenSymbol, tokenDecimals, tokenOwner, tokenIssuer, maxSupply)
 	if err != nil {

@@ -89,7 +89,6 @@ get_address() {
 
 deploy_bridge_contracts() {
     printer -t "Deploying bridge smart contracts"
-    printer -w "TODO: Fixup smart contract deployment with updated go app"
 
     bridge_approver_address=$(get_address $BRIDGE_APPROVER_ADDRESS_FILE)
     bridge_notary_address=$(get_address $BRIDGE_NOTARY_ADDRESS_FILE)
@@ -98,14 +97,6 @@ deploy_bridge_contracts() {
     bridge_minter_approver_address=$(get_address $BRIDGE_MINTER_APPROVER_ADDRESS_FILE)
     bridge_minter_notary_address=$(get_address $BRIDGE_MINTER_NOTARY_ADDRESS_FILE)
 
-    echo $bridge_approver_address
-    echo $bridge_notary_address
-    echo $bridge_fee_receiver_address
-    echo $token_owner_address
-    echo $bridge_minter_approver_address
-    echo $bridge_minter_notary_address
-    printer -s "Finished deploying bridge smart contracts"
-
     export GOPRIVATE=github.com/elevate-blockchain/*
 
     cd bridge_deployer
@@ -113,16 +104,15 @@ deploy_bridge_contracts() {
     go get github.com/elevate-blockchain/neptune/pkg/contracts
 
     DEPLOYER_CMD=cmd
-
     # Deploy bridge
-    # go run ${DEPLOYER_CMD}/bridge/main.go \
-    #     ${NERD_CHAIN_URL} \
-    #     ${DEPLOYER_PRIVATE_KEY} \
-    #     ${bridge_approver_address} \
-    #     ${bridge_notary_address} \
-    #     ${bridge_fee_receiver_address} \
-    #     ${DEPLOYMENT_FEE} \
-    #     ${CHAIN_ID}
+     go run ${DEPLOYER_CMD}/bridge/main.go \
+         ${NERD_CHAIN_URL} \
+         ${DEPLOYER_PRIVATE_KEY} \
+         ${bridge_approver_address} \
+         ${bridge_notary_address} \
+         ${bridge_fee_receiver_address} \
+         ${DEPLOYMENT_FEE} \
+         ${CHAIN_ID}
 
     # Deploy Token
     token_contract_output="$(go run ${DEPLOYER_CMD}/token/main.go \
@@ -136,16 +126,6 @@ deploy_bridge_contracts() {
     echo "token contract address=" $token_contract_output
     token_contract_address="$(echo $token_contract_output | tail -n1)"
 
-    # go run ${DEPLOYER_CMD}/token/main.go \
-    #     ${ETH_URL} \
-    #     ${DEPLOYER_PRIVATE_KEY} \
-    #     ${TOKEN_NAME} \
-    #     ${TOKEN_SYMBOL} \
-    #     ${TOKEN_DECIMALS} \
-    #     ${TOKEN_MAX_SUPPLY} \
-    #     ${token_owner_address} \
-    #     ${bridge_minter_nonce}
-
     # Deploy Bridge Minter
     go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
@@ -154,6 +134,8 @@ deploy_bridge_contracts() {
         ${bridge_notary_address} \
         ${token_contract_address} \
         ${CHAIN_ID}
+
+    printer -s "Finished deploying bridge smart contracts"
 }
 
 check_wallet_files

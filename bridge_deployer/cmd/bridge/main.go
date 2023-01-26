@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// create auth and transaction package for deploying smart contract
-	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey, uint64(3000000), *big.NewInt(1000000))
+	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey)
 
 	// Setup params
 	bridgeApprover := common.HexToAddress(approverAddress)
@@ -46,11 +46,10 @@ func main() {
 	}
 	fee := big.NewInt(feeResult)
 
-	
 	// Deploy Bridge
 	deployedBridgeContractAddress, txn, _, err := bridge.DeployBridge(auth, client, bridgeApprover, bridgeNotary, bridgeFeeReceiver, fee, chainId)
 	if err != nil {
-		if (txn != nil){
+		if txn != nil {
 			fmt.Println("txn hash: ", txn.Hash())
 			fmt.Println("txn cost: ", txn.Cost())
 		}

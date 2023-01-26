@@ -24,7 +24,7 @@ func main() {
 	tokenOwnerAddress := os.Args[7]
 
 	deployerAddress, err := bridge_common.GetAddressFromPrivateKey(deployerPrivateKey)
-	if (err != nil) {
+	if err != nil {
 		panic(err)
 	}
 
@@ -44,7 +44,7 @@ func main() {
 	fmt.Println("bridge minter address=", tokenIssuer)
 
 	// create auth and transaction package for deploying smart contract
-	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey, uint64(30000), *big.NewInt(1000000))
+	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey)
 
 	// Setup params
 	tokenOwner := common.HexToAddress(strings.TrimSpace(tokenOwnerAddress))

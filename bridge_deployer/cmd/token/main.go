@@ -49,11 +49,12 @@ func main() {
 	// Setup params
 	tokenOwner := common.HexToAddress(strings.TrimSpace(tokenOwnerAddress))
 
-	maxSupplyResult, err := strconv.ParseInt(tokenMaxSupplyArg, 10, 32)
-	if err != nil {
-		panic(err)
+	maxSupply := big.NewInt(0)
+	if _, ok := maxSupply.SetString(tokenMaxSupplyArg, 10); ok {
+		fmt.Printf("number = %v\n", maxSupply)
+	} else {
+		fmt.Printf("error parsing line %#v\n", tokenMaxSupplyArg)
 	}
-	maxSupply := big.NewInt(maxSupplyResult)
 	tokenDecimalsResult, err := strconv.ParseInt(tokenDecimalsArg, 10, 32)
 	if err != nil {
 		panic(err)

@@ -40,7 +40,7 @@ func main() {
 	bridgeApprover := common.HexToAddress(approverAddress)
 	bridgeNotary := common.HexToAddress(notaryAddress)
 	bridgeFeeReceiver := common.HexToAddress(feeReceiverAddress)
-	feeResult, err := strconv.ParseInt(feeArg, 10, 32)
+	feeResult, err := strconv.ParseInt(feeArg, 10, 64)
 	if err != nil {
 		panic(err)
 	}

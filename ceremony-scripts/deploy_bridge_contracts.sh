@@ -105,14 +105,14 @@ deploy_bridge_contracts() {
 
     DEPLOYER_CMD=cmd
     # Deploy bridge
-     go run ${DEPLOYER_CMD}/bridge/main.go \
-         ${NERD_CHAIN_URL} \
-         ${DEPLOYER_PRIVATE_KEY} \
-         ${bridge_approver_address} \
-         ${bridge_notary_address} \
-         ${bridge_fee_receiver_address} \
-         ${DEPLOYMENT_FEE} \
-         ${CHAIN_ID}
+    # go run ${DEPLOYER_CMD}/bridge/main.go \
+    #      ${NERD_CHAIN_URL} \
+    #      ${DEPLOYER_PRIVATE_KEY} \
+    #      ${bridge_approver_address} \
+    #      ${bridge_notary_address} \
+    #      ${bridge_fee_receiver_address} \
+    #      ${DEPLOYMENT_FEE} \
+    #      ${CHAIN_ID}
 
     # Deploy Token
     token_contract_output="$(go run ${DEPLOYER_CMD}/token/main.go \
@@ -126,7 +126,7 @@ deploy_bridge_contracts() {
     echo "token contract address=" $token_contract_output
     token_contract_address="$(echo $token_contract_output | tail -n1)"
 
-    # Deploy Bridge Minter
+    # # Deploy Bridge Minter
     go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
         ${DEPLOYER_PRIVATE_KEY} \

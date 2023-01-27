@@ -4,8 +4,6 @@ set -e
 ENV_FILE=./.env
 SCRIPTS_DIR=$(realpath ./ceremony-scripts)
 
-
-
 usage() {
 	echo "This script is a helper for deploying bridge smart contracts"
     echo "Usage: $0 (options) ..."
@@ -41,6 +39,9 @@ while getopts 'b:d:f:hi' option; do
 	esac
 done
 shift $((OPTIND-1))
+
+${SCRIPTS_DIR}/get_secrets.sh
+${SCRIPTS_DIR}/install_dependencies.sh
 
 printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"
@@ -97,7 +98,7 @@ deploy_bridge_contracts() {
     bridge_minter_approver_address=$(get_address $BRIDGE_MINTER_APPROVER_ADDRESS_FILE)
     bridge_minter_notary_address=$(get_address $BRIDGE_MINTER_NOTARY_ADDRESS_FILE)
 
-    git config --global url.ssh://git@github.com/.insteadOf https://github.com/
+    git config --global url."https://${GITHUB_PAT}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
     export GOPRIVATE=github.com/elevate-blockchain/*
 

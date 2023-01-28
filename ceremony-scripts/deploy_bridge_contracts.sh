@@ -40,9 +40,6 @@ while getopts 'b:d:f:hi' option; do
 done
 shift $((OPTIND-1))
 
-${SCRIPTS_DIR}/get_secrets.sh
-${SCRIPTS_DIR}/install_dependencies.sh
-
 printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
@@ -79,14 +76,10 @@ check_wallet_files() {
 }
 
 get_address() {
-	inspect_path=$1
-	inspected_content=$(${ETHKEY} inspect \
-		--private \
-		--passwordfile ${inspect_path}/password \
-		${inspect_path}/keystore)
-	echo "${inspected_content}" | sed -n "s/Address:\s*\(.*\)/\1/p" | tr -d '\n'
+    keystore_path=$1
+    echo "keystore: ${keystore_path}"
+    ADDRESS=$(grep -o '"address": *"[^"]*"' ${keystore_path} | grep -o '"[^"]*"$' | sed 's/"//g')
 }
-
 
 deploy_bridge_contracts() {
     printer -t "Deploying bridge smart contracts"

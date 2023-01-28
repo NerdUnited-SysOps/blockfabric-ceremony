@@ -77,8 +77,8 @@ check_wallet_files() {
 
 get_address() {
     keystore_path=$1
-    echo "keystore: ${keystore_path}"
-    ADDRESS=$(grep -o '"address": *"[^"]*"' ${keystore_path} | grep -o '"[^"]*"$' | sed 's/"//g')
+    ADDRESS="0x$(grep -o '"address": *"[^"]*"' ${keystore_path} | grep -o '"[^"]*"$' | sed 's/"//g')"
+    echo $ADDRESS
 }
 
 deploy_bridge_contracts() {

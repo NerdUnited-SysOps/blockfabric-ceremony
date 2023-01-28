@@ -84,12 +84,12 @@ get_address() {
 deploy_bridge_contracts() {
     printer -t "Deploying bridge smart contracts"
 
-    bridge_approver_address=$(get_address $BRIDGE_APPROVER_ADDRESS_FILE)
-    bridge_notary_address=$(get_address $BRIDGE_NOTARY_ADDRESS_FILE)
-    bridge_fee_receiver_address=$(get_address $BRIDGE_FEE_RECEIVER_ADDRESS_FILE)
-    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE)
-    bridge_minter_approver_address=$(get_address $BRIDGE_MINTER_APPROVER_ADDRESS_FILE)
-    bridge_minter_notary_address=$(get_address $BRIDGE_MINTER_NOTARY_ADDRESS_FILE)
+    bridge_approver_address=$(get_address $BRIDGE_APPROVER_ADDRESS_FILE/keystore)
+    bridge_notary_address=$(get_address $BRIDGE_NOTARY_ADDRESS_FILE/keystore)
+    bridge_fee_receiver_address=$(get_address $BRIDGE_FEE_RECEIVER_ADDRESS_FILE/keystore)
+    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
+    bridge_minter_approver_address=$(get_address $BRIDGE_MINTER_APPROVER_ADDRESS_FILE/keystore)
+    bridge_minter_notary_address=$(get_address $BRIDGE_MINTER_NOTARY_ADDRESS_FILE/keystore)
 
     git config --global url."https://${GITHUB_PAT}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 

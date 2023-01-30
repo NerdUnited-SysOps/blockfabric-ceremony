@@ -76,10 +76,9 @@ check_wallet_files() {
 
 get_address() {
     keystore_path=$1
-    echo "keystore: ${keystore_path}"
-    ADDRESS=$(grep -o '"address": *"[^"]*"' ${keystore_path} | grep -o '"[^"]*"$' | sed 's/"//g')
+    ADDRESS="0x$(grep -o '"address": *"[^"]*"' ${keystore_path} | grep -o '"[^"]*"$' | sed 's/"//g')"
+    echo $ADDRESS
 }
-
 
 deploy_bridge_contracts() {
     printer -t "Deploying bridge smart contracts"
@@ -88,9 +87,8 @@ deploy_bridge_contracts() {
     notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
     fee_receiver_address=$(get_address $FEE_RECEIVER_ADDRESS_FILE/keystore)
     token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
-    echo "file: ${APPROVER_ADDRES_FILE}"
-    echo "approver: ${approver_address}"
-    echo "fee_receiver: ${fee_receiver_address}"
+
+    git config --global url."https://${GITHUB_PAT}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
     export GOPRIVATE=github.com/elevate-blockchain/*
 
@@ -101,7 +99,7 @@ deploy_bridge_contracts() {
     DEPLOYER_CMD=cmd
     printer -w "start Deploying"
     # Deploy bridge
-     go run ${DEPLOYER_CMD}/bridge/main.go \
+    go run ${DEPLOYER_CMD}/bridge/main.go \
          ${NERD_CHAIN_URL} \
          ${DEPLOYER_PRIVATE_KEY} \
          ${approver_address} \
@@ -109,10 +107,6 @@ deploy_bridge_contracts() {
          ${fee_receiver_address} \
          ${DEPLOYMENT_FEE} \
          ${CHAIN_ID}
-    printer -w "finish Deploying"
-
-     printer -s "lovely ❤️"
-     exit;
 
     # Deploy Token
     token_contract_output="$(go run ${DEPLOYER_CMD}/token/main.go \
@@ -126,7 +120,7 @@ deploy_bridge_contracts() {
     echo "token contract address=" $token_contract_output
     token_contract_address="$(echo $token_contract_output | tail -n1)"
 
-    # Deploy Bridge Minter
+    # # Deploy Bridge Minter
     go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
         ${DEPLOYER_PRIVATE_KEY} \

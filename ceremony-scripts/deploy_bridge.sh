@@ -83,6 +83,8 @@ deploy_bridge_contracts() {
 	printer -s "Finished deploying bridge contracts"
 }
 
+${SCRIPTS_DIR}/get_secrets.sh
+${SCRIPTS_DIR}/install_dependencies.sh
 
 # create_bridge_wallets
 deploy_bridge_contracts

@@ -55,7 +55,7 @@ fi
 [ -z "${NOTARY_ADDRESS_FILE}" ] && NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/notary"
 [ -z "${TOKEN_OWNER_ADDRESS_FILE}" ] && TOKEN_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/token_owner"
 
-echo "file: ${APPROVER_ADDRESS_FILE}/keystore"
+echo "file: ${APPROVER_ADDRESS_FILE}/keystore" &>> ${LOG_FILE}
 
 check_file() {
 	file_name=$1
@@ -79,8 +79,6 @@ get_address() {
 }
 
 deploy_bridge_contracts() {
-    printer -t "Deploying bridge smart contracts"
-
     approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
     notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
     token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
@@ -98,7 +96,7 @@ deploy_bridge_contracts() {
     # Deploy bridge
     go run ${DEPLOYER_CMD}/bridge/main.go \
          ${NERD_CHAIN_URL} \
-         ${DEPLOYER_PRIVATE_KEY} \
+         ${DEPLOYER_A_PRIVATE_KEY} \
          ${approver_address} \
          ${notary_address} \
          ${FEE_RECEIVER} \
@@ -108,25 +106,23 @@ deploy_bridge_contracts() {
     # Deploy Token
     token_contract_output="$(go run ${DEPLOYER_CMD}/token/main.go \
         ${ETH_URL} \
-        ${DEPLOYER_PRIVATE_KEY} \
+        ${DEPLOYER_B_PRIVATE_KEY} \
         ${TOKEN_NAME} \
         ${TOKEN_SYMBOL} \
         ${TOKEN_DECIMALS} \
         ${TOKEN_MAX_SUPPLY} \
         ${token_owner_address})"
-    echo "token contract address=" $token_contract_output
+    echo "token contract address=" $token_contract_output &>> ${LOG_FILE}
     token_contract_address="$(echo $token_contract_output | tail -n1)"
 
     # # Deploy Bridge Minter
     go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
-        ${DEPLOYER_PRIVATE_KEY} \
+        ${DEPLOYER_A_PRIVATE_KEY} \
         ${approver_address} \
         ${notary_address} \
         ${token_contract_address} \
         ${CHAIN_ID}
-
-    printer -s "Finished deploying bridge smart contracts"
 }
 
 check_wallet_files

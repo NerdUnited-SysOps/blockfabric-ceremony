@@ -2,7 +2,7 @@ package main
 
 import (
 	bridge_common "bridge-deployer/common"
-	"fmt"
+	"log"
 	"math/big"
 	"os"
 	"strconv"
@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	fmt.Println("deploying bridge")
+	log.Println("deploying bridge")
 	ethRpcUrl := os.Args[1]
 	deployerPrivateKey := os.Args[2]
 	approverAddress := os.Args[3]
@@ -50,11 +50,11 @@ func main() {
 	deployedBridgeContractAddress, txn, _, err := bridge.DeployBridge(auth, client, bridgeApprover, bridgeNotary, bridgeFeeReceiver, fee, chainId)
 	if err != nil {
 		if txn != nil {
-			fmt.Println("txn hash: ", txn.Hash())
-			fmt.Println("txn cost: ", txn.Cost())
+			log.Println("txn hash: ", txn.Hash())
+			log.Println("txn cost: ", txn.Cost())
 		}
 		panic(err)
 	}
-	fmt.Println("txn hash: ", txn.Hash())
-	fmt.Println("Deployed bridge address: ", deployedBridgeContractAddress.Hex())
+	log.Println("txn hash: ", txn.Hash())
+	log.Println("Deployed bridge address: ", deployedBridgeContractAddress.Hex())
 }

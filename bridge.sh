@@ -34,7 +34,7 @@ printer() {
 
 
 usage() {
-	printf "Welcome! This is an interface for working with the ceremony.\n"
+	printf "Welcome! This is an interface for working with the bridge ceremony.\n"
 	printf "You may select from the options below\n\n"
 }
 

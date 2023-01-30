@@ -15,6 +15,8 @@ github.com/elevate-blockchain/neptune v0.0.0-20230123183505-7b1528eb6832 h1:G2n2
 github.com/elevate-blockchain/neptune v0.0.0-20230123183505-7b1528eb6832/go.mod h1:CfHZbCqyL9X15PmRaCKu/zD8hbUz1CLosC8OK26xmaI=
 github.com/elevate-blockchain/neptune v0.0.0-20230127174541-5ab42d1d4b18 h1:Q/ITSGEjkMGm0zLL1gZx2kzd4mbjtWrwV7549MiA1Pg=
 github.com/elevate-blockchain/neptune v0.0.0-20230127174541-5ab42d1d4b18/go.mod h1:CfHZbCqyL9X15PmRaCKu/zD8hbUz1CLosC8OK26xmaI=
+github.com/elevate-blockchain/neptune v0.0.0-20230130160808-6ba5bc61f8f6 h1:xEi9vj/iTnoMh3p38leUvsmPG28wZRjFrxxWSO+FnCc=
+github.com/elevate-blockchain/neptune v0.0.0-20230130160808-6ba5bc61f8f6/go.mod h1:CfHZbCqyL9X15PmRaCKu/zD8hbUz1CLosC8OK26xmaI=
 github.com/ethereum/go-ethereum v1.10.26 h1:i/7d9RBBwiXCEuyduBQzJw/mKmnvzsN14jqBmytw72s=
 github.com/ethereum/go-ethereum v1.10.26/go.mod h1:EYFyF19u3ezGLD4RqOkLq+ZCXzYbLoNDdZlMt7kyKFg=
 github.com/go-ole/go-ole v1.2.1 h1:2lOsA72HgjxAuMlKpFiCbHTvu44PIVkZ5hqm3RSdI/E=

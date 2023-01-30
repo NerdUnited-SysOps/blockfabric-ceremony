@@ -53,7 +53,7 @@ persistence() {
 }
 
 dev() {
-	${SCRIPTS_DIR}/dev.sh
+	${SCRIPTS_DIR}/deploy_bridge.sh -d
 }
 
 items=(
@@ -63,7 +63,7 @@ items=(
 	"Exit"
 )
 
-[ -n "${DEV_ENABLED}" ] && items+=("Devz")
+[ -n "${DEV_ENABLED}" ] && items+=("Deploy Bridge (without getting secrets)")
 
 clear -x
 
@@ -80,7 +80,7 @@ while true; do
 			2) clear -x; run_validation; break;;
 			3) clear -x; persistence; break;;
 			4) printf "Closing\n\n"; exit 1;;
-			#6) clear -x; dev; break;;
+			5) clear -x; dev; break;;
 			*)
 				printf "\n\nOops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

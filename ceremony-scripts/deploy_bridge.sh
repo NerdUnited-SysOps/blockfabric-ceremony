@@ -12,12 +12,13 @@ usage() {
     echo "  -f : Path to .env file"
     echo "  -i : Install dependencies"
     echo "  -r : Reset the ceremony"
+		echo "  -d : Run in dev mode (do not get secrets or dependencies)"
     echo "  -h : Help"
     echo ""
     echo "Example: "
 }
 
-while getopts 'b:d:f:hi' option; do
+while getopts 'b:df:hi' option; do
 	case "$option" in
 		f)
 			ENV_FILE=${OPTARG}
@@ -33,6 +34,9 @@ while getopts 'b:d:f:hi' option; do
 		r)
 			${SCRIPTS_DIR}/reset.sh
 			exit 0
+			;;
+		d)
+			DEV=true
 			;;
 		?)
 			usage
@@ -83,11 +87,12 @@ deploy_bridge_contracts() {
 	printer -s "Finished deploying bridge contracts"
 }
 
-${SCRIPTS_DIR}/get_secrets.sh
-${SCRIPTS_DIR}/install_dependencies.sh
+if [ ! "${DEV}" = true ]; then
+	${SCRIPTS_DIR}/get_secrets.sh
+	${SCRIPTS_DIR}/install_dependencies.sh
+fi
 
-# create_bridge_wallets
+create_bridge_wallets
 deploy_bridge_contracts
-
 
 # EOF

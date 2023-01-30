@@ -52,20 +52,39 @@ printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
 
+generate_wallet() {
+	${SCRIPTS_DIR}/generate_wallet.sh "$@" &>> ${LOG_FILE}
+}
+
+create_wallet() {
+	wallet_name=$1
+	key_path=${VOLUMES_DIR}/volume5/${wallet_name}
+
+	generate_wallet -o "${key_path}"
+
+	printer -n "Created ${key_path} wallet"
+}
+
 create_bridge_wallets() {
-    printer -t "Creating bridge wallets"
-	${SCRIPTS_DIR}/create_bridge_wallets.sh # >> ${LOG_FILE}
-    printer -s "Finished creating bridge wallets"
+	printer -t "Creating bridge wallets"
+
+	create_wallet "token_owner" &
+	create_wallet "fee_receiver" &
+	create_wallet "notary" &
+	create_wallet "approver" &
+	wait
+
+	printer -s "Finished creating bridge wallets"
 }
 
 deploy_bridge_contracts() {
-    printer -t "Deploying bridge contracts"
+	printer -t "Deploying bridge contracts"
 	${SCRIPTS_DIR}/deploy_bridge_contracts.sh #>> ${LOG_FILE}
-    printer -s "Finished deploying bridge contracts"
+	printer -s "Finished deploying bridge contracts"
 }
 
 
-create_bridge_wallets
+# create_bridge_wallets
 deploy_bridge_contracts
 
 

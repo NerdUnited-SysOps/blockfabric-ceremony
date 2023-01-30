@@ -1,10 +1,9 @@
 #!/usr/bin/env zsh
+
 set -e
 
 ENV_FILE=./.env
 SCRIPTS_DIR=$(realpath ./ceremony-scripts)
-
-
 
 usage() {
 	echo "This script is a helper for deploying bridge smart contracts"
@@ -52,12 +51,12 @@ else
 	source ${ENV_FILE}
 fi
 
-[ -z "${BRIDGE_APPROVER_ADDRESS_FILE}" ] && BRIDGE_APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_approver"
-[ -z "${BRIDGE_NOTARY_ADDRESS_FILE}" ] && BRIDGE_NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_notary"
-[ -z "${BRIDGE_FEE_RECEIVER_ADDRESS_FILE}" ] && BRIDGE_FEE_RECEIVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_fee_receiver"
+[ -z "${APPROVER_ADDRESS_FILE}" ] && APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/approver"
+[ -z "${NOTARY_ADDRESS_FILE}" ] && NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/notary"
+[ -z "${FEE_RECEIVER_ADDRESS_FILE}" ] && FEE_RECEIVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/fee_receiver"
 [ -z "${TOKEN_OWNER_ADDRESS_FILE}" ] && TOKEN_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/token_owner"
-[ -z "${BRIDGE_MINTER_APPROVER_ADDRESS_FILE}" ] && BRIDGE_MINTER_APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_minter_approver"
-[ -z "${BRIDGE_MINTER_NOTARY_ADDRESS_FILE}"   ] && BRIDGE_MINTER_NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_minter_notary"
+
+echo "file: ${APPROVER_ADDRESS_FILE}/keystore"
 
 check_file() {
 	file_name=$1
@@ -69,33 +68,29 @@ check_file() {
 }
 
 check_wallet_files() {
-    check_file "Bridge approver address"  "${BRIDGE_APPROVER_ADDRESS_FILE}/keystore"
-    check_file "Bridge notary address"  "${BRIDGE_NOTARY_ADDRESS_FILE}/keystore"
-    check_file "Bridge fee receiver address"  "${BRIDGE_FEE_RECEIVER_ADDRESS_FILE}/keystore"
+    check_file "Approver address"  "${APPROVER_ADDRESS_FILE}/keystore"
+    check_file "Notary address"  "${NOTARY_ADDRESS_FILE}/keystore"
+    check_file "Fee receiver address"  "${FEE_RECEIVER_ADDRESS_FILE}/keystore"
     check_file "Token address"  "${TOKEN_OWNER_ADDRESS_FILE}/keystore"
-    check_file "Bridge minter approver address"  "${BRIDGE_MINTER_APPROVER_ADDRESS_FILE}/keystore"
-    check_file "Bridge minter notary address"  "${BRIDGE_MINTER_NOTARY_ADDRESS_FILE}/keystore"
 }
 
 get_address() {
-	inspect_path=$1
-	inspected_content=$(${ETHKEY} inspect \
-		--private \
-		--passwordfile ${inspect_path}/password \
-		${inspect_path}/keystore)
-	echo "${inspected_content}" | sed -n "s/Address:\s*\(.*\)/\1/p" | tr -d '\n'
+    keystore_path=$1
+    echo "keystore: ${keystore_path}"
+    ADDRESS=$(grep -o '"address": *"[^"]*"' ${keystore_path} | grep -o '"[^"]*"$' | sed 's/"//g')
 }
 
 
 deploy_bridge_contracts() {
     printer -t "Deploying bridge smart contracts"
 
-    bridge_approver_address=$(get_address $BRIDGE_APPROVER_ADDRESS_FILE)
-    bridge_notary_address=$(get_address $BRIDGE_NOTARY_ADDRESS_FILE)
-    bridge_fee_receiver_address=$(get_address $BRIDGE_FEE_RECEIVER_ADDRESS_FILE)
-    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE)
-    bridge_minter_approver_address=$(get_address $BRIDGE_MINTER_APPROVER_ADDRESS_FILE)
-    bridge_minter_notary_address=$(get_address $BRIDGE_MINTER_NOTARY_ADDRESS_FILE)
+    approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
+    notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
+    fee_receiver_address=$(get_address $FEE_RECEIVER_ADDRESS_FILE/keystore)
+    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
+    echo "file: ${APPROVER_ADDRES_FILE}"
+    echo "approver: ${approver_address}"
+    echo "fee_receiver: ${fee_receiver_address}"
 
     export GOPRIVATE=github.com/elevate-blockchain/*
 
@@ -104,15 +99,20 @@ deploy_bridge_contracts() {
     go get github.com/elevate-blockchain/neptune/pkg/contracts
 
     DEPLOYER_CMD=cmd
+    printer -w "start Deploying"
     # Deploy bridge
      go run ${DEPLOYER_CMD}/bridge/main.go \
          ${NERD_CHAIN_URL} \
          ${DEPLOYER_PRIVATE_KEY} \
-         ${bridge_approver_address} \
-         ${bridge_notary_address} \
-         ${bridge_fee_receiver_address} \
+         ${approver_address} \
+         ${notary_address} \
+         ${fee_receiver_address} \
          ${DEPLOYMENT_FEE} \
          ${CHAIN_ID}
+    printer -w "finish Deploying"
+
+     printer -s "lovely ❤️"
+     exit;
 
     # Deploy Token
     token_contract_output="$(go run ${DEPLOYER_CMD}/token/main.go \
@@ -130,8 +130,8 @@ deploy_bridge_contracts() {
     go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
         ${DEPLOYER_PRIVATE_KEY} \
-        ${bridge_approver_address} \
-        ${bridge_notary_address} \
+        ${approver_address} \
+        ${notary_address} \
         ${token_contract_address} \
         ${CHAIN_ID}
 

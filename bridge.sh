@@ -50,6 +50,7 @@ run_validation() {
 persistence() {
     printer -e "TODO: Implement bridge persistence"
 	#./persistence.sh
+	
 }
 
 dev() {

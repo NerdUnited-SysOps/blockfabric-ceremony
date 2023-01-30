@@ -82,6 +82,16 @@ persist_distribution_issuer() {
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_PASSWORD} ${VOLUMES_DIR}/volume1/distributionIssuer/password ${AWS_PRIMARY_PROFILE}
 }
 
+persist_bridge_keys() {	
+	# approver -> blockadmin AWS secrets
+	upsert_file ${AWS_APPROVER_KEYSTORE} ${VOLUMES_DIR}/volume5/bridge_approver/keystore ${AWS_PRIMARY_PROFILE}
+	upsert_file ${AWS_APPROVER_PASSWORD} ${VOLUMES_DIR}/volume1/bridge_approver/password ${AWS_PRIMARY_PROFILE}
+
+	# notary -> brand AWS secrets
+	upsert_file ${AWS_NOTARY_KEYSTORE} ${VOLUMES_DIR}/volume5/bridge_notary/keystore ${AWS_SECONDARY_PROFILE}
+	upsert_file ${AWS_NOTARY_PASSWORD} ${VOLUMES_DIR}/volume5/bridge_notary/password ${AWS_SECONDARY_PROFILE}
+}
+
 items=(
 	"Persist distribution issuer wallet"
 	"Persist chain variables (cli args, genesis, addresses, etc)"
@@ -101,7 +111,8 @@ while true; do
 		case $REPLY in
 			1) persist_distribution_issuer; break;;
 			2) save_ansible_vars; break;;
-			3) printf "Closing\n\n"; exit 0;;
+			3) persist_bridge_keys; break;;
+			4) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

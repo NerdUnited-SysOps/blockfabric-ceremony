@@ -51,7 +51,7 @@ func main() {
 	nonce = nonce + 1
 
 	tokenIssuer := bridge_common.GetDeterministicAddress(deployerAddress, nonce)
-	log.Println("bridge minter address=", tokenIssuer)
+	log.Println("Bridge minter contract address=", tokenIssuer)
 
 	// create auth and transaction package for deploying smart contract
 	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey)
@@ -86,6 +86,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	log.Println("tokenContractAddress=", deployedTokenContractAddress.Hex())
 
 	fmt.Println(deployedTokenContractAddress.Hex())
 }

@@ -84,12 +84,12 @@ persist_distribution_issuer() {
 
 persist_bridge_keys() {	
 	# approver -> blockadmin AWS secrets
-	upsert_file ${AWS_APPROVER_KEYSTORE} ${VOLUMES_DIR}/volume5/bridge_approver/keystore ${AWS_PRIMARY_PROFILE}
-	upsert_file ${AWS_APPROVER_PASSWORD} ${VOLUMES_DIR}/volume1/bridge_approver/password ${AWS_PRIMARY_PROFILE}
+	upsert_file ${AWS_APPROVER_KEYSTORE} ${VOLUMES_DIR}/volume5/approver/keystore ${AWS_PRIMARY_PROFILE}
+	upsert_file ${AWS_APPROVER_PASSWORD} ${VOLUMES_DIR}/volume1/approver/password ${AWS_PRIMARY_PROFILE}
 
 	# notary -> brand AWS secrets
-	upsert_file ${AWS_NOTARY_KEYSTORE} ${VOLUMES_DIR}/volume5/bridge_notary/keystore ${AWS_SECONDARY_PROFILE}
-	upsert_file ${AWS_NOTARY_PASSWORD} ${VOLUMES_DIR}/volume5/bridge_notary/password ${AWS_SECONDARY_PROFILE}
+	upsert_file ${AWS_NOTARY_KEYSTORE} ${VOLUMES_DIR}/volume5/notary/keystore ${AWS_SECONDARY_PROFILE}
+	upsert_file ${AWS_NOTARY_PASSWORD} ${VOLUMES_DIR}/volume5/notary/password ${AWS_SECONDARY_PROFILE}
 }
 
 items=(

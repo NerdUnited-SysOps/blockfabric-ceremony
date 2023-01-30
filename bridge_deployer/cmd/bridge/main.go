@@ -13,7 +13,15 @@ import (
 )
 
 func main() {
-	log.Println("deploying bridge")
+	// If the file doesn't exist, create it or append to the file
+	file, err := os.OpenFile("golang_bridge.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(file)
+
+	log.Println("Deploying L1 bridge")
+
 	ethRpcUrl := os.Args[1]
 	deployerPrivateKey := os.Args[2]
 	approverAddress := os.Args[3]
@@ -55,6 +63,6 @@ func main() {
 		}
 		panic(err)
 	}
-	log.Println("txn hash: ", txn.Hash())
+	log.Println("Txn hash: ", txn.Hash())
 	log.Println("Deployed bridge address: ", deployedBridgeContractAddress.Hex())
 }

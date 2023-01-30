@@ -4,6 +4,7 @@ import (
 	bridge_common "bridge-deployer/common"
 	"context"
 	"fmt"
+	"log"
 	"math/big"
 	"os"
 	"strconv"
@@ -15,6 +16,15 @@ import (
 )
 
 func main() {
+	// If the file doesn't exist, create it or append to the file
+	file, err := os.OpenFile("bridge.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(file)
+
+	log.Println("Deploying L1 ERC20 Token")
+
 	ethRpcUrl := os.Args[1]
 	deployerPrivateKey := os.Args[2]
 	tokenName := os.Args[3]
@@ -41,7 +51,7 @@ func main() {
 	nonce = nonce + 1
 
 	tokenIssuer := bridge_common.GetDeterministicAddress(deployerAddress, nonce)
-	fmt.Println("bridge minter address=", tokenIssuer)
+	log.Println("bridge minter address=", tokenIssuer)
 
 	// create auth and transaction package for deploying smart contract
 	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey)
@@ -51,9 +61,9 @@ func main() {
 
 	maxSupply := big.NewInt(0)
 	if _, ok := maxSupply.SetString(tokenMaxSupplyArg, 10); ok {
-		fmt.Printf("number = %v\n", maxSupply)
+		log.Printf("number = %v\n", maxSupply)
 	} else {
-		fmt.Printf("error parsing line %#v\n", tokenMaxSupplyArg)
+		log.Printf("error parsing line %#v\n", tokenMaxSupplyArg)
 	}
 	tokenDecimalsResult, err := strconv.ParseInt(tokenDecimalsArg, 10, 32)
 	if err != nil {
@@ -64,12 +74,13 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("tokenName=", tokenName)
-	fmt.Println("tokenSymbol=", tokenSymbol)
-	fmt.Println("tokenDecimals=", tokenDecimals)
-	fmt.Println("tokenOwner=", tokenOwner)
-	fmt.Println("tokenIssuer=", tokenIssuer)
-	fmt.Println("maxSupply=", maxSupply)
+	log.Println("tokenName=", tokenName)
+	log.Println("tokenSymbol=", tokenSymbol)
+	log.Println("tokenDecimals=", tokenDecimals)
+	log.Println("tokenOwner=", tokenOwner)
+	log.Println("tokenIssuer=", tokenIssuer)
+	log.Println("maxSupply=", maxSupply)
+
 	// Deploy Token
 	deployedTokenContractAddress, _, _, err := bridge.DeployToken(auth, client, tokenName, tokenSymbol, tokenDecimals, tokenOwner, tokenIssuer, maxSupply)
 	if err != nil {

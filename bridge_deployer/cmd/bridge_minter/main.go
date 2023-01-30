@@ -2,7 +2,7 @@ package main
 
 import (
 	bridge_common "bridge-deployer/common"
-	"fmt"
+	"log"
 	"math/big"
 	"os"
 	"strconv"
@@ -14,6 +14,15 @@ import (
 )
 
 func main() {
+	// If the file doesn't exist, create it or append to the file
+	file, err := os.OpenFile("golang_bridge.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(file)
+
+	log.Println("Deploying L2 bridge")
+
 	ethRpcUrl := os.Args[1]
 	deployerPrivateKey := os.Args[2]
 	approverAddress := os.Args[3]
@@ -40,15 +49,16 @@ func main() {
 	}
 	chainId := big.NewInt(chainResult)
 
-	fmt.Println("bridgeApprover=", bridgeApprover)
-	fmt.Println("bridgeNotary=", bridgeNotary)
-	fmt.Println("tokenContractAddress=", tokenContractAddress)
-	fmt.Println("chainId=", chainId)
+	log.Println("bridgeApprover=", bridgeApprover)
+	log.Println("bridgeNotary=", bridgeNotary)
+	log.Println("tokenContractAddress=", tokenContractAddress)
+	log.Println("chainId=", chainId)
+
 	// Deploy Bridge Minter
 	deployedBridgeMinterContractAddress, _, _, err := bridge.DeployBridgeMinter(auth, client, bridgeApprover, bridgeNotary, tokenContractAddress, chainId)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("bridge minter address=", deployedBridgeMinterContractAddress.Hex())
+	log.Println("bridge minter address=", deployedBridgeMinterContractAddress.Hex())
 }

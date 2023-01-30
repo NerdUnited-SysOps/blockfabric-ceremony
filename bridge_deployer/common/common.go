@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
-	"fmt"
 	"log"
 	"math/big"
 
@@ -28,14 +27,14 @@ func GetAccountAuth(client *ethclient.Client, addressPrivateKey string) *bind.Tr
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	fmt.Println("Deployer address=", fromAddress)
+	log.Println("Deployer address=", fromAddress)
 
 	//fetch the last use nonce of account
 	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("nonce=", nonce)
+	log.Println("nonce=", nonce)
 	chainID, err := client.ChainID(context.Background())
 	if err != nil {
 		panic(err)

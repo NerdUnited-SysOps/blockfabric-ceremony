@@ -92,7 +92,7 @@ deploy_bridge_contracts() {
     go get github.com/elevate-blockchain/neptune/pkg/contracts
 
     DEPLOYER_CMD=cmd
-    printer -w "start Deploying"
+    printer -n "Deploying L2 Bridge"
     # Deploy bridge
     go run ${DEPLOYER_CMD}/bridge/main.go \
          ${NERD_CHAIN_URL} \
@@ -104,6 +104,7 @@ deploy_bridge_contracts() {
          ${CHAIN_ID}
 
     # Deploy Token
+    printer -n "Deploying L1 ERC20 Token"
     token_contract_output="$(go run ${DEPLOYER_CMD}/token/main.go \
         ${ETH_URL} \
         ${DEPLOYER_B_PRIVATE_KEY} \
@@ -115,7 +116,8 @@ deploy_bridge_contracts() {
     echo "token contract address=" $token_contract_output &>> ${LOG_FILE}
     token_contract_address="$(echo $token_contract_output | tail -n1)"
 
-    # # Deploy Bridge Minter
+    # Deploy Bridge Minter
+    printer -n "Deploying L1 Bridge"
     go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
         ${DEPLOYER_A_PRIVATE_KEY} \
@@ -123,6 +125,8 @@ deploy_bridge_contracts() {
         ${notary_address} \
         ${token_contract_address} \
         ${CHAIN_ID}
+
+    printer -n "Deploying finished."
 }
 
 check_wallet_files

@@ -95,6 +95,7 @@ persist_bridge_keys() {
 items=(
 	"Persist distribution issuer wallet"
 	"Persist chain variables (cli args, genesis, addresses, etc)"
+	"Persist bridge keys"
 	"Exit"
 )
 

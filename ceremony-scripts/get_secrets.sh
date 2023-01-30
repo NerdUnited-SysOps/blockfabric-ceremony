@@ -41,6 +41,7 @@ get_key() {
 			get-secret-value \
 			--secret-id "${secret_id}" \
 			--output text \
+			--profile ${AWS_PRIMARY_PROFILE} \
 			--query SecretString
 	else
 		printer -e "Missing secret key id."

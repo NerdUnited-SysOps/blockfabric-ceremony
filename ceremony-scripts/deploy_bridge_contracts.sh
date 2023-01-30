@@ -53,7 +53,6 @@ fi
 
 [ -z "${APPROVER_ADDRESS_FILE}" ] && APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/approver"
 [ -z "${NOTARY_ADDRESS_FILE}" ] && NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/notary"
-[ -z "${FEE_RECEIVER_ADDRESS_FILE}" ] && FEE_RECEIVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/fee_receiver"
 [ -z "${TOKEN_OWNER_ADDRESS_FILE}" ] && TOKEN_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/token_owner"
 
 echo "file: ${APPROVER_ADDRESS_FILE}/keystore"
@@ -70,7 +69,6 @@ check_file() {
 check_wallet_files() {
     check_file "Approver address"  "${APPROVER_ADDRESS_FILE}/keystore"
     check_file "Notary address"  "${NOTARY_ADDRESS_FILE}/keystore"
-    check_file "Fee receiver address"  "${FEE_RECEIVER_ADDRESS_FILE}/keystore"
     check_file "Token address"  "${TOKEN_OWNER_ADDRESS_FILE}/keystore"
 }
 
@@ -85,7 +83,6 @@ deploy_bridge_contracts() {
 
     approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
     notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
-    fee_receiver_address=$(get_address $FEE_RECEIVER_ADDRESS_FILE/keystore)
     token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
 
     git config --global url."https://${GITHUB_PAT}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
@@ -104,7 +101,7 @@ deploy_bridge_contracts() {
          ${DEPLOYER_PRIVATE_KEY} \
          ${approver_address} \
          ${notary_address} \
-         ${fee_receiver_address} \
+         ${FEE_RECEIVER} \
          ${DEPLOYMENT_FEE} \
          ${CHAIN_ID}
 

@@ -21,7 +21,7 @@ func main() {
 	}
 	log.SetOutput(file)
 
-	log.Println("Deploying L1 bridge")
+	log.Println("Deploying L2 bridge")
 
 	ethRpcUrl := os.Args[1]
 	deployerPrivateKey := os.Args[2]

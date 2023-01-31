@@ -96,7 +96,7 @@ persist_bridge_keys() {
 	upsert_file ${AWS_NOTARY_PASSWORD} ${VOLUMES_DIR}/volume5/notary/password ${AWS_SECONDARY_PROFILE}
 
 	notary_private_key=get_private_key ${VOLUMES_DIR}/volume5/notary
-	upsert_file ${AWS_APPROVER_KEY} notary_private_key ${AWS_PRIMARY_PROFILE}
+	upsert_file ${AWS_NOTARY_KEY} notary_private_key ${AWS_PRIMARY_PROFILE}
 }
 
 inspect() {

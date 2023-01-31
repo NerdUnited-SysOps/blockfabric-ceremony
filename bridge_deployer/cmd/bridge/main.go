@@ -43,7 +43,7 @@ func main() {
 	}
 
 	// create auth and transaction package for deploying smart contract
-	auth := bridge_common.GetLondonAccountAuth(client, deployerPrivateKey)
+	auth := bridge_common.GetLegacyAccountAuth(client, deployerPrivateKey)
 
 	// Setup params
 	bridgeApprover := common.HexToAddress(approverAddress)

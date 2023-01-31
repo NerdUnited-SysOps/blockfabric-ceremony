@@ -22,7 +22,7 @@ func main() {
 	}
 	log.SetOutput(file)
 
-	log.Println("Deploying L2 bridge")
+	log.Println("Deploying L1 bridge")
 
 	ethRpcUrl := os.Args[1]
 	deployerPrivateKey := os.Args[2]
@@ -38,7 +38,7 @@ func main() {
 	}
 
 	// create auth and transaction package for deploying smart contract
-	auth := bridge_common.GetLegacyAccountAuth(client, deployerPrivateKey)
+	auth := bridge_common.GetLondonAccountAuth(client, deployerPrivateKey)
 
 	// Setup params
 	bridgeApprover := common.HexToAddress(strings.TrimSpace(approverAddress))

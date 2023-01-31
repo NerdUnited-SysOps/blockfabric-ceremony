@@ -54,7 +54,7 @@ func main() {
 	log.Println("Bridge minter contract address=", tokenIssuer)
 
 	// create auth and transaction package for deploying smart contract
-	auth := bridge_common.GetLondonAccountAuth(client, deployerPrivateKey)
+	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey, bridge_common.London)
 
 	// Setup params
 	tokenOwner := common.HexToAddress(strings.TrimSpace(tokenOwnerAddress))

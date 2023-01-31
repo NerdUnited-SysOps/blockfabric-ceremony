@@ -4,6 +4,7 @@ set -e
 
 ENV_FILE=./.env
 SCRIPTS_DIR=$(realpath ./ceremony-scripts)
+ETHKEY=${HOME}/go/bin/ethkey
 
 usage() {
 	echo "Options"
@@ -87,9 +88,30 @@ persist_bridge_keys() {
 	upsert_file ${AWS_APPROVER_KEYSTORE} ${VOLUMES_DIR}/volume5/approver/keystore ${AWS_PRIMARY_PROFILE}
 	upsert_file ${AWS_APPROVER_PASSWORD} ${VOLUMES_DIR}/volume5/approver/password ${AWS_PRIMARY_PROFILE}
 
+	approver_private_key=get_private_key ${VOLUMES_DIR}/volume5/approver
+	upsert_file ${AWS_APPROVER_KEY} approver_private_key ${AWS_SECONDARY_PROFILE}
+
 	# notary -> brand AWS secrets
 	upsert_file ${AWS_NOTARY_KEYSTORE} ${VOLUMES_DIR}/volume5/notary/keystore ${AWS_SECONDARY_PROFILE}
 	upsert_file ${AWS_NOTARY_PASSWORD} ${VOLUMES_DIR}/volume5/notary/password ${AWS_SECONDARY_PROFILE}
+
+	notary_private_key=get_private_key ${VOLUMES_DIR}/volume5/notary
+	upsert_file ${AWS_APPROVER_KEY} notary_private_key ${AWS_PRIMARY_PROFILE}
+}
+
+inspect() {
+	inspect_path=$1
+
+	${ETHKEY} inspect \
+		--private \
+		--passwordfile ${inspect_path}/password \
+		${inspect_path}/keystore
+}
+
+get_private_key() {
+	inspect_path=$1
+	inspected_content=$(inspect "${inspect_path}")
+	echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
 }
 
 items=(

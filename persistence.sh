@@ -102,14 +102,14 @@ persist_bridge_keys() {
 	upsert_file ${AWS_APPROVER_PASSWORD} ${VOLUMES_DIR}/volume5/approver/password ${AWS_PRIMARY_PROFILE}
 
 	approver_private_key=$(get_private_key ${VOLUMES_DIR}/volume5/approver)
-	upsert_file ${AWS_APPROVER_PRIVATE_KEY} approver_private_key ${AWS_SECONDARY_PROFILE}
+	upsert_file ${AWS_APPROVER_PRIVATE_KEY} $approver_private_key ${AWS_SECONDARY_PROFILE}
 
 	# notary -> brand AWS secrets
 	upsert_file ${AWS_NOTARY_KEYSTORE} ${VOLUMES_DIR}/volume5/notary/keystore ${AWS_SECONDARY_PROFILE}
 	upsert_file ${AWS_NOTARY_PASSWORD} ${VOLUMES_DIR}/volume5/notary/password ${AWS_SECONDARY_PROFILE}
 
 	notary_private_key=$(get_private_key ${VOLUMES_DIR}/volume5/notary)
-	upsert_file ${AWS_NOTARY_PRIVATE_KEY} notary_private_key ${AWS_PRIMARY_PROFILE}
+	upsert_file ${AWS_NOTARY_PRIVATE_KEY} $notary_private_key ${AWS_PRIMARY_PROFILE}
 
 	# contract addresses
 	volue5=${VOLUMES_DIR}/volume5

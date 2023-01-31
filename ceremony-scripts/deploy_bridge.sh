@@ -73,7 +73,6 @@ create_bridge_wallets() {
 	printer -t "Creating bridge wallets"
 
 	create_wallet "token_owner" &
-	create_wallet "fee_receiver" &
 	create_wallet "notary" &
 	create_wallet "approver" &
 	wait

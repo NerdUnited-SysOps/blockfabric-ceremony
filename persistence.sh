@@ -117,11 +117,12 @@ persist_address_file() {
 	key_name=$1
 	file_path=$2
 	profile=$3
+	printer -n "Persisting ${file_path} to ${key_name}"
 
 	if [ -f "${file_path}" ]; then
 		upsert_file ${key_name} ${file_path} ${profile}
 	else
-		printer -e "Missing ${bridge_address_file}"
+		printer -e "Missing ${file_path}"
 	fi
 }
 
@@ -141,7 +142,7 @@ persist_bridge_keys() {
 	upsert_secret ${AWS_NOTARY_PRIVATE_KEY} notary_private_key ${AWS_PRIMARY_PROFILE}
 
 	# contract addresses
-	volue5=${VOLUMES_DIR}/volume5
+	volume5=${VOLUMES_DIR}/volume5
 	persist_address_file ${BRIDGE_CONTRACT_ADDRESS} ${volume5}/bridge_address ${AWS_PRIMARY_PROFILE}
 	persist_address_file ${BRIDGE_MINTER_CONTRACT_ADDRESS} ${volume5}/token_address ${AWS_PRIMARY_PROFILE}
 	persist_address_file ${TOKEN_CONTRACT_ADDRESS} ${volume5}/bridge_minter_address ${AWS_PRIMARY_PROFILE}

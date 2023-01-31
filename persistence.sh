@@ -37,6 +37,35 @@ printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
 
+upsert_secret() {
+	upsert_key=$1
+	upsert_value=$2
+	profile=$3
+	printer -n "Persisting ${upsert_val} to ${upsert_key}"
+
+	secret=$(aws secretsmanager \
+		put-secret-value \
+		--secret-id ${upsert_key} \
+		--profile ${profile} \
+		--secret-string ${upsert_value} &)
+
+			if [ -n "${secret}" ]; then
+				printer -s "Complete"
+			else
+				aws secretsmanager \
+					create-secret \
+					--name ${upsert_key} \
+					--profile ${profile} \
+					--secret-string ${upsert_value}
+
+				if [ $? -eq 0 ]; then
+					printer -s "Complete"
+				else
+					printer -e "Failed to pserist ${upsert_key}"
+				fi
+				fi
+}
+
 upsert_file() {
 	upsert_key=$1
 	upsert_file=$2
@@ -102,14 +131,14 @@ persist_bridge_keys() {
 	upsert_file ${AWS_APPROVER_PASSWORD} ${VOLUMES_DIR}/volume5/approver/password ${AWS_PRIMARY_PROFILE}
 
 	approver_private_key=$(get_private_key ${VOLUMES_DIR}/volume5/approver)
-	upsert_file ${AWS_APPROVER_PRIVATE_KEY} $approver_private_key ${AWS_SECONDARY_PROFILE}
+	upsert_secret ${AWS_APPROVER_PRIVATE_KEY} $approver_private_key ${AWS_SECONDARY_PROFILE}
 
 	# notary -> brand AWS secrets
 	upsert_file ${AWS_NOTARY_KEYSTORE} ${VOLUMES_DIR}/volume5/notary/keystore ${AWS_SECONDARY_PROFILE}
 	upsert_file ${AWS_NOTARY_PASSWORD} ${VOLUMES_DIR}/volume5/notary/password ${AWS_SECONDARY_PROFILE}
 
 	notary_private_key=$(get_private_key ${VOLUMES_DIR}/volume5/notary)
-	upsert_file ${AWS_NOTARY_PRIVATE_KEY} $notary_private_key ${AWS_PRIMARY_PROFILE}
+	upsert_secret ${AWS_NOTARY_PRIVATE_KEY} notary_private_key ${AWS_PRIMARY_PROFILE}
 
 	# contract addresses
 	volue5=${VOLUMES_DIR}/volume5

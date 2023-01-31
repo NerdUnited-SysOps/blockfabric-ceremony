@@ -94,14 +94,14 @@ deploy_bridge_contracts() {
     DEPLOYER_CMD=cmd
     printer -n "Deploying L2 Bridge"
     # Deploy bridge
-    bridge_output=$(go run ${DEPLOYER_CMD}/bridge/main.go \
+    bridge_output="$(go run ${DEPLOYER_CMD}/bridge/main.go \
          ${NERD_CHAIN_URL} \
          ${DEPLOYER_A_PRIVATE_KEY} \
          ${approver_address} \
          ${notary_address} \
          ${FEE_RECEIVER} \
          ${DEPLOYMENT_FEE} \
-         ${CHAIN_ID})
+         ${CHAIN_ID})"
 
     echo "bridge output=" $bridge_output &>> ${LOG_FILE}
     bridge_address="$(echo $bridge_output | tail -n1)"
@@ -124,13 +124,13 @@ deploy_bridge_contracts() {
 
     # Deploy Bridge Minter
     printer -n "Deploying L1 Bridge"
-    bridge_minter_output=$(go run ${DEPLOYER_CMD}/bridge_minter/main.go \
+    bridge_minter_output="$(go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
         ${DEPLOYER_A_PRIVATE_KEY} \
         ${approver_address} \
         ${notary_address} \
         ${token_contract_address} \
-        ${CHAIN_ID})
+        ${CHAIN_ID})"
 
     bridge_minter_address="$(echo $bridge_minter_output | tail -n1)"
     echo $bridge_minter_address > ${VOLUMES_DIR}/volume5/bridge_minter_address

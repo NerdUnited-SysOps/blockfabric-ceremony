@@ -94,14 +94,18 @@ deploy_bridge_contracts() {
     DEPLOYER_CMD=cmd
     printer -n "Deploying L2 Bridge"
     # Deploy bridge
-    go run ${DEPLOYER_CMD}/bridge/main.go \
+    bridge_output=$(go run ${DEPLOYER_CMD}/bridge/main.go \
          ${NERD_CHAIN_URL} \
          ${DEPLOYER_A_PRIVATE_KEY} \
          ${approver_address} \
          ${notary_address} \
          ${FEE_RECEIVER} \
          ${DEPLOYMENT_FEE} \
-         ${CHAIN_ID}
+         ${CHAIN_ID})
+
+    echo "bridge output=" $bridge_output &>> ${LOG_FILE}
+    bridge_address="$(echo $bridge_output | tail -n1)"
+    echo $bridge_address > ${VOLUMES_DIR}/volume5/bridge_address
 
     # Deploy Token
     printer -n "Deploying L1 ERC20 Token"
@@ -113,18 +117,23 @@ deploy_bridge_contracts() {
         ${TOKEN_DECIMALS} \
         ${TOKEN_MAX_SUPPLY} \
         ${token_owner_address})"
+
     echo "token contract address=" $token_contract_output &>> ${LOG_FILE}
     token_contract_address="$(echo $token_contract_output | tail -n1)"
+    echo $token_contract_address > ${VOLUMES_DIR}/volume5/token_address
 
     # Deploy Bridge Minter
     printer -n "Deploying L1 Bridge"
-    go run ${DEPLOYER_CMD}/bridge_minter/main.go \
+    bridge_minter_output=$(go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
         ${DEPLOYER_A_PRIVATE_KEY} \
         ${approver_address} \
         ${notary_address} \
         ${token_contract_address} \
-        ${CHAIN_ID}
+        ${CHAIN_ID})
+
+    bridge_minter_address="$(echo $bridge_minter_output | tail -n1)"
+    echo $bridge_minter_address > ${VOLUMES_DIR}/volume5/bridge_minter_address
 
     printer -n "Deploying finished."
 }

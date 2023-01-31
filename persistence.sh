@@ -83,6 +83,18 @@ persist_distribution_issuer() {
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_PASSWORD} ${VOLUMES_DIR}/volume1/distributionIssuer/password ${AWS_PRIMARY_PROFILE}
 }
 
+persist_address_file() {
+	key_name=$1
+	file_path=$2
+	profile=$3
+
+	if [ -f "${file_path}" ]; then
+		upsert_file ${key_name} ${file_path} ${profile}
+	else
+		printer -e "Missing ${bridge_address_file}"
+	fi
+}
+
 persist_bridge_keys() {	
 	# approver -> blockadmin AWS secrets
 	upsert_file ${AWS_APPROVER_KEYSTORE} ${VOLUMES_DIR}/volume5/approver/keystore ${AWS_PRIMARY_PROFILE}
@@ -97,6 +109,13 @@ persist_bridge_keys() {
 
 	notary_private_key=get_private_key ${VOLUMES_DIR}/volume5/notary
 	upsert_file ${AWS_NOTARY_PRIVATE_KEY} notary_private_key ${AWS_PRIMARY_PROFILE}
+
+	# contract addresses
+	volue5=${VOLUMES_DIR}/volume5
+	persist_address_file ${BRIDGE_CONTRACT_ADDRESS} ${volume5}/bridge_address ${AWS_PRIMARY_PROFILE}
+	persist_address_file ${BRIDGE_MINTER_CONTRACT_ADDRESS} ${volume5}/token_address ${AWS_PRIMARY_PROFILE}
+	persist_address_file ${TOKEN_CONTRACT_ADDRESS} ${volume5}/bridge_minter_address ${AWS_PRIMARY_PROFILE}
+
 }
 
 inspect() {

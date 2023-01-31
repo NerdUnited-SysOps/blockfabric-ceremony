@@ -47,6 +47,7 @@ upsert_file() {
 	secret=$(aws secretsmanager \
 		put-secret-value \
 		--secret-id ${upsert_key} \
+		--profile ${profile} \
 		--secret-string ${upsert_value} &)
 
 			if [ -n "${secret}" ]; then

@@ -144,8 +144,8 @@ persist_bridge_keys() {
 	# contract addresses
 	volume5=${VOLUMES_DIR}/volume5
 	persist_address_file ${BRIDGE_CONTRACT_ADDRESS} ${volume5}/bridge_address ${AWS_PRIMARY_PROFILE}
-	persist_address_file ${BRIDGE_MINTER_CONTRACT_ADDRESS} ${volume5}/token_address ${AWS_PRIMARY_PROFILE}
-	persist_address_file ${TOKEN_CONTRACT_ADDRESS} ${volume5}/bridge_minter_address ${AWS_PRIMARY_PROFILE}
+	persist_address_file ${BRIDGE_MINTER_CONTRACT_ADDRESS} ${volume5}/bridge_minter_address ${AWS_PRIMARY_PROFILE}
+	persist_address_file ${TOKEN_CONTRACT_ADDRESS} ${volume5}/token_address ${AWS_PRIMARY_PROFILE}
 
 	# secondary contracts
 	persist_address_file ${BRIDGE_CONTRACT_ADDRESS} ${volume5}/bridge_address ${AWS_SECONDARY_PROFILE}

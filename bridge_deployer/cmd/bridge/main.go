@@ -2,6 +2,7 @@ package main
 
 import (
 	bridge_common "bridge-deployer/common"
+	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -65,4 +66,5 @@ func main() {
 	}
 	log.Println("Txn hash: ", txn.Hash())
 	log.Println(deployedBridgeContractAddress.Hex())
+	fmt.Println(deployedBridgeContractAddress.Hex())
 }

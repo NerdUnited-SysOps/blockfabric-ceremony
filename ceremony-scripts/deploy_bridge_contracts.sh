@@ -119,7 +119,7 @@ deploy_bridge_contracts() {
         ${token_owner_address})"
 
     echo "token contract address=" $token_contract_output &>> ${LOG_FILE}
-    token_contract_address="$(echo $token_contract_output)"
+    token_contract_address="$(echo $token_contract_output | tail -n1)"
     echo $token_contract_address > ${VOLUMES_DIR}/volume5/token_address
 
     # Deploy Bridge Minter
@@ -132,7 +132,7 @@ deploy_bridge_contracts() {
         ${token_contract_address} \
         ${CHAIN_ID})"
 
-    bridge_minter_address="$(echo $bridge_minter_output)"
+    bridge_minter_address="$(echo $bridge_minter_output | tail -n1)"
     echo $bridge_minter_address > ${VOLUMES_DIR}/volume5/bridge_minter_address
 
     printer -n "Deploying finished."

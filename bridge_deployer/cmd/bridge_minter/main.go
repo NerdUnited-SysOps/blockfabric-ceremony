@@ -2,6 +2,7 @@ package main
 
 import (
 	bridge_common "bridge-deployer/common"
+	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -61,4 +62,5 @@ func main() {
 	}
 
 	log.Println(deployedBridgeMinterContractAddress.Hex())
+	fmt.Println(deployedBridgeMinterContractAddress.Hex())
 }

@@ -64,5 +64,5 @@ func main() {
 		panic(err)
 	}
 	log.Println("Txn hash: ", txn.Hash())
-	log.Println("Deployed bridge address: ", deployedBridgeContractAddress.Hex())
+	log.Println(deployedBridgeContractAddress.Hex())
 }

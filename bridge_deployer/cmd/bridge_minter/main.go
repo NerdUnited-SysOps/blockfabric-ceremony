@@ -60,5 +60,5 @@ func main() {
 		panic(err)
 	}
 
-	log.Println("bridge minter address=", deployedBridgeMinterContractAddress.Hex())
+	log.Println(deployedBridgeMinterContractAddress.Hex())
 }

@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 
 # USAGE: generate_ansible_goquorum_laybook.sh -v [Validator IP String]
 #
@@ -64,6 +64,13 @@ printer -t "Creating ansible vars"
 [ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/lockupOwner"
 [ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/Lockup.bin-runtime"
 
+# [ -z "${BRIDGE_APPROVER_ADDRESS_FILE}" ] && BRIDGE_APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_approver/keystore"
+# [ -z "${BRIDGE_NOTARY_ADDRESS_FILE}" ] && BRIDGE_NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_notary/keystore"
+# [ -z "${BRIDGE_FEE_RECEIVER_ADDRESS_FILE}" ] && BRIDGE_FEE_RECEIVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_fee_receiver/keystore"
+# [ -z "${TOKEN_OWNER_ADDRESS_FILE}" ] && TOKEN_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/token_owner/keystore"
+# [ -z "${BRIDGE_MINTER_APPROVER_ADDRESS_FILE}" ] && BRIDGE_MINTER_APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_minter_approver/keystore"
+# [ -z "${BRIDGE_MINTER_NOTARY_ADDRESS_FILE}"   ] && BRIDGE_MINTER_NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/bridge_minter_notary/keystore"
+
 check_file() {
 	file_name=$1
 	file_path=$2
@@ -80,6 +87,14 @@ check_file "Distirbution bytecode" "${DIST_RUNTIME_BIN_FILE}"
 check_file "Distribution owner address" "${DIST_OWNER_ADDRESS_FILE}/keystore"
 check_file "distribution issuer address" "${DIST_ISSUER_ADDRESS_FILE}/keystore"
 check_file "Lockup owner address" "${LOCKUP_OWNER_ADDRESS_FILE}/keystore"
+
+# check_file "Bridge approver address"  "${BRIDGE_APPROVER_ADDRESS_FILE}"
+# check_file "Bridge notary address"  "${BRIDGE_NOTARY_ADDRESS_FILE}"
+# check_file "Bridge fee receiver address"  "${BRIDGE_FEE_RECEIVER_ADDRESS_FILE}"
+# check_file "Token address"  "${TOKEN_OWNER_ADDRESS_FILE}"
+# check_file "Bridge minter approver address"  "${BRIDGE_MINTER_APPROVER_ADDRESS_FILE}"
+# check_file "Bridge minter notary address"  "${BRIDGE_MINTER_NOTARY_ADDRESS_FILE}"
+
 
 put_all_quorum_var() {
 	VAR_NAME=$1
@@ -144,6 +159,17 @@ all_quorum_vars() {
 	put_all_quorum_var "lace_genesis_lockup_owner_address" "\"$(get_address $LOCKUP_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_owner_address" "\"$(get_address $DIST_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_issuer_address" "\"$(get_address $DIST_ISSUER_ADDRESS_FILE | cut -c3-)\""
+
+
+
+# TODO: read address, store in appropriate role var
+#echo "${BRIDGE_APPROVER_ADDRESS_FILE}       $(get_address $BRIDGE_APPROVER_ADDRESS_FILE)"
+#echo "${BRIDGE_NOTARY_ADDRESS_FILE}         $(get_address $BRIDGE_NOTARY_ADDRESS_FILE)"
+#echo "${BRIDGE_FEE_RECEIVER_ADDRESS_FILE}   $(get_address $BRIDGE_FEE_RECEIVER_ADDRESS_FILE)"
+#echo "${TOKEN_OWNER_ADDRESS_FILE}           $(get_address $TOKEN_OWNER_ADDRESS_FILE)"
+#echo "${BRIDGE_MINTER_APPROVER_ADDRESS_FILE}$(get_address $BRIDGE_MINTER_APPROVER_ADDRESS_FILE)"
+#echo "${BRIDGE_MINTER_NOTARY_ADDRESS_FILE}  $(get_address $BRIDGE_MINTER_NOTARY_ADDRESS_FILE)"
+
 
 	put_all_quorum_var "goquorum_genesis_sc_dao_code" "\"0x$(cat ${DAO_RUNTIME_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_lockup_code" "\"0x$(cat ${LOCKUP_RUNTIME_BIN_FILE})\""

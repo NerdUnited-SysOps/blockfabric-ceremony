@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 
 ENV_FILE=./.env
 SCRIPTS_DIR=$(realpath ./ceremony-scripts)
@@ -40,7 +40,7 @@ volume_prompt() {
 	volume=""
 
 	PS3=$'\n'"Select volume: "
-	select item in volume1 volume2 volume3 volume4; do
+	select item in volume1 volume2 volume3 volume4 volume5; do
 		case $REPLY in
 			*) volume="volume${REPLY}"; break;;
 		esac
@@ -117,7 +117,7 @@ RED='\033[0;31m'
 while true; do
 	COLUMNS=1
 	PS3=$'\n'"Select option: "
-	select item in "${items[@]}" 
+	select item in "${items[@]}"
 		case $REPLY in
 			1) clear -x; run_validation; break;;
 			2) clear -x; list_volume_content; break;;
@@ -125,7 +125,7 @@ while true; do
 			4) clear -x; inspect_volumes; break;;
 			5) clear -x; print_account_range; break;;
 			6) printf "Closing.\n\n"; exit 0;;
-			*) 
+			*)
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage
 				break;

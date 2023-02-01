@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 
 set -e
 
@@ -15,8 +15,7 @@ ENV_FILE=${BASE_DIR}/.env
 usage() {
   echo "This script sets up the validator nodes..."
   echo "Usage: $0 (options) ..."
-  echo "  -d : Data directory on external volume"
-	echo "  -f : Path to .env file"
+  echo "  -f : Path to .env file"
   echo "  -i : Install dependencies"
   echo "  -r : Reset the ceremony"
   echo "  -h : Help"
@@ -80,7 +79,7 @@ get_ansible_vars() {
 
 	if [ ! -d "${ANSIBLE_DIR}" ]; then
 		source ${ENV_FILE}
-		
+
 		if git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} &>> ${LOG_FILE}; then
 			printer -s "Fetched variables"
 		else

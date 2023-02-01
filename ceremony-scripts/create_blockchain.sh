@@ -145,7 +145,6 @@ copy_logs() {
 	cp $LOG_FILE ${VOLUMES_DIR}/volume2
 	cp $LOG_FILE ${VOLUMES_DIR}/volume3
 	cp $LOG_FILE ${VOLUMES_DIR}/volume4
-	cp $LOG_FILE ${VOLUMES_DIR}/volume5
 
 	printer -s "Successfully moved ${LOG_FILE} file to all volumes"
 }

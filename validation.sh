@@ -40,7 +40,7 @@ volume_prompt() {
 	volume=""
 
 	PS3=$'\n'"Select volume: "
-	select item in volume1 volume2 volume3 volume4 volume5; do
+	select item in volume1 volume2 volume3 volume4; do
 		case $REPLY in
 			*) volume="volume${REPLY}"; break;;
 		esac
@@ -53,7 +53,7 @@ inspect_volumes() {
 	volume=$(volume_prompt)
 
 	printf "\n"
-	${SCRIPTS_DIR}/validation/validate_accounts.sh -p ${VOLUMES_DIR}/${volume}
+	${SCRIPTS_DIR}/validation/validate_accounts.sh -p ${VOLUMES_DIR}/${volume} | tee -a ${LOG_FILE}
 	printf "\n\n"
 }
 
@@ -62,8 +62,18 @@ list_volume_content() {
 	volume=$(volume_prompt)
 
 	printf "\n"
-	printf "Executing: find ${VOLUMES_DIR}/${volume} -type f\n\n"
-	find ${VOLUMES_DIR}/${volume} -type f
+	printf "Executing: tree ${VOLUMES_DIR}/${volume} | less\n\n" | tee -a ${LOG_FILE}
+	tree ${VOLUMES_DIR}/${volume} | tee -a ${LOG_FILE} | less
+	printf "\n\n"
+}
+
+list_volume_sizes() {
+	volume_prompt_intro
+	volume=$(volume_prompt)
+
+	printf "\n"
+	printf "Executing: ls ${VOLUMES_DIR}/${volume} -alR | less\n\n" | tee -a ${LOG_FILE}
+	ls ${VOLUMES_DIR}/${volume} -alR | tee -a ${LOG_FILE} | less
 	printf "\n\n"
 }
 
@@ -72,10 +82,11 @@ list_addreses() {
 	volume=$(volume_prompt)
 
 	printf "\n"
-	printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/${volume} | sed 's/\\/keystore\\:address\\\"\:\\\"/\\\t\\\t/g' | tr -d '\"'\n\n"
+	printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/${volume} | sed 's/\\/keystore\\:address\\\"\:\\\"/\\\t\\\t/g' | tr -d '\"'\n\n" | tee -a ${LOG_FILE}
 	grep -r -o "address\":\"[a-f0-9]*\"" ${VOLUMES_DIR}/${volume} \
 		| sed 's/\/keystore\:address\"\:\"/\t\t/g' \
-		| tr -d '"'
+		| tr -d '"' \
+		| tee -a ${LOG_FILE}
 	printf "\n\n"
 }
 
@@ -85,12 +96,12 @@ list_addreses() {
 
 run_validation() {
 	printf "Validating chain...\n\n"
-	${SCRIPTS_DIR}/validation/run_validation.sh
+	${SCRIPTS_DIR}/validation/run_validation.sh | tee -a ${LOG_FILE}
 	printf "\n\nNote: It takes a minute for all nodes to catch up with their peers.\n\n"
 }
 
 print_account_range() {
-	./exec_chain.sh "debug.accountRange()"
+	./exec_chain.sh "debug.accountRange()" | tee -a ${LOG_FILE}
 	printf "\n\n"
 }
 
@@ -105,6 +116,7 @@ items=(
 	"List addresses"
 	"Validate keystore and password"
 	"Print chain accounts"
+	"List volume sizes"
 	"Exit"
 )
 
@@ -124,7 +136,8 @@ while true; do
 			3) clear -x; list_addreses; break;;
 			4) clear -x; inspect_volumes; break;;
 			5) clear -x; print_account_range; break;;
-			6) printf "Closing.\n\n"; exit 0;;
+			6) clear -x; list_volume_sizes; break;;
+			7) printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

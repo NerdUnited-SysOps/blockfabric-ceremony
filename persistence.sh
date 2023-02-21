@@ -97,6 +97,7 @@ upsert_file() {
 }
 
 save_ansible_vars() {
+	cp ${LOG_FILE} ${ANSIBLE_DIR}/ceremony.log
 	git config --global user.name "ceremony-script"
 	git config --global user.email "ceremony@email.com"
 	git -C ${ANSIBLE_DIR}/ checkout -B ceremony-artifacts

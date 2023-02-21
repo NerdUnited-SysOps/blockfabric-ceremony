@@ -23,7 +23,12 @@ function daysSinceUnlock(lockupTimestamp) {
 }
 
 function currentUnlocked(lockupTimestamp, lockupDailyUnlock) {
-	return Math.floor(((Date.now()/1000) - parseInt(lockupTimestamp,16))/60/60/24) * parseInt(lockupDailyUnlock,16)
+	unlocked = Math.floor(((Date.now()/1000) - parseInt(lockupTimestamp,16))/60/60/24) * parseInt(lockupDailyUnlock,16)
+	if (unlocked <= 0) {
+		return 0
+	} else {
+		return unlocked
+	}
 }
 
 function repeat(c, len) {

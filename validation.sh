@@ -53,7 +53,7 @@ inspect_volumes() {
 	volume=$(volume_prompt)
 
 	printf "\n"
-	${SCRIPTS_DIR}/validation/validate_accounts.sh -p ${VOLUMES_DIR}/${volume}
+	${SCRIPTS_DIR}/validation/validate_accounts.sh -p ${VOLUMES_DIR}/${volume} | tee -a ${LOG_FILE}
 	printf "\n\n"
 }
 
@@ -62,8 +62,8 @@ list_volume_content() {
 	volume=$(volume_prompt)
 
 	printf "\n"
-	printf "Executing: tree ${VOLUMES_DIR}/${volume} | less\n\n"
-	tree ${VOLUMES_DIR}/${volume} | less
+	printf "Executing: tree ${VOLUMES_DIR}/${volume} | less\n\n" | tee -a ${LOG_FILE}
+	tree ${VOLUMES_DIR}/${volume} | tee -a ${LOG_FILE} | less
 	printf "\n\n"
 }
 
@@ -72,10 +72,11 @@ list_addreses() {
 	volume=$(volume_prompt)
 
 	printf "\n"
-	printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/${volume} | sed 's/\\/keystore\\:address\\\"\:\\\"/\\\t\\\t/g' | tr -d '\"'\n\n"
+	printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/${volume} | sed 's/\\/keystore\\:address\\\"\:\\\"/\\\t\\\t/g' | tr -d '\"'\n\n" | tee -a ${LOG_FILE}
 	grep -r -o "address\":\"[a-f0-9]*\"" ${VOLUMES_DIR}/${volume} \
 		| sed 's/\/keystore\:address\"\:\"/\t\t/g' \
-		| tr -d '"'
+		| tr -d '"' \
+		| tee -a ${LOG_FILE}
 	printf "\n\n"
 }
 
@@ -85,12 +86,12 @@ list_addreses() {
 
 run_validation() {
 	printf "Validating chain...\n\n"
-	${SCRIPTS_DIR}/validation/run_validation.sh
+	${SCRIPTS_DIR}/validation/run_validation.sh | tee -a ${LOG_FILE}
 	printf "\n\nNote: It takes a minute for all nodes to catch up with their peers.\n\n"
 }
 
 print_account_range() {
-	./exec_chain.sh "debug.accountRange()"
+	./exec_chain.sh "debug.accountRange()" | tee -a ${LOG_FILE}
 	printf "\n\n"
 }
 

@@ -62,8 +62,8 @@ list_volume_content() {
 	volume=$(volume_prompt)
 
 	printf "\n"
-	printf "Executing: find ${VOLUMES_DIR}/${volume} -type f\n\n"
-	find ${VOLUMES_DIR}/${volume} -type f
+	printf "Executing: tree ${VOLUMES_DIR}/${volume} | less\n\n"
+	tree ${VOLUMES_DIR}/${volume} | less
 	printf "\n\n"
 }
 

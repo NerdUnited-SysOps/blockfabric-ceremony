@@ -67,6 +67,16 @@ list_volume_content() {
 	printf "\n\n"
 }
 
+list_volume_sizes() {
+	volume_prompt_intro
+	volume=$(volume_prompt)
+
+	printf "\n"
+	printf "Executing: ll ${VOLUMES_DIR}/${volume} -R | less\n\n" | tee -a ${LOG_FILE}
+	ll ${VOLUMES_DIR}/${volume} -R | tee -a ${LOG_FILE} | less
+	printf "\n\n"
+}
+
 list_addreses() {
 	volume_prompt_intro
 	volume=$(volume_prompt)
@@ -106,6 +116,7 @@ items=(
 	"List addresses"
 	"Validate keystore and password"
 	"Print chain accounts"
+	"List volume sizes"
 	"Exit"
 )
 
@@ -125,7 +136,8 @@ while true; do
 			3) clear -x; list_addreses; break;;
 			4) clear -x; inspect_volumes; break;;
 			5) clear -x; print_account_range; break;;
-			6) printf "Closing.\n\n"; exit 0;;
+			6) clear -x; list_volume_sizes; break;;
+			7) printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

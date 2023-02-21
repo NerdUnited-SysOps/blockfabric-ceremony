@@ -40,7 +40,7 @@ volume_prompt() {
 	volume=""
 
 	PS3=$'\n'"Select volume: "
-	select item in volume1 volume2 volume3 volume4 volume5; do
+	select item in volume1 volume2 volume3 volume4; do
 		case $REPLY in
 			*) volume="volume${REPLY}"; break;;
 		esac

@@ -72,8 +72,8 @@ list_volume_sizes() {
 	volume=$(volume_prompt)
 
 	printf "\n"
-	printf "Executing: ll ${VOLUMES_DIR}/${volume} -R | less\n\n" | tee -a ${LOG_FILE}
-	ll ${VOLUMES_DIR}/${volume} -R | tee -a ${LOG_FILE} | less
+	printf "Executing: ls ${VOLUMES_DIR}/${volume} -alR | less\n\n" | tee -a ${LOG_FILE}
+	ls ${VOLUMES_DIR}/${volume} -alR | tee -a ${LOG_FILE} | less
 	printf "\n\n"
 }
 

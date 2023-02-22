@@ -137,18 +137,6 @@ run_ansible() {
 	[ ! $? -eq 0 ] && printer -e "Failed to execute ansible playbook"
 }
 
-copy_logs() {
-	printer -t "Moving ${LOG_FILE} file to all volumes"
-
-	[ -f "${LOG_FILE}" ] || touch ${LOG_FILE}
-	cp $LOG_FILE ${VOLUMES_DIR}/volume1
-	cp $LOG_FILE ${VOLUMES_DIR}/volume2
-	cp $LOG_FILE ${VOLUMES_DIR}/volume3
-	cp $LOG_FILE ${VOLUMES_DIR}/volume4
-
-	printer -s "Successfully moved ${LOG_FILE} file to all volumes"
-}
-
 clear -x
 
 printer -b
@@ -172,8 +160,6 @@ VALIDATOR_IPS=$(get_list_of_validator_ips)
 ${SCRIPTS_DIR}/create_all_wallets.sh -i "${VALIDATOR_IPS}"
 ${SCRIPTS_DIR}/generate_dao_storage.sh -i "$VALIDATOR_IPS"
 ${SCRIPTS_DIR}/generate_ansible_vars.sh -v "$VALIDATOR_IPS"
-
-copy_logs
 
 # Executing ansible returns a non-zero code even when it's successful.
 # Backgrounding the task stops the script from existing.

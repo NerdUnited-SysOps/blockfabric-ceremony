@@ -108,6 +108,18 @@ save_ansible_vars() {
 	printer -s "Persisted artifacts"
 }
 
+save_log_file() {
+	printer -t "Moving ${LOG_FILE} file to all volumes"
+
+	[ -f "${LOG_FILE}" ] || touch ${LOG_FILE}
+	cp $LOG_FILE ${VOLUMES_DIR}/volume1
+	cp $LOG_FILE ${VOLUMES_DIR}/volume2
+	cp $LOG_FILE ${VOLUMES_DIR}/volume3
+	cp $LOG_FILE ${VOLUMES_DIR}/volume4
+
+	printer -s "Successfully moved ${LOG_FILE} file to all volumes"
+}
+
 persist_distribution_issuer() {
 	# Get the private key (or the keystore & password)
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_KEYSTORE} ${VOLUMES_DIR}/volume1/distributionIssuer/keystore ${AWS_PRIMARY_PROFILE}
@@ -170,6 +182,7 @@ get_private_key() {
 items=(
 	"Persist distribution issuer wallet"
 	"Persist chain variables (cli args, genesis, addresses, etc)"
+	"Save Log File to volumes"
 	"Persist bridge keys"
 	"Exit"
 )
@@ -187,8 +200,9 @@ while true; do
 		case $REPLY in
 			1) persist_distribution_issuer; break;;
 			2) save_ansible_vars; break;;
-			3) persist_bridge_keys; break;;
-			4) printf "Closing\n\n"; exit 0;;
+			3) save_log_file; break;;
+			4) persist_bridge_keys; break;;
+			5) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

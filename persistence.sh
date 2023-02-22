@@ -109,7 +109,8 @@ save_ansible_vars() {
 }
 
 save_log_file() {
-	printer -t "Copying ${LOG_FILE} file to all volumes\n"
+	printer -t "Copying ${LOG_FILE} file to all volumes"
+	echo "\n"
 
 	cp -v $LOG_FILE ${VOLUMES_DIR}/volume1/
 	cp -v $LOG_FILE ${VOLUMES_DIR}/volume2/

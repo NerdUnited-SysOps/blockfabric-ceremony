@@ -108,6 +108,18 @@ save_ansible_vars() {
 	printer -s "Persisted artifacts"
 }
 
+save_log_file() {
+	printer -t "Copying ${LOG_FILE} file to all volumes"
+	echo "\n"
+
+	cp -v $LOG_FILE ${VOLUMES_DIR}/volume1/
+	cp -v $LOG_FILE ${VOLUMES_DIR}/volume2/
+	cp -v $LOG_FILE ${VOLUMES_DIR}/volume3/
+	cp -v $LOG_FILE ${VOLUMES_DIR}/volume4/
+
+	echo "\n\n"
+}
+
 persist_distribution_issuer() {
 	# Get the private key (or the keystore & password)
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_KEYSTORE} ${VOLUMES_DIR}/volume1/distributionIssuer/keystore ${AWS_PRIMARY_PROFILE}
@@ -170,6 +182,7 @@ get_private_key() {
 items=(
 	"Persist distribution issuer wallet"
 	"Persist chain variables (cli args, genesis, addresses, etc)"
+	"Save Log File to volumes"
 	"Persist bridge keys"
 	"Exit"
 )
@@ -182,13 +195,14 @@ NC='\033[0m'
 RED='\033[0;31m'
 while true; do
 	COLUMNS=1
-	PS3=$'\n'"Select option: "
+	PS3=$'\n'"${BRAND_NAME} ${NETWORK_TYPE} | Select option: "
 	select item in "${items[@]}" 
 		case $REPLY in
 			1) persist_distribution_issuer; break;;
 			2) save_ansible_vars; break;;
-			3) persist_bridge_keys; break;;
-			4) printf "Closing\n\n"; exit 0;;
+			3) save_log_file; break;;
+			4) persist_bridge_keys; break;;
+			5) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

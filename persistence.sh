@@ -111,13 +111,10 @@ save_ansible_vars() {
 save_log_file() {
 	printer -t "Moving ${LOG_FILE} file to all volumes"
 
-	[ -f "${LOG_FILE}" ] || touch ${LOG_FILE}
-	cp $LOG_FILE ${VOLUMES_DIR}/volume1
-	cp $LOG_FILE ${VOLUMES_DIR}/volume2
-	cp $LOG_FILE ${VOLUMES_DIR}/volume3
-	cp $LOG_FILE ${VOLUMES_DIR}/volume4
-
-	printer -s "Successfully moved ${LOG_FILE} file to all volumes"
+	cp -v $LOG_FILE ${VOLUMES_DIR}/volume1/
+	cp -v $LOG_FILE ${VOLUMES_DIR}/volume2/
+	cp -v $LOG_FILE ${VOLUMES_DIR}/volume3/
+	cp -v $LOG_FILE ${VOLUMES_DIR}/volume4/
 }
 
 persist_distribution_issuer() {

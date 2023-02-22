@@ -13,9 +13,10 @@ usage() {
   echo "  -r : Path to the RPC node"
   echo "  -u : User to ssh with"
   echo "  -v : path to validation file"
+  echo "  -x : SSH Hostname"
 }
 
-while getopts d:g:i:k:p:r:u:v: option; do
+while getopts d:g:i:k:p:r:u:v:x: option; do
     case "${option}" in
         d) 
             DATADIR=${OPTARG}
@@ -44,6 +45,9 @@ while getopts d:g:i:k:p:r:u:v: option; do
             ;;
         v)
             VALIDATION_FILE=${OPTARG}
+            ;;
+        x)
+            SSH_HOST=${OPTARG}
             ;;
     esac
 done
@@ -125,7 +129,7 @@ verify_blockchain() {
         -o ConnectTimeout=20 \
         -o StrictHostKeyChecking=no \
         -i ${KEY_PATH} \
-        "${USER}@${RPC_PATH}" "
+        "${USER}@${SSH_HOST}" "
             sudo ${GETH_PATH} attach \
                 --datadir ${DATADIR} \
                 --exec \"${geth_exec_command}\""

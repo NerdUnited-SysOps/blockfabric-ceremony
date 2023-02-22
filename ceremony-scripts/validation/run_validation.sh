@@ -9,6 +9,8 @@ ENV_FILE=${BASE_DIR}/.env
 
 source ${ENV_FILE}
 
+SSH_HOST=$(dig +short $RPC_PATH | head -1)
+
 ${VALIDATION_DIR}/validate_chain.sh \
   -d $DATADIR \
   -g $REMOTE_GETH_PATH \
@@ -17,5 +19,6 @@ ${VALIDATION_DIR}/validate_chain.sh \
   -p $RPC_PORT \
   -r $RPC_PATH \
   -u $NODE_USER \
-  -v ${VALIDATION_DIR}/remoteValidate.js
+  -v ${VALIDATION_DIR}/remoteValidate.js \
+  -x ${SSH_HOST}
 

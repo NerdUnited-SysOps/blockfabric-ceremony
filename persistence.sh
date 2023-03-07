@@ -99,10 +99,9 @@ upsert_file() {
 save_ansible_vars() {
 	# Prepend bootstrap.log into ceremony.log before github commits and copies to volumes
 	x=$(cat ~/bootstrap.log; cat ${LOG_FILE})
-	echo "$x" > ${LOG_FILE}.combined
-	mv ${LOG_FILE} ${LOG_FILE}.orig
-	mv ${LOG_FILE}.combined ${LOG_FILE}
-	
+	echo "$x" > ${LOG_FILE}
+	echo "Finished: $(date) >> ${LOG_FILE}
+	## bootstrap.log will already have a Started: timestamp
 	cp ${LOG_FILE} ${ANSIBLE_DIR}/ceremony.log
 	git config --global user.name "ceremony-script"
 	git config --global user.email "ceremony@email.com"

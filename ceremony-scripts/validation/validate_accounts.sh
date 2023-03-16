@@ -83,7 +83,7 @@ m=0
 lines=()
 for p in $all_paths; do
 	lines+=$(find_dir $p "${line_length}" &)
-	if (( $m % 5 == 0 )); then
+	if (( $m % 10 == 0 )); then
 		wait
 		for l in $lines; do
 			printf "$l"

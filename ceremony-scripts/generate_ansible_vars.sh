@@ -156,6 +156,10 @@ all_quorum_vars() {
 	if [ -n "${NODE_USER}" ]; then
 		put_all_quorum_var "ansible_user" "${NODE_USER}"
 	fi
+	# Set the timestamp of the genesis block to now
+	put_all_quorum_var "goquorum_genesis_timestamp" "\"$(date +%s)\""
+	put_all_quorum_var "lace_genesis_lockup_owner_address" "\"$(get_address $LOCKUP_OWNER_ADDRESS_FILE)\""
+
 	put_all_quorum_var "lace_genesis_lockup_owner_address" "\"$(get_address $LOCKUP_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_owner_address" "\"$(get_address $DIST_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_issuer_address" "\"$(get_address $DIST_ISSUER_ADDRESS_FILE | cut -c3-)\""

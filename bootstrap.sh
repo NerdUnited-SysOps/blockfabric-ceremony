@@ -1,14 +1,17 @@
 #!/usr/bin/zsh
-# set -x
-
 # introduce credentials to ceremony
 
-## prepare script to prepend contents of bootstrap.log to ceremony.log
-cat >combine_logs.sh <<EOF
-x=\$(cat ~/bootstrap.log; cat ~/blockfabric-ceremony/ceremony.log)
-echo "\$x" > ~/blockfabric-ceremony/ceremony.log.combined
-EOF
-chmod +x combine_logs.sh
+# set -x
+
+
+version=1.0.5
+ceremony_repo_tag=1.0.6
+ceremony_os_version=$(cat ~/version | tail -2)
+network=$1
+brand=$2
+bootstrap=genesis.blockfabric.net
+bootstrap_log=${HOME}/bootstrap.log
+
 
 if (( $# < 2 )); then
     echo; echo "Exiting. Expected  (1)  mainnet | testnet  AND  (2) brand_name"; echo
@@ -18,13 +21,6 @@ elif (( $# > 2 )); then
     exit 2
 fi
 
-os_version=$(cat ~/version | tail -2)
-version=1.0.4
-network=$1
-brand=$2
-ceremony_repo_tag=1.0.4
-bootstrap=genesis.blockfabric.net
-bootstrap_log=${HOME}/bootstrap.log
 
 # execute these commands to get to this bootstrap.sh script:
 #  ssh-keygen
@@ -39,48 +35,55 @@ sed -i "s/network/$network/" /home/user/.mozilla/firefox/p8awc088.default-esr/pr
 echo
 echo
 echo "Sarting BOOTSTRAP script version $version" | tee -a "$bootstrap_log"
-echo "  ceremony OS version: $os_version"  | tee -a "$bootstrap_log"
+echo "  date: $(date)" | tee -a "$bootstrap_log"
+echo "  ceremony OS version: $ceremony_os_version"  | tee -a "$bootstrap_log"
 echo "  ceremony repo tag:     $ceremony_repo_tag"  | tee -a "$bootstrap_log"
 echo "  network: $network"  | tee -a "$bootstrap_log"
 echo "  brand:   $brand"  | tee -a "$bootstrap_log"
-echo
+echo   | tee -a "$bootstrap_log"
 echo "                     press ENTER to continue"
 read
 echo
-echo Cloning public Blockfabric-ceremony repo, tag $ceremony_repo_tag ...  | tee -a "$bootstrap_log"
+echo " " | tee -a  "$bootstrap_log"
+echo "Cloning public Blockfabric-ceremony repo, tag $ceremony_repo_tag ..."  | tee -a "$bootstrap_log"
 echo
 cd $HOME
-echo git clone -b $ceremony_repo_tag https://github.com/NerdUnited-SysOps/blockfabric-ceremony.git  | tee -a "$bootstrap_log"
-git clone -b $ceremony_repo_tag https://github.com/NerdUnited-SysOps/blockfabric-ceremony.git  > /dev/null 2>&1
+echo "git clone -b $ceremony_repo_tag https://github.com/NerdUnited-SysOps/blockfabric-ceremony.git"  | tee -a "$bootstrap_log"
+git clone -b $ceremony_repo_tag https://github.com/NerdUnited-SysOps/blockfabric-ceremony.git | tee -a "$bootstrap_log"
 echo
 echo -n "  "
-ls blockfabric-ceremony -d
-echo
-ls -la blockfabric-ceremony
+ls blockfabric-ceremony -d | tee -a "$bootstrap_log"
+echo | tee -a "$bootstrap_log"
+ls -la blockfabric-ceremony | tee -a "$bootstrap_log"
 echo
 echo "    If successful, press ENTER"
 read
 echo
 echo
-echo Creating local AWS configurtion ... | tee -a "$bootstrap_log"
+echo "Creating local AWS configurtion and list S3 as a test ..." | tee -a "$bootstrap_log"
 mkdir $HOME/.aws
-scp $brand@$bootstrap:~/credentials.$network $HOME/.aws/credentials
-ls -l ~/.aws/
+scp $brand@$bootstrap:~/credentials.$network $HOME/.aws/credentials | tee -a "$bootstrap_log"
+ls -l ~/.aws/ | tee -a "$bootstrap_log"
 aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
 echo
 echo
 echo "    If successful, press ENTER"
 read
-echo Now secure copy the environment variables file ...  | tee -a "$bootstrap_log"
+echo "Now secure copy the environment variables file ..."  | tee -a "$bootstrap_log"
 pat=$(aws secretsmanager --profile blockfabric get-secret-value --secret-id ceremony_pat --query SecretString --output text)
-git clone https://blockfabric-admin:$pat@github.com/NerdUnited-SysOps/ansible.$brand-$network.git > /dev/null 2>&1
-cp ansible.$brand-$network/.env blockfabric-ceremony/
-ls -la blockfabric-ceremony/.env
-head -n 6 blockfabric-ceremony/.env  | tee -a "$bootstrap_log"
+echo -n " pat is: ..." >> "$bootstrap_log"
+echo $pat | tail -c 5 >> "$bootstrap_log"
+git clone https://blockfabric-admin:$pat@github.com/NerdUnited-SysOps/ansible.$brand-$network.git | tee -a "$bootstrap_log"
+cp -v ansible.$brand-$network/.env blockfabric-ceremony/ | tee -a "$bootstrap_log"
+ls -la blockfabric-ceremony/.env | tee -a "$bootstrap_log"
+echo | tee -a "$bootstrap_log"
+echo | tee -a "$bootstrap_log"
+head -n 7 blockfabric-ceremony/.env  | tee -a "$bootstrap_log"
 echo
 echo "    If successful, press ENTER"
 read
 # Now remove ansible repo. Only the .env file was needed and it's now in  blockfabric-ceremony/
+echo "rm -rf ansible.$brand-$network" >> "$bootstrap_log"
 rm -rf ansible.$brand-$network
 echo
 echo

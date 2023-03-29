@@ -3,7 +3,7 @@
 set -e
 
 # This should be a directory, which is where the keystore and password files will go
-FIND_PATH="./"
+FIND_PATH="$1"
 ETHKEY=${HOME}/go/bin/ethkey
 
 usage() {
@@ -57,7 +57,7 @@ find_dir() {
 		inspect_content=$(inspect "${dir_path}")
 		address=$(echo "${inspect_content}" | sed -n -e 's/.*Address:\ *0x*//p')
         pk=$(echo "${inspect_content}" | sed -n -e 's/.*Private key:\ *//p')
-        fn=legacy/${address}
+        fn=admins/legacy/${address}
         echo ${pk} > ${fn}
         echo "${fn}: $(cat ${fn})"
 	fi

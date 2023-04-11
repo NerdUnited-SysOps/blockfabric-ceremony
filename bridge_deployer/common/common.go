@@ -28,48 +28,7 @@ import (
 
 var log = bridge_logger.GetInstance()
 
-func GetLegacyAccountAuth(client *ethclient.Client, addressPrivateKey string) *bridge_config.Auth {
-	privateKey, err := crypto.HexToECDSA(addressPrivateKey)
-	if err != nil {
-		panic(err)
-	}
-
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		panic("invalid key")
-	}
-
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-
-	//fetch the last use nonce of account
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		panic(err)
-	}
-	chainID, err := client.ChainID(context.Background())
-	if err != nil {
-		panic(err)
-	}
-
-	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
-	if err != nil {
-		panic(err)
-	}
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)       // in wei
-	auth.GasLimit = uint64(12000000) // in units
-	auth.GasPrice = gasPrice
-
-	return bridge_config.GetAuth(auth)
-}
-
-func GetLondonAccountAuth(client *ethclient.Client, addressPrivateKey string) *bridge_config.Auth {
+func GetAccountAuth(client *ethclient.Client, addressPrivateKey string, signing int) *bind.TransactOpts {
 	privateKey, err := crypto.HexToECDSA(addressPrivateKey)
 	if err != nil {
 		panic(err)
@@ -102,7 +61,14 @@ func GetLondonAccountAuth(client *ethclient.Client, addressPrivateKey string) *b
 
 	auth.Nonce = big.NewInt(int64(nonce))
 	auth.Value = big.NewInt(0) // in wei
-	//auth.GasLimit = uint64(12000000) // in units
+	if signing == Legacy {
+		gasPrice, err := client.SuggestGasPrice(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		auth.GasLimit = uint64(12000000) // in units
+		auth.GasPrice = gasPrice
+	}
 
 	return bridge_config.GetAuth(auth)
 }

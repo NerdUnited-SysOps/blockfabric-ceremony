@@ -47,8 +47,12 @@ func main() {
 	chainResult, err := strconv.ParseInt(chainArg, 10, 32)
 
 	config, err := bridge_common.InitConfig(ethRpcUrl, deployerPrivateKey)
+	if err != nil {
+		panic(err)
+	}
 
-	config.ChainId = *big.NewInt(chainResult)
+	// create auth and transaction package for deploying smart contract
+	auth := bridge_common.GetAccountAuth(client, deployerPrivateKey, bridge_common.Legacy)
 
 	// Setup params
 	bridgeApprover := common.HexToAddress(approverAddress)

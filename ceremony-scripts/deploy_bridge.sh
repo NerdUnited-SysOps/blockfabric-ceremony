@@ -62,7 +62,8 @@ generate_wallet() {
 
 create_wallet() {
 	wallet_name=$1
-	key_path=${VOLUMES_DIR}/volume5/${wallet_name}
+	volume=$2
+	key_path=${VOLUMES_DIR}/${volume}/${wallet_name}
 
 	generate_wallet -o "${key_path}"
 
@@ -72,9 +73,9 @@ create_wallet() {
 create_bridge_wallets() {
 	printer -t "Creating bridge wallets"
 
-	create_wallet "token_owner" &
-	create_wallet "notary" &
-	create_wallet "approver" &
+	create_wallet "token_owner" "volume2" &
+	create_wallet "notary" "volume2" &
+	create_wallet "approver" "volume3" &
 	wait
 
 	printer -s "Finished creating bridge wallets"

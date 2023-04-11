@@ -51,9 +51,9 @@ else
 	source ${ENV_FILE}
 fi
 
-[ -z "${APPROVER_ADDRESS_FILE}" ] && APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/approver"
-[ -z "${NOTARY_ADDRESS_FILE}" ] && NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/notary"
-[ -z "${TOKEN_OWNER_ADDRESS_FILE}" ] && TOKEN_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/token_owner"
+[ -z "${APPROVER_ADDRESS_FILE}" ] && APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume3/approver"
+[ -z "${NOTARY_ADDRESS_FILE}" ] && NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume2/notary"
+[ -z "${TOKEN_OWNER_ADDRESS_FILE}" ] && TOKEN_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume2/token_owner"
 [ -z "${TOKEN_CONTRACT_ADDRESS_FILE}" ] && TOKEN_CONTRACT_ADDRESS_FILE="$BASE_DIR/volumes/volume5/token_contract_address"
 
 echo "file: ${APPROVER_ADDRESS_FILE}/keystore" &>> ${LOG_FILE}
@@ -79,12 +79,38 @@ get_address() {
     echo $ADDRESS
 }
 
+get_deployer_a_private_key() {
+    keystore=$(./ceremony-scripts/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}")
+    keystore_file_path=${VOLUMES_DIR}/volume1/distributionIssuer/keystore
+    echo "${keystore}" > ${keystore_file_path}
+
+    password=$(./ceremony-scripts/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_PASSWORD}")
+
+    inspected_content=$(ethkey inspect --private --passwordfile <(echo "${password}") "${keystore_file_path}")
+    echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
+}
+
+deploy_bridge_contracts() {
+    deployer_a_private_key=$(get_deployer_a_private_key)
+    approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
+    notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
+    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
+
+    git config --global url."https://${GITHUB_PAT}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+
+    export GOPRIVATE=github.com/elevate-blockchain/*
+
+    cd bridge_deployer
+
+    go get github.com/elevate-blockchain/neptune/pkg/contracts
+
 deploy_bridge() {
+    DEPLOYER_CMD=cmd
     printer -n "Deploying L2 Bridge"
     # Deploy bridge
     go run ${DEPLOYER_CMD}/bridge/main.go \
          ${NERD_CHAIN_URL} \
-         ${DEPLOYER_A_PRIVATE_KEY} \
+         ${deployer_a_private_key} \
          $1 \
          $2 \
          ${FEE_RECEIVER} \
@@ -117,7 +143,7 @@ deploy_bridge() {
     printer -n "Deploying L1 Bridge Minter"
     go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
-        ${DEPLOYER_A_PRIVATE_KEY} \
+        ${deployer_a_private_key} \
         $1 \
         $2 \
         $3 \

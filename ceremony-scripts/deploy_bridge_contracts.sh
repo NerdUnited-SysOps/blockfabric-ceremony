@@ -78,7 +78,19 @@ get_address() {
     echo $ADDRESS
 }
 
+get_deployer_a_private_key() {
+    keystore=$(./ceremony-scripts/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}")
+    keystore_file_path=${VOLUMES_DIR}/volume1/distributionIssuer/keystore
+    echo "${keystore}" > ${keystore_file_path}
+
+    password=$(./ceremony-scripts/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_PASSWORD}")
+
+    inspected_content=$(ethkey inspect --private --passwordfile <(echo "${password}") "${keystore_file_path}")
+    echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
+}
+
 deploy_bridge_contracts() {
+    deployer_a_private_key=$(get_deployer_a_private_key)
     approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
     notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
     token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
@@ -96,7 +108,7 @@ deploy_bridge_contracts() {
     # Deploy bridge
     bridge_output="$(go run ${DEPLOYER_CMD}/bridge/main.go \
          ${NERD_CHAIN_URL} \
-         ${DEPLOYER_A_PRIVATE_KEY} \
+         ${deployer_a_private_key} \
          ${approver_address} \
          ${notary_address} \
          ${FEE_RECEIVER} \
@@ -126,7 +138,7 @@ deploy_bridge_contracts() {
     printer -n "Deploying L1 Bridge"
     bridge_minter_output="$(go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
-        ${DEPLOYER_A_PRIVATE_KEY} \
+        ${deployer_a_private_key} \
         ${approver_address} \
         ${notary_address} \
         ${token_contract_address} \

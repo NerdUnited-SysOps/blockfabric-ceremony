@@ -80,17 +80,17 @@ get_address() {
 }
 
 get_deployer_a_private_key() {
-    keystore=$(./ceremony-scripts/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}")
+    keystore=$(${SCRIPTS_DIR}/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}")
     keystore_file_path=${VOLUMES_DIR}/volume1/distributionIssuer/keystore
     echo "${keystore}" > ${keystore_file_path}
 
-    password=$(./ceremony-scripts/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_PASSWORD}")
+    password=$(${SCRIPTS_DIR}/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_PASSWORD}")
 
     inspected_content=$(ethkey inspect --private --passwordfile <(echo "${password}") "${keystore_file_path}")
     echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
 }
 
-deploy_bridge() {
+ deploy_bridge() {
     DEPLOYER_CMD=cmd
     printer -n "Deploying L2 Bridge"
     # Deploy bridge
@@ -113,12 +113,12 @@ deploy_bridge() {
     printer -n "Deploying L1 ERC20 Token"
     go run ${DEPLOYER_CMD}/token/main.go \
         ${ETH_URL} \
-        ${DEPLOYER_B_PRIVATE_KEY} \
+        $1 \
         ${TOKEN_NAME} \
         ${TOKEN_SYMBOL} \
         ${TOKEN_DECIMALS} \
         ${TOKEN_MAX_SUPPLY} \
-        $1
+        $2
 
     mv token_contract_address ${VOLUMES_DIR}/volume5/token_contract_address
 
@@ -140,8 +140,9 @@ deploy_bridge() {
 
 deploy_bridge_contracts() {
 
-    deployer_a_private_key=$DEPLOYER_A_PRIVATE_KEY
-    #$(get_deployer_a_private_key)}
+    deployer_a_private_key=$(get_deployer_a_private_key)
+    deployer_b_private_key=$(${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_B_KEY_NAME}")
+    
     approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
     notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
     token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
@@ -157,7 +158,7 @@ deploy_bridge_contracts() {
     export DEPLOYER_CMD=cmd
 
     deploy_bridge $deployer_a_private_key $approver_address $notary_address
-    deploy_token $token_owner_address
+    deploy_token $deployer_b_private_key $token_owner_address
     token_contract_address=$(cat $TOKEN_CONTRACT_ADDRESS_FILE)
     deploy_bridge_minter $deployer_a_private_key $approver_address $notary_address $token_contract_address
 

@@ -109,7 +109,7 @@ func GetBridge(address common.Address, approver common.Address, notary common.Ad
 	}
 }
 
-func GetBridgeMinter(address common.Address, owner common.Address, approver common.Address, notary common.Address, tokenAddress common.Address) *BridgeMinter {
+func GetBridgeMinter(address common.Address, approver common.Address, notary common.Address, tokenAddress common.Address) *BridgeMinter {
 
 	return &BridgeMinter{
 		Address:      address,

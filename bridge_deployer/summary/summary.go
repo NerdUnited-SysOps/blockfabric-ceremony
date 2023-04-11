@@ -6,10 +6,7 @@ import (
 	bridge_logger "bridge-deployer/logging"
 
 	"context"
-	"fmt"
 	"math/big"
-	"strconv"
-	"time"
 )
 
 var log = bridge_logger.GetInstance()
@@ -57,7 +54,7 @@ func BridgeContract(config *bridge_config.Config) {
 
 func BridgeMinterContract(config *bridge_config.Config) {
 	ethClient := config.EthClient
-	address := config.Bridge.Address
+	address := config.BridgeMinter.Address
 
 	log.Println("----------------------------------------")
 	log.Println("BridgeMinter contract: " + address.Hex())

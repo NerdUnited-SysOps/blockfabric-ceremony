@@ -17,12 +17,12 @@ var log = bridge_logger.GetInstance()
 func main() {
 	log.Println("Summary")
 
-	config, err := bridge_common.InitConfig("https://goerli.infura.io/v3/dcd6387708064e8b8d0cb565440acfad", "1111111111111111111111111111111111111111111111111111111111111111", bridge_common.Legacy)
+	config, err := bridge_common.InitConfig("https://rpc.nerdcore.testnet.blockfabric.net:8669", "1111111111111111111111111111111111111111111111111111111111111111", bridge_common.Legacy)
 	if err != nil {
 		log.Printf("Error reading config: %s", err)
 	}
 	// Get lockupAddress from command call args
-	/*bridgeAddressStr := os.Args[1]
+	bridgeAddressStr := os.Args[1]
 	bridgeAddress := common.Address{}
 	if len(bridgeAddressStr) != 0 {
 		bridgeAddress = common.HexToAddress(strings.TrimSpace(bridgeAddressStr))
@@ -34,7 +34,7 @@ func main() {
 	if len(bridgeMinterAddressStr) != 0 {
 		bridgeMinterAddress = common.HexToAddress(strings.TrimSpace(bridgeMinterAddressStr))
 	}
-*/
+
 	tokenAddressStr := os.Args[1]
 	tokenAddress := common.Address{}
 	if len(tokenAddressStr) != 0 {
@@ -42,8 +42,9 @@ func main() {
 	}
 	config.Token = bridge_config.GetToken(tokenAddress, common.HexToAddress("0x0"), "name", "SYM", 8, *big.NewInt(3000))
 	config.Token.Address = tokenAddress
+
 	// Print summary
-	//summary.BridgeContract(config.EthClient, bridgeAddress)
-	//summary.BridgeMinterContract(config.EthClient, bridgeMinterAddress)
+	summary.BridgeContract(config.EthClient, bridgeAddress)
+	summary.BridgeMinterContract(config.EthClient, bridgeMinterAddress)
 	summary.TokenContract(config)
 }

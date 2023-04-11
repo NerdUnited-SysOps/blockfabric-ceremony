@@ -54,6 +54,7 @@ fi
 [ -z "${APPROVER_ADDRESS_FILE}" ] && APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/approver"
 [ -z "${NOTARY_ADDRESS_FILE}" ] && NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume5/notary"
 [ -z "${TOKEN_OWNER_ADDRESS_FILE}" ] && TOKEN_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume5/token_owner"
+[ -z "${TOKEN_CONTRACT_ADDRESS_FILE}" ] && TOKEN_CONTRACT_ADDRESS_FILE="$BASE_DIR/volumes/volume5/token_contract_address"
 
 echo "file: ${APPROVER_ADDRESS_FILE}/keystore" &>> ${LOG_FILE}
 
@@ -141,9 +142,10 @@ deploy_bridge_contracts() {
 
     export DEPLOYER_CMD=cmd
 
-    #deploy_bridge $approver_address $notary_address
+    deploy_bridge $approver_address $notary_address
     deploy_token $token_owner_address
-    #deploy_bridge_minter $approver_address $notary_address $token_owner_address
+    token_contract_address=$(cat $TOKEN_CONTRACT_ADDRESS_FILE)
+    deploy_bridge_minter $approver_address $notary_address $token_contract_address
 
     printer -n "Deploying finished."
 }

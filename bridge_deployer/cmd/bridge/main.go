@@ -62,9 +62,7 @@ func main() {
 	fee := big.NewInt(feeResult)
 
 	config.Bridge = bridge_config.GetBridge(common.HexToAddress("0"), bridgeApprover, bridgeNotary, bridgeFeeReceiver, *fee)
-
 	config.Print()
-
 	instance, err := deploy(config)
 	if err != nil {
 		log.Println("There was an error deploying the bridge contract")
@@ -87,7 +85,6 @@ func main() {
 
 	bridge_summary.BridgeContract(config)
 	bridge_validate.BridgeContract(config)
-
 	log.Println("Bridge contract (bridge.sol) deployment complete")
 }
 

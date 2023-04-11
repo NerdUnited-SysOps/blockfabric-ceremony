@@ -44,9 +44,7 @@ func main() {
 		panic(err)
 	}
 	tokenIssuerAddress := bridge_common.GetDeterministicAddress(deployerAddress, config.Auth.Auth.Nonce.Uint64()+1)
-
 	tokenOwner := common.HexToAddress(strings.TrimSpace(tokenOwnerAddress))
-
 	maxSupply := big.NewInt(0)
 	if _, ok := maxSupply.SetString(tokenMaxSupplyArg, 10); ok {
 		log.Printf("number = %v\n", maxSupply)
@@ -62,7 +60,6 @@ func main() {
 		panic(err)
 	}
 	config.Token = bridge_config.GetToken(tokenOwner, tokenIssuerAddress, tokenName, tokenSymbol, int(tokenDecimals), *maxSupply)
-
 	config.Print()
 
 	instance, err := deploy(config)
@@ -89,7 +86,6 @@ func main() {
 	bridge_validate.TokenContract(config)
 
 	log.Println("Token contract (token.sol) deployment complete")
-
 }
 
 func deploy(config *bridge_config.Config) (*bridge.Token, error) {

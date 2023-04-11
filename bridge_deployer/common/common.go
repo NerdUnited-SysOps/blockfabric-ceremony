@@ -41,14 +41,12 @@ func GetAccountAuth(client *ethclient.Client, addressPrivateKey string, signing 
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	log.Println("Deployer address=", fromAddress)
 
 	//fetch the last use nonce of account
 	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
 		panic(err)
 	}
-	log.Println("nonce=", nonce)
 	chainID, err := client.ChainID(context.Background())
 	if err != nil {
 		panic(err)

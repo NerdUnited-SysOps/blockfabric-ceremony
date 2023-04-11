@@ -46,11 +46,10 @@ func main() {
 	tokenIssuerAddress := bridge_common.GetDeterministicAddress(deployerAddress, config.Auth.Auth.Nonce.Uint64()+1)
 	tokenOwner := common.HexToAddress(strings.TrimSpace(tokenOwnerAddress))
 	maxSupply := big.NewInt(0)
-	if _, ok := maxSupply.SetString(tokenMaxSupplyArg, 10); ok {
-		log.Printf("number = %v\n", maxSupply)
-	} else {
+	if _, ok := maxSupply.SetString(tokenMaxSupplyArg, 10); !ok {
 		log.Printf("error parsing line %#v\n", tokenMaxSupplyArg)
 	}
+
 	tokenDecimalsResult, err := strconv.ParseInt(tokenDecimalsArg, 10, 32)
 	if err != nil {
 		panic(err)

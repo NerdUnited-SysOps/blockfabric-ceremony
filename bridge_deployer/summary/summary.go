@@ -15,10 +15,6 @@ func BridgeContract(config *bridge_config.Config) {
 	address := config.Bridge.Address
 	ethClient := config.EthClient
 
-	log.Println("----------------------------------------")
-	log.Printf("Bridge contract: " + address.Hex())
-	log.Println("----------------------------------------")
-
 	balance, err := ethClient.BalanceAt(context.Background(), address, nil)
 	if err != nil {
 		log.Printf("There was an error checking bridge balance for contract: %s", address.Hex())
@@ -43,12 +39,15 @@ func BridgeContract(config *bridge_config.Config) {
 		log.Println("error getting fee from storage")
 		panic(err)
 	}
-	log.Println("Balance:         " + balance.String())
 	log.Println("----------------------------------------")
-	log.Println("Approver:        " + *approver)
-	log.Println("Notary:          " + *notary)
-	log.Println("FeeReceiver:     " + *feeReceiver)
-	log.Println("Fee:             " + *fee)
+	log.Printf("Bridge contract:        " + address.Hex())
+	log.Println("----------------------------------------")
+	log.Println("Balance:               " + balance.String())
+	log.Println("----------------------------------------")
+	log.Println("Approver:              " + *approver)
+	log.Println("Notary:                " + *notary)
+	log.Println("FeeReceiver:           " + *feeReceiver)
+	log.Println("Fee:                   " + *fee)
 	log.Println()
 }
 
@@ -56,9 +55,10 @@ func BridgeMinterContract(config *bridge_config.Config) {
 	ethClient := config.EthClient
 	address := config.BridgeMinter.Address
 
-	log.Println("----------------------------------------")
-	log.Println("BridgeMinter contract: " + address.Hex())
-	log.Println("----------------------------------------")
+	balance, err := ethClient.BalanceAt(context.Background(), address, nil)
+	if err != nil {
+		log.Printf("There was an error checking bridge balance for contract: %s", address.Hex())
+	}
 
 	notary, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(0))
 	if err != nil {
@@ -77,18 +77,18 @@ func BridgeMinterContract(config *bridge_config.Config) {
 	}
 
 	log.Println("----------------------------------------")
-	log.Println("Notary:               " + *notary)
-	log.Println("Approver:             " + *approver)
-	log.Println("Token Address:        " + *tokenAddress)
+	log.Println("BridgeMinter contract: " + address.Hex())
+	log.Println("----------------------------------------")
+	log.Println("Balance:               " + balance.String())
+	log.Println("----------------------------------------")
+	log.Println("Notary:                " + *notary)
+	log.Println("Approver:              " + *approver)
+	log.Println("Token Address:         " + *tokenAddress)
 }
 
 func TokenContract(config *bridge_config.Config) {
 	address := config.Token.Address
 	ethClient := config.EthClient
-
-	log.Println("----------------------------------------")
-	log.Printf("Token contract: " + address.Hex())
-	log.Println("----------------------------------------")
 
 	balance, err := ethClient.BalanceAt(context.Background(), address, nil)
 	if err != nil {
@@ -124,13 +124,16 @@ func TokenContract(config *bridge_config.Config) {
 		log.Println("error getting symbol from storage")
 		panic(err)
 	}
-	log.Println("Balance:         " + balance.String())
 	log.Println("----------------------------------------")
-	log.Println("Name:            " + *name)
-	log.Println("Symbol:          " + *symbol)
-	log.Println("Owner:           " + *owner)
-	log.Println("Issuer:          " + issuer)
-	log.Println("Decimals:        " + decimals)
-	log.Println("Max Supply:      " + *maxSupply)
+	log.Printf("Token contract:         " + address.Hex())
+	log.Println("----------------------------------------")
+	log.Println("Balance:               " + balance.String())
+	log.Println("----------------------------------------")
+	log.Println("Name:                  " + *name)
+	log.Println("Symbol:                " + *symbol)
+	log.Println("Owner:                 " + *owner)
+	log.Println("Issuer:                " + issuer)
+	log.Println("Decimals:              " + decimals)
+	log.Println("Max Supply:            " + *maxSupply)
 	log.Println()
 }

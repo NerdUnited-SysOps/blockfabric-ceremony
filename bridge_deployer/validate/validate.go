@@ -101,7 +101,7 @@ func BridgeMinterContract(config *bridge_config.Config) {
 		log.Fatal(err)
 	}
 	if validateAddressInStorage(config, notaryWallet.Address, config.BridgeMinter.Address, 0) {
-		log.Println("Bridge minter notary keystore address matches on-chain bridge minter storage\t✓")
+		log.Println("Bridge minter notary keystore address matches on-chain bridge minter storage\t\t✓")
 	} else {
 		log.Println("ERROR: Bridge minter notary keystore address does not match on-chain bridge minter storage")
 	}
@@ -111,7 +111,7 @@ func BridgeMinterContract(config *bridge_config.Config) {
 		log.Fatal(err)
 	}
 	if validateAddressInStorage(config, approverWallet.Address, config.BridgeMinter.Address, 1) {
-		log.Println("Bridge minter approver keystore address matches on-chain bridge minter storage\t✓")
+		log.Println("Bridge minter approver keystore address matches on-chain bridge minter storage\t\t✓")
 	} else {
 		log.Println("ERROR: Bridge minter approver keystore address does not match on-chain bridge minter storage")
 	}

@@ -169,20 +169,20 @@ func (bridge *Bridge) Print() {
 }
 
 func (bridge *BridgeMinter) Print() {
-	log.Println("    Address:    	        ", bridge.Address)
-	log.Println("    Approver:    	        ", bridge.Approver)
-	log.Println("    Notary:     	        ", bridge.Notary)
-	log.Println("    TokenAddress:	        ", bridge.TokenAddress)
+	log.Println("    Address:               ", bridge.Address)
+	log.Println("    Approver:              ", bridge.Approver)
+	log.Println("    Notary:                ", bridge.Notary)
+	log.Println("    TokenAddress:          ", bridge.TokenAddress)
 }
 
 func (token *Token) Print() {
-	log.Println("    Address:    	        ", token.Address)
-	log.Println("    Owner:    	            ", token.Owner)
-	log.Println("    Issuer:     	        ", token.Issuer)
-	log.Println("    Name:	                ", token.Name)
-	log.Println("    Symbol:	            ", token.Symbol)
-	log.Println("    Decimals:	            ", token.Decimals)
-	log.Println("    MaxSupply:	            ", token.MaxSupply)
+	log.Println("    Address:               ", token.Address)
+	log.Println("    Owner:                 ", token.Owner)
+	log.Println("    Issuer:                ", token.Issuer)
+	log.Println("    Name:                  ", token.Name)
+	log.Println("    Symbo:                 ", token.Symbol)
+	log.Println("    Decimals:              ", token.Decimals)
+	log.Println("    MaxSupply:             ", token.MaxSupply)
 }
 
 func (wallet *Wallet) Print() {
@@ -194,9 +194,6 @@ func (wallet *Wallet) Print() {
 func (config *Config) Print() {
 	log.Println("Auth:                      ", config.Auth)
 	config.Auth.Print()
-	log.Println("")
-	log.Println("AwsInfo:                   ", config.AwsInfo)
-	log.Println("Brand:                     ", config.Brand)
 	log.Println("")
 	if config.Bridge != nil {
 		log.Println("Bridge:")
@@ -215,8 +212,6 @@ func (config *Config) Print() {
 	}
 	log.Println("ChainId:                   ", config.ChainId)
 	log.Println("DeployerPrivateKey length: ", len(config.DeployerPrivateKey))
-	log.Println("EthClient: ", config.EthClient)
-	log.Println("")
-	log.Println("Network: ", config.Network)
+	log.Println("EthClient:                 ", config.EthClient)
 	log.Println("")
 }

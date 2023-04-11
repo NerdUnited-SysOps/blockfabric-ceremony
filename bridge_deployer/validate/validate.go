@@ -15,9 +15,9 @@ import (
 var log = bridge_logger.GetInstance()
 
 const (
-	ApproverPath   string = "../volumes/volume5/approver/"
-	NotaryPath            = "../volumes/volume5/notary/"
-	TokenOwnerPath        = "../volumes/volume5/token_owner/"
+	ApproverPath   string = "../volumes/volume3/approver/"
+	NotaryPath            = "../volumes/volume2/notary/"
+	TokenOwnerPath        = "../volumes/volume2/token_owner/"
 )
 
 func getWalletFromKeystorePath(config *bridge_config.Config, path string) (*bridge_config.Wallet, error) {

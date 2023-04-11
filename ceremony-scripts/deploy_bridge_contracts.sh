@@ -90,29 +90,15 @@ get_deployer_a_private_key() {
     echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
 }
 
-deploy_bridge_contracts() {
-    deployer_a_private_key=$(get_deployer_a_private_key)
-    approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
-    notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
-    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
-
-    git config --global url."https://${GITHUB_PAT}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-
-    export GOPRIVATE=github.com/elevate-blockchain/*
-
-    cd bridge_deployer
-
-    go get github.com/elevate-blockchain/neptune/pkg/contracts
-
 deploy_bridge() {
     DEPLOYER_CMD=cmd
     printer -n "Deploying L2 Bridge"
     # Deploy bridge
     go run ${DEPLOYER_CMD}/bridge/main.go \
          ${NERD_CHAIN_URL} \
-         ${deployer_a_private_key} \
          $1 \
          $2 \
+         $3 \
          ${FEE_RECEIVER} \
          ${DEPLOYMENT_FEE} \
         ${CHAIN_ID}
@@ -143,10 +129,10 @@ deploy_bridge() {
     printer -n "Deploying L1 Bridge Minter"
     go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
-        ${deployer_a_private_key} \
-        $1 \
+        $1\
         $2 \
         $3 \
+        $4 \
         ${CHAIN_ID}
 
     mv bridge_minter_address ${VOLUMES_DIR}/volume5/bridge_minter_address
@@ -154,6 +140,8 @@ deploy_bridge() {
 
 deploy_bridge_contracts() {
 
+    deployer_a_private_key=$DEPLOYER_A_PRIVATE_KEY
+    #$(get_deployer_a_private_key)}
     approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
     notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
     token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
@@ -168,10 +156,10 @@ deploy_bridge_contracts() {
 
     export DEPLOYER_CMD=cmd
 
-    deploy_bridge $approver_address $notary_address
+    deploy_bridge $deployer_a_private_key $approver_address $notary_address
     deploy_token $token_owner_address
     token_contract_address=$(cat $TOKEN_CONTRACT_ADDRESS_FILE)
-    deploy_bridge_minter $approver_address $notary_address $token_contract_address
+    deploy_bridge_minter $deployer_a_private_key $approver_address $notary_address $token_contract_address
 
     printer -n "Deploying finished."
 }

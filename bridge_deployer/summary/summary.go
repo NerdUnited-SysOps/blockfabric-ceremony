@@ -62,48 +62,27 @@ func BridgeMinterContract(config *bridge_config.Config) {
 	log.Println("----------------------------------------")
 	log.Println("BridgeMinter contract: " + address.Hex())
 	log.Println("----------------------------------------")
-	balance, err := ethClient.BalanceAt(context.Background(), address, nil)
+
+	notary, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(0))
 	if err != nil {
-		log.Println("There was an error checking BridgeMinter balance for contract: " + address.Hex())
+		log.Println("error getting notary from storage")
+		panic(err)
+	}
+	approver, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(1))
+	if err != nil {
+		log.Println("error getting approver from storage")
+		panic(err)
+	}
+	tokenAddress, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(2))
+	if err != nil {
+		log.Println("error getting tokenAddress from storage")
+		panic(err)
 	}
 
-	owner, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(0))
-	if err != nil {
-		log.Println("error getting owner from storage")
-		panic(err)
-	}
-	bridge, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(2))
-	if err != nil {
-		log.Println("error getting bridge from storage")
-		panic(err)
-	}
-	dailyLimit, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(4))
-	if err != nil {
-		log.Println("error getting dailyLimit from storage")
-		panic(err)
-	}
-	lastBridge, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(5))
-	if err != nil {
-		log.Println("error getting lastBridge from storage")
-		panic(err)
-	}
-	lastDistroInt, err := strconv.ParseInt(*lastBridge, 16, 64)
-	if err != nil {
-		log.Println("error converting lastBridge to int")
-		panic(err)
-	}
-	intUnix, err := strconv.ParseInt(fmt.Sprint(lastDistroInt), 10, 64)
-	if err != nil {
-		log.Fatal(err)
-	}
-	lastDistroTime := time.Unix(intUnix, 0)
-
-	log.Println("Balance:             " + balance.String())
 	log.Println("----------------------------------------")
-	log.Println("Owner:               " + *owner)
-	log.Println("Issuer:              " + *bridge + " - Bridge contract")
-	log.Println("DailyLimit:          " + *dailyLimit)
-	log.Println("LastBridge:    " + fmt.Sprint(intUnix) + " ..." + lastDistroTime.String())
+	log.Println("Notary:               " + *notary)
+	log.Println("Approver:             " + *approver)
+	log.Println("Token Address:        " + *tokenAddress)
 }
 
 func TokenContract(config *bridge_config.Config) {

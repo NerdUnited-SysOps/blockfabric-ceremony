@@ -28,7 +28,7 @@ import (
 
 var log = bridge_logger.GetInstance()
 
-func GetAccountAuth(client *ethclient.Client, addressPrivateKey string, signing int) *bind.TransactOpts {
+func GetAccountAuth(client *ethclient.Client, addressPrivateKey string, signing int) *bridge_config.Auth {
 	privateKey, err := crypto.HexToECDSA(addressPrivateKey)
 	if err != nil {
 		panic(err)
@@ -93,14 +93,14 @@ func GetDeterministicAddress(address common.Address, nonce uint64) (contractAddr
 	return crypto.CreateAddress(common.HexToAddress(address.Hex()), nonce)
 }
 
-func InitConfig(rpcUrl string, deployerPrivateKey string) (*bridge_config.Config, error) {
+func InitConfig(rpcUrl string, deployerPrivateKey string, signing int) (*bridge_config.Config, error) {
 
 	client, err := ethclient.Dial(rpcUrl)
 	if err != nil {
 		return nil, errors.New("error dialing" + rpcUrl)
 	}
 
-	auth := GetLegacyAccountAuth(client, deployerPrivateKey)
+	auth := GetAccountAuth(client, deployerPrivateKey, signing)
 
 	cfg := bridge_config.GetConfig(
 		"",

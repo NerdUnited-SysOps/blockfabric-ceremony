@@ -167,7 +167,7 @@ func (config *Config) Print() {
 	config.Bridge.Print()
 	log.Println("")
 	log.Println("BridgeMinter: ")
-	//config.BridgeMinter.Print()
+	config.BridgeMinter.Print()
 	log.Println("")
 	log.Println("ChainId:                   ", config.ChainId)
 	log.Println("DeployerPrivateKey length: ", len(config.DeployerPrivateKey))

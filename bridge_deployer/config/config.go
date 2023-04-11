@@ -50,6 +50,17 @@ type BridgeMinter struct {
 	Instance     *bridge.BridgeMinter
 }
 
+type Token struct {
+	Address   common.Address
+	Owner     common.Address
+	Issuer    common.Address
+	Name      string
+	Symbol    string
+	Decimals  int
+	MaxSupply big.Int
+	Instance  *bridge.Token
+}
+
 // Config contains all the necessary things for swapping the lockup contracts and moving the funds.
 type Config struct {
 	Brand              string
@@ -60,6 +71,7 @@ type Config struct {
 	EthClient          *ethclient.Client
 	Bridge             *Bridge
 	BridgeMinter       *BridgeMinter
+	Token              *Token
 	AwsInfo            *AwsInfo
 }
 
@@ -70,7 +82,7 @@ func GetAuth(auth *bind.TransactOpts) *Auth {
 	}
 }
 
-func GetConfig(brand string, network string, chainId big.Int, deployerPrivateKey string, auth *Auth, client *ethclient.Client, bridge *Bridge, bridgeMinter *BridgeMinter, awsInfo *AwsInfo) *Config {
+func GetConfig(brand string, network string, chainId big.Int, deployerPrivateKey string, auth *Auth, client *ethclient.Client, bridge *Bridge, bridgeMinter *BridgeMinter, token *Token, awsInfo *AwsInfo) *Config {
 
 	return &Config{
 		Brand:              brand,
@@ -81,6 +93,7 @@ func GetConfig(brand string, network string, chainId big.Int, deployerPrivateKey
 		EthClient:          client,
 		Bridge:             bridge,
 		BridgeMinter:       bridgeMinter,
+		Token:              token,
 		AwsInfo:            awsInfo,
 	}
 }
@@ -103,6 +116,18 @@ func GetBridgeMinter(address common.Address, owner common.Address, approver comm
 		Approver:     approver,
 		Notary:       notary,
 		TokenAddress: tokenAddress,
+	}
+}
+
+func GetToken(owner common.Address, issuer common.Address, name string, symbol string, decimals int, maxSupply big.Int) *Token {
+
+	return &Token{
+		Owner:     owner,
+		Issuer:    issuer,
+		Name:      name,
+		Symbol:    symbol,
+		Decimals:  decimals,
+		MaxSupply: maxSupply,
 	}
 }
 
@@ -150,6 +175,16 @@ func (bridge *BridgeMinter) Print() {
 	log.Println("    TokenAddress:	        ", bridge.TokenAddress)
 }
 
+func (token *Token) Print() {
+	log.Println("    Address:    	        ", token.Address)
+	log.Println("    Owner:    	            ", token.Owner)
+	log.Println("    Issuer:     	        ", token.Issuer)
+	log.Println("    Name:	                ", token.Name)
+	log.Println("    Symbol:	            ", token.Symbol)
+	log.Println("    Decimals:	            ", token.Decimals)
+	log.Println("    MaxSupply:	            ", token.MaxSupply)
+}
+
 func (wallet *Wallet) Print() {
 	log.Println("    Address:               ", wallet.Address)
 	log.Println("    PublicKey length:      ", wallet.Pub)
@@ -163,12 +198,21 @@ func (config *Config) Print() {
 	log.Println("AwsInfo:                   ", config.AwsInfo)
 	log.Println("Brand:                     ", config.Brand)
 	log.Println("")
-	log.Println("Bridge:                    ")
-	config.Bridge.Print()
-	log.Println("")
-	log.Println("BridgeMinter: ")
-	config.BridgeMinter.Print()
-	log.Println("")
+	if config.Bridge != nil {
+		log.Println("Bridge:")
+		config.Bridge.Print()
+		log.Println("")
+	}
+	if config.BridgeMinter != nil {
+		log.Println("BridgeMinter:")
+		config.BridgeMinter.Print()
+		log.Println("")
+	}
+	if config.Token != nil {
+		log.Println("Token:")
+		config.Token.Print()
+		log.Println("")
+	}
 	log.Println("ChainId:                   ", config.ChainId)
 	log.Println("DeployerPrivateKey length: ", len(config.DeployerPrivateKey))
 	log.Println("EthClient: ", config.EthClient)

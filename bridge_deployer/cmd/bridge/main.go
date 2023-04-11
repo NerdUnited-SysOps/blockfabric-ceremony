@@ -9,7 +9,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"math/big"
 	"os"
@@ -65,59 +64,31 @@ func main() {
 	config.Bridge = bridge_config.GetBridge(common.HexToAddress("0"), bridgeApprover, bridgeNotary, bridgeFeeReceiver, *fee)
 
 	config.Print()
-	proceed, err := confirmDeploy(config)
+
+	instance, err := deploy(config)
 	if err != nil {
-		log.Println("There was an error reading the proceed confirmation")
+		log.Println("There was an error deploying the bridge contract")
 		panic(err)
 	}
-	if proceed {
-		instance, err := deploy(config)
-		if err != nil {
-			log.Println("There was an error deploying the bridge contract")
-			panic(err)
-		}
-		config.Bridge.Instance = instance
+	config.Bridge.Instance = instance
 
-		// write the bridge address to a filefile
-		f, err := os.Create("bridge_address")
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-		n2, err := f.Write([]byte(config.Bridge.Address.Hex()))
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("wrote %d bytes\n", n2)
-		f.Sync()
-
-		bridge_summary.BridgeContract(config)
-		bridge_validate.BridgeContract(config)
+	// write the bridge address to a filefile
+	f, err := os.Create("bridge_address")
+	if err != nil {
+		panic(err)
 	}
+	defer f.Close()
+	n2, err := f.Write([]byte(config.Bridge.Address.Hex()))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("wrote %d bytes\n", n2)
+	f.Sync()
+
+	bridge_summary.BridgeContract(config)
+	bridge_validate.BridgeContract(config)
 
 	log.Println("Bridge contract (bridge.sol) deployment complete")
-}
-
-func confirmDeploy(config *bridge_config.Config) (bool, error) {
-
-	var input string
-	for {
-		log.Print("Continue? (y/n)?")
-		_, err := fmt.Scanln(&input)
-		if err != nil {
-			log.Printf("There was an error reading the confirmation input: %s", err.Error())
-			return false, err
-		}
-		if input == "y" || input == "n" {
-			input = strings.ToLower(input)
-			break
-		}
-	}
-
-	if input == "y" {
-		return true, nil
-	}
-	return false, nil
 }
 
 func deploy(config *bridge_config.Config) (*bridge.Bridge, error) {

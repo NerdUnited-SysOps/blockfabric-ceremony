@@ -105,7 +105,7 @@ deploy_bridge() {
         ${TOKEN_SYMBOL} \
         ${TOKEN_DECIMALS} \
         ${TOKEN_MAX_SUPPLY} \
-        ${$1}
+        $1
 
     mv token_contract_address ${VOLUMES_DIR}/volume5/token_contract_address
 
@@ -141,9 +141,9 @@ deploy_bridge_contracts() {
 
     export DEPLOYER_CMD=cmd
 
-    deploy_bridge $approver_address $notary_address
+    #deploy_bridge $approver_address $notary_address
     deploy_token $token_owner_address
-    deploy_bridge_minter $approver_address $notary_address $token_owner_address
+    #deploy_bridge_minter $approver_address $notary_address $token_owner_address
 
     printer -n "Deploying finished."
 }

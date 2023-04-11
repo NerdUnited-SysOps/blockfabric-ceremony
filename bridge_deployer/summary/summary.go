@@ -24,7 +24,7 @@ func BridgeContract(config *bridge_config.Config) {
 
 	balance, err := ethClient.BalanceAt(context.Background(), address, nil)
 	if err != nil {
-		log.Printf("There was an error checking lockup balance for contract: %s", address.Hex())
+		log.Printf("There was an error checking bridge balance for contract: %s", address.Hex())
 	}
 	approver, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(0))
 	if err != nil {
@@ -104,4 +104,57 @@ func BridgeMinterContract(config *bridge_config.Config) {
 	log.Println("Issuer:              " + *bridge + " - Bridge contract")
 	log.Println("DailyLimit:          " + *dailyLimit)
 	log.Println("LastBridge:    " + fmt.Sprint(intUnix) + " ..." + lastDistroTime.String())
+}
+
+func TokenContract(config *bridge_config.Config) {
+	address := config.Token.Address
+	ethClient := config.EthClient
+
+	log.Println("----------------------------------------")
+	log.Printf("Token contract: " + address.Hex())
+	log.Println("----------------------------------------")
+
+	balance, err := ethClient.BalanceAt(context.Background(), address, nil)
+	if err != nil {
+		log.Printf("There was an error checking token balance for contract: %s", address.Hex())
+	}
+	owner, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(0))
+	if err != nil {
+		log.Println("error getting owner from storage")
+		panic(err)
+	}
+	issuerAndDecimals, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(2))
+	if err != nil {
+		log.Println("error getting issuer/decimals from storage")
+		panic(err)
+	}
+
+	issuer := (*issuerAndDecimals)[24:len(*issuerAndDecimals)]
+	decimals := (*issuerAndDecimals)[0:24]
+
+	maxSupply, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(4))
+	if err != nil {
+		log.Println("error getting maxSupply from storage")
+		panic(err)
+	}
+
+	name, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(7))
+	if err != nil {
+		log.Println("error getting name from storage")
+		panic(err)
+	}
+	symbol, err := bridge_common.GetStorageAt(address, ethClient, big.NewInt(8))
+	if err != nil {
+		log.Println("error getting symbol from storage")
+		panic(err)
+	}
+	log.Println("Balance:         " + balance.String())
+	log.Println("----------------------------------------")
+	log.Println("Name:            " + *name)
+	log.Println("Symbol:          " + *symbol)
+	log.Println("Owner:           " + *owner)
+	log.Println("Issuer:          " + issuer)
+	log.Println("Decimals:        " + decimals)
+	log.Println("Max Supply:      " + *maxSupply)
+	log.Println()
 }

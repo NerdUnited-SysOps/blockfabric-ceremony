@@ -112,6 +112,7 @@ func InitConfig(rpcUrl string, deployerPrivateKey string, signing int) (*bridge_
 		nil,
 		nil,
 		nil,
+		nil,
 	)
 
 	return cfg, err

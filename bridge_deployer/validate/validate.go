@@ -19,6 +19,7 @@ const (
 	NotaryPath                = "../volumes/volume5/notary/"
 	MinterApproverPath        = "../volumes/volume5/bridge_minter_approver/"
 	MinterNotaryPath          = "../volumes/volume5/bridge_minter_notary/"
+	TokenOwnerPath            = "../volumes/volume5/token_owner/"
 )
 
 func getWalletFromKeystorePath(config *bridge_config.Config, path string) (*bridge_config.Wallet, error) {
@@ -75,6 +76,23 @@ func BridgeContract(config *bridge_config.Config) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("Validation complete: success")
+}
+
+func TokenContract(config *bridge_config.Config) {
+	log.Println("Validation starting")
+	log.Println("Validating token contract")
+	ownerWallet, err := getWalletFromKeystorePath(config, TokenOwnerPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if checkStorage(config, ownerWallet.Address, config.Token.Address, 0) {
+		log.Println("Token owner keystore address matches on-chain token storage\t✓")
+	} else {
+		log.Println("ERROR: Token owner keystore address does not match on-chain token storage")
+	}
+	log.Println("Validation complete")
+
 	log.Println("Validation complete: success")
 }
 

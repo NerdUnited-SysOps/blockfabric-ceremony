@@ -78,62 +78,72 @@ get_address() {
     echo $ADDRESS
 }
 
-deploy_bridge_contracts() {
-    approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
-    notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
-    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
-
-    git config --global url."https://${GITHUB_PAT}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-
-    export GOPRIVATE=github.com/elevate-blockchain/*
-
-    cd bridge_deployer
-
-    go get github.com/elevate-blockchain/neptune/pkg/contracts
-
-    DEPLOYER_CMD=cmd
+deploy_bridge() {
     printer -n "Deploying L2 Bridge"
     # Deploy bridge
-    bridge_output="$(go run ${DEPLOYER_CMD}/bridge/main.go \
+    go run ${DEPLOYER_CMD}/bridge/main.go \
          ${NERD_CHAIN_URL} \
          ${DEPLOYER_A_PRIVATE_KEY} \
-         ${approver_address} \
-         ${notary_address} \
+         $1 \
+         $2 \
          ${FEE_RECEIVER} \
          ${DEPLOYMENT_FEE} \
-         ${CHAIN_ID})"
+        ${CHAIN_ID}
 
-    echo "bridge output=" $bridge_output &>> ${LOG_FILE}
-    bridge_address="$(echo $bridge_output | tail -n1)"
-    echo $bridge_address > ${VOLUMES_DIR}/volume5/bridge_address
+    mv bridge_address ${VOLUMES_DIR}/volume5/bridge_address
 
+    printer -n "L2 Bridge Deployed."
+ }
+
+ deploy_token() {
     # Deploy Token
     printer -n "Deploying L1 ERC20 Token"
-    token_contract_output="$(go run ${DEPLOYER_CMD}/token/main.go \
+    go run ${DEPLOYER_CMD}/token/main.go \
         ${ETH_URL} \
         ${DEPLOYER_B_PRIVATE_KEY} \
         ${TOKEN_NAME} \
         ${TOKEN_SYMBOL} \
         ${TOKEN_DECIMALS} \
         ${TOKEN_MAX_SUPPLY} \
-        ${token_owner_address})"
+        ${$1}
 
-    echo "token contract address=" $token_contract_output &>> ${LOG_FILE}
-    token_contract_address="$(echo $token_contract_output | tail -n1)"
-    echo $token_contract_address > ${VOLUMES_DIR}/volume5/token_address
+    mv token_contract_address ${VOLUMES_DIR}/volume5/token_contract_address
 
+ }
+
+ deploy_bridge_minter() {
     # Deploy Bridge Minter
-    printer -n "Deploying L1 Bridge"
-    bridge_minter_output="$(go run ${DEPLOYER_CMD}/bridge_minter/main.go \
+    printer -n "Deploying L1 Bridge Minter"
+    go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
         ${DEPLOYER_A_PRIVATE_KEY} \
-        ${approver_address} \
-        ${notary_address} \
-        ${token_contract_address} \
-        ${CHAIN_ID})"
+        $1 \
+        $2 \
+        $3 \
+        ${CHAIN_ID}
 
-    bridge_minter_address="$(echo $bridge_minter_output | tail -n1)"
-    echo $bridge_minter_address > ${VOLUMES_DIR}/volume5/bridge_minter_address
+    mv bridge_minter_address ${VOLUMES_DIR}/volume5/bridge_minter_address
+ }
+
+deploy_bridge_contracts() {
+
+    approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
+    notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
+    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
+
+    git config --global url."https://${GITHUB_PAT}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+
+    export GOPRIVATE=github.com/NerdCoreSdk/*
+
+    cd bridge_deployer
+
+    go get github.com/NerdCoreSdk/neptune/pkg/contracts
+
+    export DEPLOYER_CMD=cmd
+
+    deploy_bridge $approver_address $notary_address
+    deploy_token $token_owner_address
+    deploy_bridge_minter $approver_address $notary_address $token_owner_address
 
     printer -n "Deploying finished."
 }

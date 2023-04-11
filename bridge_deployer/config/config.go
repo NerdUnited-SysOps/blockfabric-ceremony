@@ -180,7 +180,7 @@ func (token *Token) Print() {
 	log.Println("    Owner:                 ", token.Owner)
 	log.Println("    Issuer:                ", token.Issuer)
 	log.Println("    Name:                  ", token.Name)
-	log.Println("    Symbo:                 ", token.Symbol)
+	log.Println("    Symbol:                ", token.Symbol)
 	log.Println("    Decimals:              ", token.Decimals)
 	log.Println("    MaxSupply:             ", token.MaxSupply)
 }
@@ -212,6 +212,5 @@ func (config *Config) Print() {
 	}
 	log.Println("ChainId:                   ", config.ChainId)
 	log.Println("DeployerPrivateKey length: ", len(config.DeployerPrivateKey))
-	log.Println("EthClient:                 ", config.EthClient)
 	log.Println("")
 }

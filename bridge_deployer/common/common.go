@@ -115,6 +115,7 @@ func InitConfig(rpcUrl string, deployerPrivateKey string, signing int) (*bridge_
 
 	return cfg, err
 }
+
 func GetAdminKey(path string) (string, error) {
 	log.Println("Path: " + path)
 	re := regexp.MustCompile("^[A-Fa-f0-9]{40}$")

@@ -82,8 +82,8 @@ get_address() {
 get_deployer_a_private_key() {
     keystore=$(${SCRIPTS_DIR}/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}")
     keystore_file_path=./tmp/issuer_keystore
+    mkdir -p ./tmp
 
-    mkdir -p ${keystore_file_path}
     echo "${keystore}" > ${keystore_file_path}
 
     password=$(${SCRIPTS_DIR}/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_PASSWORD}")

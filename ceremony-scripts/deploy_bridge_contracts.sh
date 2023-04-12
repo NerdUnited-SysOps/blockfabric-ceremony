@@ -172,8 +172,90 @@ deploy_bridge_contracts() {
     printer -n "Deploying finished."
 }
 
-check_wallet_files
-deploy_bridge_contracts
+configure_go() {
+    git config --global url."https://${GITHUB_PAT}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
+    export GOPRIVATE=github.com/NerdCoreSdk/*
+
+    cd bridge_deployer
+
+    go get github.com/NerdCoreSdk/neptune/pkg/contracts
+
+    export DEPLOYER_CMD=cmd
+}
+
+deploy_l2_bridge_contract() {
+    check_wallet_files
+
+    deployer_a_private_key=$(get_deployer_a_private_key)
+
+    approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
+    notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
+
+    configure_go
+
+    deploy_bridge $deployer_a_private_key $approver_address $notary_address
+    cd -
+
+    printer -n "Deployed L2 bridge."
+}
+
+deploy_l1_token_contract() {
+    check_wallet_files
+    deployer_a_private_key=$(get_deployer_a_private_key)
+    deployer_b_private_key=$(${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_B_KEY_NAME}")
+
+    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
+
+    configure_go
+
+    deploy_token $deployer_b_private_key $token_owner_address $deployer_a_private_key
+    cd -
+
+    printer -n "Deployed L1 contract."
+}
+
+deploy_l1_bridge_minter_contract() {
+    check_wallet_files
+    deployer_a_private_key=$(get_deployer_a_private_key)
+
+    approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
+    notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
+    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
+
+    configure_go
+
+    token_contract_address=$(cat $TOKEN_CONTRACT_ADDRESS_FILE)
+    deploy_bridge_minter $deployer_a_private_key $approver_address $notary_address $token_contract_address
+    cd -
+
+    printer -n "Deployed L1 bridge_minter."
+}
+
+items=(
+	"Deploy L2 Bridge"
+	"Deploy L1 Token"
+	"Deploy L1 Bridge Minter"
+	"Exit"
+)
+
+NC='\033[0m'
+RED='\033[0;31m'
+while true; do
+	COLUMNS=1
+	PS3=$'\n'"${BRAND_NAME} ${NETWORK_TYPE} | Select option: "
+	select item in "${items[@]}"
+		case $REPLY in
+			1) deploy_l2_bridge_contract; break;;
+			2) deploy_l1_token_contract; break;;
+			3) deploy_l1_bridge_minter_contract; break;;
+			4) printf "Closing\n\n"; exit 1;;
+			*)
+				printf "\n\nOops, ${RED}${REPLY}${NC} is an unknown option\n\n";
+				usage
+				break;
+		esac
+	done
+done
 
 # EOF

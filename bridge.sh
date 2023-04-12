@@ -49,7 +49,7 @@ run_validation() {
 
 persistence() {
 	./persistence.sh
-	
+
 }
 
 dev() {
@@ -79,7 +79,7 @@ while true; do
 			1) clear -x; deploy_bridge; break;;
 			2) clear -x; run_validation; break;;
 			3) clear -x; persistence; break;;
-			4) printf "Closing\n\n"; exit 1;;
+			4) printf "Closing\n\n"; exit 0;;
 			5) clear -x; dev; break;;
 			*)
 				printf "\n\nOops, ${RED}${REPLY}${NC} is an unknown option\n\n";

@@ -249,7 +249,7 @@ while true; do
 			1) deploy_l2_bridge_contract; break;;
 			2) deploy_l1_token_contract; break;;
 			3) deploy_l1_bridge_minter_contract; break;;
-			4) printf "Closing\n\n"; exit 1;;
+			4) printf "Closing\n\n"; exit 0;;
 			*)
 				printf "\n\nOops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

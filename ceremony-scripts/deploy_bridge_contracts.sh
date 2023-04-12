@@ -4,6 +4,7 @@ set -e
 
 ENV_FILE=./.env
 SCRIPTS_DIR=$(realpath ./ceremony-scripts)
+ETHKEY=${HOME}/go/bin/ethkey
 
 usage() {
 	echo "This script is a helper for deploying bridge smart contracts"
@@ -88,7 +89,7 @@ get_deployer_a_private_key() {
 
     password=$(${SCRIPTS_DIR}/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_PASSWORD}")
 
-    inspected_content=$(ethkey inspect --private --passwordfile <(echo "${password}") "${keystore_file_path}")
+    inspected_content=$(${ETHKEY} inspect --private --passwordfile <(echo "${password}") "${keystore_file_path}")
     echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
 }
 

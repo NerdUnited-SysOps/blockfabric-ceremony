@@ -55,7 +55,7 @@ fi
 [ -z "${APPROVER_ADDRESS_FILE}" ] && APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume3/approver"
 [ -z "${NOTARY_ADDRESS_FILE}" ] && NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume2/notary"
 [ -z "${TOKEN_OWNER_ADDRESS_FILE}" ] && TOKEN_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume2/token_owner"
-[ -z "${TOKEN_CONTRACT_ADDRESS_FILE}" ] && TOKEN_CONTRACT_ADDRESS_FILE="$BASE_DIR/volumes/volume5/token_contract_address"
+[ -z "${TOKEN_CONTRACT_ADDRESS_FILE}" ] && TOKEN_CONTRACT_ADDRESS_FILE="$BASE_DIR/tmp/token_contract_address"
 
 echo "file: ${APPROVER_ADDRESS_FILE}/keystore" &>> ${LOG_FILE}
 
@@ -106,7 +106,8 @@ get_deployer_a_private_key() {
          ${DEPLOYMENT_FEE} \
         ${CHAIN_ID}
 
-    mv bridge_address ${VOLUMES_DIR}/volume5/bridge_address
+    mkdir -p ${BASE_DIR}/tmp
+    mv bridge_address ${BASE_DIR}/tmp
 
     printer -n "L2 Bridge Deployed."
  }
@@ -123,7 +124,7 @@ get_deployer_a_private_key() {
         ${TOKEN_MAX_SUPPLY} \
         $2
 
-    mv token_contract_address ${VOLUMES_DIR}/volume5/token_contract_address
+    mv token_contract_address ${BASE_DIR}/tmp/token_contract_address
 
  }
 
@@ -138,14 +139,14 @@ get_deployer_a_private_key() {
         $4 \
         ${CHAIN_ID}
 
-    mv bridge_minter_address ${VOLUMES_DIR}/volume5/bridge_minter_address
+    mv bridge_minter_address ${BASE_DIR}/tmp/bridge_minter_address
  }
 
 deploy_bridge_contracts() {
 
     deployer_a_private_key=$(get_deployer_a_private_key)
     deployer_b_private_key=$(${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_B_KEY_NAME}")
-    
+
     approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
     notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
     token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)

@@ -122,10 +122,12 @@ save_log_file() {
 	printer -t "Copying ${LOG_FILE} file to all volumes"
 	echo "\n"
 
-	[ -d ${VOLUMES_DIR}/volume1 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume1/
-	[ -d ${VOLUMES_DIR}/volume2 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume2/
-	[ -d ${VOLUMES_DIR}/volume3 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume3/
-	[ -d ${VOLUMES_DIR}/volume4 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume4/
+	now=$(date +"%m_%d_%y")
+
+	[ -d ${VOLUMES_DIR}/volume1 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume1/${now}_${LOG_FILE}"
+	[ -d ${VOLUMES_DIR}/volume2 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume2/${now}_${LOG_FILE}"
+	[ -d ${VOLUMES_DIR}/volume3 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume3/${now}_${LOG_FILE}"
+	[ -d ${VOLUMES_DIR}/volume4 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume4/${now}_${LOG_FILE}"
 
 	echo "\n\n"
 }
@@ -191,8 +193,8 @@ get_private_key() {
 
 items=(
 	"Persist distribution issuer wallet (chain creation)"
-	"Save Log File to volumes"
 	"Persist bridge keys"
+	"Save Log File to volumes"
 	"Persist operational variables (cli args, variables, addresses, etc)"
 	"Exit"
 )
@@ -209,8 +211,8 @@ while true; do
 	select item in "${items[@]}" 
 		case $REPLY in
 			1) persist_distribution_issuer | tee -a ${LOG_FILE}; break;;
-			2) save_log_file | tee -a ${LOG_FILE}; break;;
-			3) persist_bridge_keys | tee -a ${LOG_FILE}; break;;
+			2) persist_bridge_keys | tee -a ${LOG_FILE}; break;;
+			3) save_log_file | tee -a ${LOG_FILE}; break;;
 			4) save_ansible_vars | tee -a ${LOG_FILE}; break;;
 			5) printf "Closing\n\n"; exit 0;;
 			*) 

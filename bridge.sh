@@ -71,9 +71,9 @@ while true; do
 	select item in "${items[@]}"
 		case $REPLY in
 			1) clear -x; deploy_bridge; break;;
-			3) clear -x; persistence; break;;
-			4) printf "Closing\n\n"; exit 0;;
-			5) clear -x; dev; break;;
+			2) clear -x; persistence; break;;
+			3) printf "Closing\n\n"; exit 0;;
+			4) clear -x; dev; break;;
 			*)
 				printf "\n\nOops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

@@ -97,15 +97,17 @@ upsert_file() {
 }
 
 save_ansible_vars() {
+	[ -d ${ANSIBLE_DIR} ] && git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} 
+	now=$(date +"%m_%d_%y")
 	# Prepend bootstrap.log into ceremony.log before github commits and before it's copied to volumes/
 	COMBINED=$(cat ~/bootstrap.log; cat ${LOG_FILE})
 	echo "$COMBINED" > ${LOG_FILE}
-	echo "Finished: $(date)" >> ${LOG_FILE}
+	echo "Finished: $(date)" >> "${now}_${LOG_FILE}"
 	## bootstrap.log will already have a Started: timestamp
-	cp ${LOG_FILE} ${ANSIBLE_DIR}/ceremony.log
+	cp ${LOG_FILE} "${ANSIBLE_DIR}/${now}_ceremony.log"
 	git config --global user.name "ceremony-script"
 	git config --global user.email "ceremony@email.com"
-	git -C ${ANSIBLE_DIR}/ checkout -B ceremony-artifacts
+	git -C ${ANSIBLE_DIR}/ checkout -B "${now}-ceremony-artifacts"
 	git -C ${ANSIBLE_DIR}/ add ${ANSIBLE_DIR}/ &>> ${LOG_FILE}
 	git -C ${ANSIBLE_DIR}/ commit -m "Committing produced artifacts"
 	git -C ${ANSIBLE_DIR}/ push origin HEAD --force --porcelain &>> ${LOG_FILE}
@@ -117,10 +119,10 @@ save_log_file() {
 	printer -t "Copying ${LOG_FILE} file to all volumes"
 	echo "\n"
 
-	cp -v $LOG_FILE ${VOLUMES_DIR}/volume1/
-	cp -v $LOG_FILE ${VOLUMES_DIR}/volume2/
-	cp -v $LOG_FILE ${VOLUMES_DIR}/volume3/
-	cp -v $LOG_FILE ${VOLUMES_DIR}/volume4/
+	[ -d ${VOLUMES_DIR}/volume1 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume1/
+	[ -d ${VOLUMES_DIR}/volume2 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume2/
+	[ -d ${VOLUMES_DIR}/volume3 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume3/
+	[ -d ${VOLUMES_DIR}/volume4 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume4/
 
 	echo "\n\n"
 }

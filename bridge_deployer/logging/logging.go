@@ -13,7 +13,7 @@ var once sync.Once
 // Getter for a singleton log.Logger
 func GetInstance() *log.Logger {
 	once.Do(func() {
-		logger = createLogger("../bridge.log")
+		logger = createLogger("../ceremony.log")
 	})
 	return logger
 }

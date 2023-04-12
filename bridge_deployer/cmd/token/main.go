@@ -34,12 +34,13 @@ func main() {
 	tokenDecimalsArg := os.Args[5]
 	tokenMaxSupplyArg := os.Args[6]
 	tokenOwnerAddress := os.Args[7]
+	bridgeMinterDeployerPrivateKey := os.Args[8]
 
 	config, err := bridge_common.InitConfig(ethRpcUrl, deployerPrivateKey, bridge_common.London)
 	if err != nil {
 		panic(err)
 	}
-	deployerAddress, err := bridge_common.GetAddressFromPrivateKey(deployerPrivateKey)
+	deployerAddress, err := bridge_common.GetAddressFromPrivateKey(bridgeMinterDeployerPrivateKey)
 	if err != nil {
 		panic(err)
 	}

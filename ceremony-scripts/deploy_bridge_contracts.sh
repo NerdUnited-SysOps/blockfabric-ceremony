@@ -114,6 +114,8 @@ get_deployer_a_private_key() {
 
  deploy_token() {
     # Deploy Token
+
+    deployer_a_private_key=$3
     printer -n "Deploying L1 ERC20 Token"
     go run ${DEPLOYER_CMD}/token/main.go \
         ${ETH_URL} \
@@ -123,6 +125,7 @@ get_deployer_a_private_key() {
         ${TOKEN_DECIMALS} \
         ${TOKEN_MAX_SUPPLY} \
         $2
+        $deployer_a_private_key
 
     mv token_contract_address ${BASE_DIR}/tmp/token_contract_address
 
@@ -133,7 +136,7 @@ get_deployer_a_private_key() {
     printer -n "Deploying L1 Bridge Minter"
     go run ${DEPLOYER_CMD}/bridge_minter/main.go \
         ${ETH_URL} \
-        $1\
+        $1 \
         $2 \
         $3 \
         $4 \
@@ -162,7 +165,7 @@ deploy_bridge_contracts() {
     export DEPLOYER_CMD=cmd
 
     deploy_bridge $deployer_a_private_key $approver_address $notary_address
-    deploy_token $deployer_b_private_key $token_owner_address
+    deploy_token $deployer_b_private_key $token_owner_address $deployer_a_private_key
     token_contract_address=$(cat $TOKEN_CONTRACT_ADDRESS_FILE)
     deploy_bridge_minter $deployer_a_private_key $approver_address $notary_address $token_contract_address
 

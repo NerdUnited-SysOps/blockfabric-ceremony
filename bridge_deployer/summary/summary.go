@@ -2,18 +2,20 @@ package summary
 
 import (
 	bridge_common "bridge-deployer/common"
-	bridge_config "bridge-deployer/config"
 	bridge_logger "bridge-deployer/logging"
 
 	"context"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 var log = bridge_logger.GetInstance()
 
-func BridgeContract(config *bridge_config.Config) {
-	address := config.Bridge.Address
-	ethClient := config.EthClient
+func BridgeContract(rpcUrl string, addressString string) {
+	address := common.HexToAddress(addressString)
+	ethClient, err := ethclient.Dial(rpcUrl)
 
 	balance, err := ethClient.BalanceAt(context.Background(), address, nil)
 	if err != nil {
@@ -51,9 +53,9 @@ func BridgeContract(config *bridge_config.Config) {
 	log.Println()
 }
 
-func BridgeMinterContract(config *bridge_config.Config) {
-	ethClient := config.EthClient
-	address := config.BridgeMinter.Address
+func BridgeMinterContract(rpcUrl string, addressString string) {
+	address := common.HexToAddress(addressString)
+	ethClient, err := ethclient.Dial(rpcUrl)
 
 	balance, err := ethClient.BalanceAt(context.Background(), address, nil)
 	if err != nil {
@@ -86,9 +88,14 @@ func BridgeMinterContract(config *bridge_config.Config) {
 	log.Println("Token Address:         " + *tokenAddress)
 }
 
-func TokenContract(config *bridge_config.Config) {
-	address := config.Token.Address
-	ethClient := config.EthClient
+func TokenContract(rpcUrl string, addressString string) {
+	address := common.HexToAddress(addressString)
+
+	log.Printf("rpcurl %s", rpcUrl)
+	ethClient, err := ethclient.Dial(rpcUrl)
+	if err != nil {
+		log.Printf("Failed to create ethClient")
+	}
 
 	balance, err := ethClient.BalanceAt(context.Background(), address, nil)
 	if err != nil {

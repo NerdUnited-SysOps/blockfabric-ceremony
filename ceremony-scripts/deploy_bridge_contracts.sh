@@ -232,10 +232,44 @@ deploy_l1_bridge_minter_contract() {
     printer -n "Deployed L1 bridge_minter."
 }
 
+validate_l2_bridge_contract() {
+    printer -n "Deploying L2 Bridge"
+
+    cd $BRIDGE_DEPLOYER
+    go run cmd/validate/bridge.go \
+        ${NERD_CHAIN_URL} \
+        "$(cat ${BASE_DIR}/tmp/bridge_address)"
+    cd -
+}
+
+validate_l1_token_contract() {
+    printer -n "Deploying L2 Bridge"
+
+    cd $BRIDGE_DEPLOYER
+    go run cmd/validate/token.go \
+        ${ETH_URL} \
+        "$(cat ${BASE_DIR}/tmp/token_contract_address)"
+    cd -
+}
+
+validate_l1_bridge_minter_contract() {
+    printer -n "Deploying L2 Bridge"
+
+    cd $BRIDGE_DEPLOYER
+    go run cmd/validate/bridge_minter.go \
+        ${ETH_URL} \
+        "$(cat ${BASE_DIR}/tmp/bridge_minter_address)" \
+        "$(cat ${BASE_DIR}/tmp/token_contract_address)"
+    cd -
+}
+
 items=(
 	"Deploy L2 Bridge"
+	"Validate L2 Bridge"
 	"Deploy L1 Token"
+  "Validate L1 Token"
 	"Deploy L1 Bridge Minter"
+  "Validate L1 Bridge Minter"
 	"Exit"
 )
 
@@ -247,9 +281,12 @@ while true; do
 	select item in "${items[@]}"
 		case $REPLY in
 			1) deploy_l2_bridge_contract; break;;
-			2) deploy_l1_token_contract; break;;
-			3) deploy_l1_bridge_minter_contract; break;;
-			4) printf "Closing\n\n"; exit 0;;
+			2) validate_l2_bridge_contract; break;;
+			3) deploy_l1_token_contract; break;;
+			4) validate_l1_token_contract; break;;
+			5) deploy_l1_bridge_minter_contract; break;;
+			6) validate_l1_bridge_minter_contract; break;;
+			7) printf "Closing\n\n"; exit 0;;
 			*)
 				printf "\n\nOops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

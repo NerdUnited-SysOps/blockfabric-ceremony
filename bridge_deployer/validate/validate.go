@@ -10,6 +10,7 @@ import (
 	bridge_logger "bridge-deployer/logging"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 var log = bridge_logger.GetInstance()
@@ -20,7 +21,7 @@ const (
 	TokenOwnerPath        = "../volumes/volume2/token_owner/"
 )
 
-func getWalletFromKeystorePath(config *bridge_config.Config, path string) (*bridge_config.Wallet, error) {
+func getWalletFromKeystorePath(path string) (*bridge_config.Wallet, error) {
 
 	wallet, err := bridge_common.DecryptKeystore(path+"keystore", path+"password")
 	if wallet == nil {
@@ -30,10 +31,11 @@ func getWalletFromKeystorePath(config *bridge_config.Config, path string) (*brid
 	return wallet, err
 }
 
-func validateAddressInStorage(config *bridge_config.Config, address common.Address, contractAddress common.Address, storageIndex int) bool {
+func validateAddressInStorage(rpcUrl string, address common.Address, contractAddress common.Address, storageIndex int) bool {
+	ethClient, err := ethclient.Dial(rpcUrl)
 	addr := strings.ToLower(strings.TrimPrefix(address.Hex(), "0x"))
 
-	storage, err := bridge_common.GetStorageAt(contractAddress, config.EthClient, big.NewInt(int64(storageIndex)))
+	storage, err := bridge_common.GetStorageAt(contractAddress, ethClient, big.NewInt(int64(storageIndex)))
 	if err != nil {
 		log.Printf("error getting index [%v] from storage\n", storageIndex)
 	}
@@ -43,21 +45,21 @@ func validateAddressInStorage(config *bridge_config.Config, address common.Addre
 	return addr == addr2
 }
 
-func validateBridgeKeys(config *bridge_config.Config) (bool, error) {
-	approverWallet, err := getWalletFromKeystorePath(config, ApproverPath)
+func validateBridgeKeys(rpcUrl string, bridgeAddress string) (bool, error) {
+	approverWallet, err := getWalletFromKeystorePath(ApproverPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if validateAddressInStorage(config, approverWallet.Address, config.Bridge.Address, 0) {
+	if validateAddressInStorage(rpcUrl, approverWallet.Address, common.HexToAddress(bridgeAddress), 0) {
 		log.Println("Bridge approver keystore address matches on-chain bridge storage\t✓")
 	} else {
 		log.Println("ERROR: Bridge approver keystore address does not match on-chain bridge storage")
 	}
-	notaryWallet, err := getWalletFromKeystorePath(config, NotaryPath)
+	notaryWallet, err := getWalletFromKeystorePath(NotaryPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if validateAddressInStorage(config, notaryWallet.Address, config.Bridge.Address, 1) {
+	if validateAddressInStorage(rpcUrl, notaryWallet.Address, common.HexToAddress(bridgeAddress), 1) {
 		log.Println("Bridge notary keystore address matches on-chain bridge storage\t✓")
 	} else {
 		log.Println("ERROR: Bridge notary keystore address does not match on-chain bridge storage")
@@ -67,58 +69,58 @@ func validateBridgeKeys(config *bridge_config.Config) (bool, error) {
 	return true, nil
 }
 
-func BridgeContract(config *bridge_config.Config) {
+func BridgeContract(rpcUrl string, bridgeAddress string) {
 	log.Println("Validation starting")
 	log.Println("Validating bridge keys")
-	_, err := validateBridgeKeys(config)
+	_, err := validateBridgeKeys(rpcUrl, bridgeAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("Validation complete: success")
 }
 
-func TokenContract(config *bridge_config.Config) {
+func TokenContract(rpcUrl string, tokenAddress string) {
 	log.Println("Validation starting")
 	log.Println("Validating token contract")
-	ownerWallet, err := getWalletFromKeystorePath(config, TokenOwnerPath)
+	ownerWallet, err := getWalletFromKeystorePath(TokenOwnerPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if validateAddressInStorage(config, ownerWallet.Address, config.Token.Address, 0) {
+
+	if validateAddressInStorage(rpcUrl, ownerWallet.Address, common.HexToAddress(tokenAddress), 0) {
 		log.Println("Token owner keystore address matches on-chain token storage\t✓")
 	} else {
 		log.Println("ERROR: Token owner keystore address does not match on-chain token storage")
 	}
 	log.Println("Validation complete")
-
-	log.Println("Validation complete: success")
 }
 
-func BridgeMinterContract(config *bridge_config.Config) {
+func BridgeMinterContract(rpcUrl string, bridgeMinterAddress string, tokenAddress string) {
 
-	notaryWallet, err := getWalletFromKeystorePath(config, NotaryPath)
+	notaryWallet, err := getWalletFromKeystorePath(NotaryPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if validateAddressInStorage(config, notaryWallet.Address, config.BridgeMinter.Address, 0) {
+	if validateAddressInStorage(rpcUrl, notaryWallet.Address, common.HexToAddress(bridgeMinterAddress), 0) {
 		log.Println("Bridge minter notary keystore address matches on-chain bridge minter storage\t\t✓")
 	} else {
 		log.Println("ERROR: Bridge minter notary keystore address does not match on-chain bridge minter storage")
 	}
 
-	approverWallet, err := getWalletFromKeystorePath(config, ApproverPath)
+	approverWallet, err := getWalletFromKeystorePath(ApproverPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if validateAddressInStorage(config, approverWallet.Address, config.BridgeMinter.Address, 1) {
+	if validateAddressInStorage(rpcUrl, approverWallet.Address, common.HexToAddress(bridgeMinterAddress), 1) {
 		log.Println("Bridge minter approver keystore address matches on-chain bridge minter storage\t\t✓")
 	} else {
 		log.Println("ERROR: Bridge minter approver keystore address does not match on-chain bridge minter storage")
 	}
 	// validate token contract address
-	tokenAddress := strings.ToLower(strings.TrimPrefix(config.BridgeMinter.TokenAddress.Hex(), "0x"))
+	tokenAddress = strings.ToLower(strings.TrimPrefix(tokenAddress, "0x"))
 
-	storage, err := bridge_common.GetStorageAt(config.BridgeMinter.Address, config.EthClient, big.NewInt(int64(2)))
+	ethClient, err := ethclient.Dial(rpcUrl)
+	storage, err := bridge_common.GetStorageAt(common.HexToAddress(bridgeMinterAddress), ethClient, big.NewInt(int64(2)))
 	if err != nil {
 		log.Printf("error getting index [%v] from storage\n", 2)
 	}

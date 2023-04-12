@@ -208,10 +208,10 @@ while true; do
 	PS3=$'\n'"${BRAND_NAME} ${NETWORK_TYPE} | Select option: "
 	select item in "${items[@]}" 
 		case $REPLY in
-			1) persist_distribution_issuer; break;;
-			2) save_ansible_vars; break;;
-			3) save_log_file; break;;
-			4) persist_bridge_keys; break;;
+			1) persist_distribution_issuer | tee -a ${LOG_FILE}; break;;
+			2) save_ansible_vars | tee -a ${LOG_FILE}; break;;
+			3) save_log_file | tee -a ${LOG_FILE}; break;;
+			4) persist_bridge_keys | tee -a ${LOG_FILE}; break;;
 			5) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";

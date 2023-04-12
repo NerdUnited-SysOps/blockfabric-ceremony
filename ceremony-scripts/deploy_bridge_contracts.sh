@@ -243,7 +243,7 @@ validate_l2_bridge_contract() {
 }
 
 validate_l1_token_contract() {
-    printer -n "Deploying L2 Bridge"
+    printer -n "Deploying L1 Token"
 
     cd $BRIDGE_DEPLOYER
     go run cmd/validate/token.go \
@@ -253,7 +253,7 @@ validate_l1_token_contract() {
 }
 
 validate_l1_bridge_minter_contract() {
-    printer -n "Deploying L2 Bridge"
+    printer -n "Deploying L1 Bridge Minter"
 
     cd $BRIDGE_DEPLOYER
     go run cmd/validate/bridge_minter.go \

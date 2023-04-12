@@ -92,11 +92,7 @@ if [ ! "${DEV}" = true ]; then
 	${SCRIPTS_DIR}/install_dependencies.sh
 fi
 
-printer -b
-
 create_bridge_wallets
 deploy_bridge_contracts
-
-printer -f 40
 
 # EOF

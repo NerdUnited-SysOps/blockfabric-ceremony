@@ -4,6 +4,7 @@ set -e
 
 ENV_FILE=./.env
 SCRIPTS_DIR=$(realpath ./ceremony-scripts)
+ETHKEY=${HOME}/go/bin/ethkey
 
 usage() {
 	echo "This script is a helper for deploying bridge smart contracts"
@@ -54,6 +55,7 @@ fi
 [ -z "${APPROVER_ADDRESS_FILE}" ] && APPROVER_ADDRESS_FILE="$BASE_DIR/volumes/volume3/approver"
 [ -z "${NOTARY_ADDRESS_FILE}" ] && NOTARY_ADDRESS_FILE="$BASE_DIR/volumes/volume2/notary"
 [ -z "${TOKEN_OWNER_ADDRESS_FILE}" ] && TOKEN_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume2/token_owner"
+[ -z "${TOKEN_CONTRACT_ADDRESS_FILE}" ] && TOKEN_CONTRACT_ADDRESS_FILE="$BASE_DIR/tmp/token_contract_address"
 
 echo "file: ${APPROVER_ADDRESS_FILE}/keystore" &>> ${LOG_FILE}
 
@@ -80,16 +82,71 @@ get_address() {
 
 get_deployer_a_private_key() {
     keystore=$(${SCRIPTS_DIR}/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}")
-    keystore_file_path=${VOLUMES_DIR}/volume1/distributionIssuer/keystore
+    keystore_file_path=./tmp/issuer_keystore
+    mkdir -p ./tmp
+
     echo "${keystore}" > ${keystore_file_path}
 
     password=$(${SCRIPTS_DIR}/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_PASSWORD}")
 
-    inspected_content=$(ethkey inspect --private --passwordfile <(echo "${password}") "${keystore_file_path}")
+    inspected_content=$(${ETHKEY} inspect --private --passwordfile <(echo "${password}") "${keystore_file_path}")
     echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
 }
 
+ deploy_bridge() {
+    DEPLOYER_CMD=cmd
+    printer -n "Deploying L2 Bridge"
+    # Deploy bridge
+    go run ${DEPLOYER_CMD}/bridge/main.go \
+         ${NERD_CHAIN_URL} \
+         $1 \
+         $2 \
+         $3 \
+         ${FEE_RECEIVER} \
+         ${DEPLOYMENT_FEE} \
+        ${CHAIN_ID}
+
+    mkdir -p ${BASE_DIR}/tmp
+    mv bridge_address ${BASE_DIR}/tmp
+
+    printer -n "L2 Bridge Deployed."
+ }
+
+ deploy_token() {
+    # Deploy Token
+
+    deployer_a_private_key=$3
+    printer -n "Deploying L1 ERC20 Token"
+    go run ${DEPLOYER_CMD}/token/main.go \
+        ${ETH_URL} \
+        $1 \
+        ${TOKEN_NAME} \
+        ${TOKEN_SYMBOL} \
+        ${TOKEN_DECIMALS} \
+        ${TOKEN_MAX_SUPPLY} \
+        $2                  \
+        $deployer_a_private_key
+
+    mv token_contract_address ${BASE_DIR}/tmp/token_contract_address
+
+ }
+
+ deploy_bridge_minter() {
+    # Deploy Bridge Minter
+    printer -n "Deploying L1 Bridge Minter"
+    go run ${DEPLOYER_CMD}/bridge_minter/main.go \
+        ${ETH_URL} \
+        $1 \
+        $2 \
+        $3 \
+        $4 \
+        ${CHAIN_ID}
+
+    mv bridge_minter_address ${BASE_DIR}/tmp/bridge_minter_address
+ }
+
 deploy_bridge_contracts() {
+
     deployer_a_private_key=$(get_deployer_a_private_key)
     deployer_b_private_key=$(${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_B_KEY_NAME}")
 
@@ -99,61 +156,106 @@ deploy_bridge_contracts() {
 
     git config --global url."https://${GITHUB_PAT}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
-    export GOPRIVATE=github.com/elevate-blockchain/*
+    export GOPRIVATE=github.com/NerdCoreSdk/*
 
     cd bridge_deployer
 
-    go get github.com/elevate-blockchain/neptune/pkg/contracts
+    go get github.com/NerdCoreSdk/neptune/pkg/contracts
 
-    DEPLOYER_CMD=cmd
-    printer -n "Deploying L2 Bridge"
-    # Deploy bridge
-    bridge_output="$(go run ${DEPLOYER_CMD}/bridge/main.go \
-         ${NERD_CHAIN_URL} \
-         ${deployer_a_private_key} \
-         ${approver_address} \
-         ${notary_address} \
-         ${FEE_RECEIVER} \
-         ${DEPLOYMENT_FEE} \
-         ${CHAIN_ID})"
+    export DEPLOYER_CMD=cmd
 
-    echo "bridge output=" $bridge_output &>> ${LOG_FILE}
-    bridge_address="$(echo $bridge_output | tail -n1)"
-    echo $bridge_address > ${VOLUMES_DIR}/volume5/bridge_address
-
-    # Deploy Token
-    printer -n "Deploying L1 ERC20 Token"
-    token_contract_output="$(go run ${DEPLOYER_CMD}/token/main.go \
-        ${ETH_URL} \
-        ${deployer_b_private_key} \
-        ${TOKEN_NAME} \
-        ${TOKEN_SYMBOL} \
-        ${TOKEN_DECIMALS} \
-        ${TOKEN_MAX_SUPPLY} \
-        ${token_owner_address})"
-
-    echo "token contract address=" $token_contract_output &>> ${LOG_FILE}
-    token_contract_address="$(echo $token_contract_output | tail -n1)"
-    echo $token_contract_address > ${VOLUMES_DIR}/volume5/token_address
-
-    # Deploy Bridge Minter
-    printer -n "Deploying L1 Bridge"
-    bridge_minter_output="$(go run ${DEPLOYER_CMD}/bridge_minter/main.go \
-        ${ETH_URL} \
-        ${deployer_a_private_key} \
-        ${approver_address} \
-        ${notary_address} \
-        ${token_contract_address} \
-        ${CHAIN_ID})"
-
-    bridge_minter_address="$(echo $bridge_minter_output | tail -n1)"
-    echo $bridge_minter_address > ${VOLUMES_DIR}/volume5/bridge_minter_address
+    deploy_bridge $deployer_a_private_key $approver_address $notary_address
+    deploy_token $deployer_b_private_key $token_owner_address $deployer_a_private_key
+    token_contract_address=$(cat $TOKEN_CONTRACT_ADDRESS_FILE)
+    deploy_bridge_minter $deployer_a_private_key $approver_address $notary_address $token_contract_address
 
     printer -n "Deploying finished."
 }
 
-check_wallet_files
-deploy_bridge_contracts
+configure_go() {
+    git config --global url."https://${GITHUB_PAT}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
+    export GOPRIVATE=github.com/NerdCoreSdk/*
+
+    cd bridge_deployer
+
+    go get github.com/NerdCoreSdk/neptune/pkg/contracts
+
+    export DEPLOYER_CMD=cmd
+}
+
+deploy_l2_bridge_contract() {
+    check_wallet_files
+
+    deployer_a_private_key=$(get_deployer_a_private_key)
+
+    approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
+    notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
+
+    configure_go
+
+    deploy_bridge $deployer_a_private_key $approver_address $notary_address
+    cd -
+
+    printer -n "Deployed L2 bridge."
+}
+
+deploy_l1_token_contract() {
+    check_wallet_files
+    deployer_a_private_key=$(get_deployer_a_private_key)
+    deployer_b_private_key=$(${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_B_KEY_NAME}")
+
+    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
+
+    configure_go
+
+    deploy_token $deployer_b_private_key $token_owner_address $deployer_a_private_key
+    cd -
+
+    printer -n "Deployed L1 contract."
+}
+
+deploy_l1_bridge_minter_contract() {
+    check_wallet_files
+    deployer_a_private_key=$(get_deployer_a_private_key)
+
+    approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
+    notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
+    token_owner_address=$(get_address $TOKEN_OWNER_ADDRESS_FILE/keystore)
+
+    configure_go
+
+    token_contract_address=$(cat $TOKEN_CONTRACT_ADDRESS_FILE)
+    deploy_bridge_minter $deployer_a_private_key $approver_address $notary_address $token_contract_address
+    cd -
+
+    printer -n "Deployed L1 bridge_minter."
+}
+
+items=(
+	"Deploy L2 Bridge"
+	"Deploy L1 Token"
+	"Deploy L1 Bridge Minter"
+	"Exit"
+)
+
+NC='\033[0m'
+RED='\033[0;31m'
+while true; do
+	COLUMNS=1
+	PS3=$'\n'"${BRAND_NAME} ${NETWORK_TYPE} | Select option: "
+	select item in "${items[@]}"
+		case $REPLY in
+			1) deploy_l2_bridge_contract; break;;
+			2) deploy_l1_token_contract; break;;
+			3) deploy_l1_bridge_minter_contract; break;;
+			4) printf "Closing\n\n"; exit 1;;
+			*)
+				printf "\n\nOops, ${RED}${REPLY}${NC} is an unknown option\n\n";
+				usage
+				break;
+		esac
+	done
+done
 
 # EOF

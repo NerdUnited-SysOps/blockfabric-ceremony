@@ -41,7 +41,7 @@ upsert_secret() {
 	upsert_key=$1
 	upsert_value=$2
 	profile=$3
-	printer -n "Persisting ${upsert_val} to ${upsert_key}"
+	printer -n "Persisting value to ${upsert_key}"
 
 	secret=$(aws secretsmanager \
 		put-secret-value \
@@ -160,13 +160,13 @@ persist_bridge_keys() {
 	upsert_secret ${AWS_NOTARY_PRIVATE_KEY} $notary_private_key ${AWS_PRIMARY_PROFILE}
 
 	# contract addresses
-	volume5=${VOLUMES_DIR}/volume5
-	persist_address_file ${BRIDGE_CONTRACT_ADDRESS} ${volume5}/bridge_address ${AWS_PRIMARY_PROFILE}
-	persist_address_file ${BRIDGE_MINTER_CONTRACT_ADDRESS} ${volume5}/bridge_minter_address ${AWS_PRIMARY_PROFILE}
-	persist_address_file ${TOKEN_CONTRACT_ADDRESS} ${volume5}/token_address ${AWS_PRIMARY_PROFILE}
+	temp_dir=${BASE_DIR}/tmp
+	persist_address_file ${BRIDGE_CONTRACT_ADDRESS} ${temp_dir}/bridge_address ${AWS_PRIMARY_PROFILE}
+	persist_address_file ${BRIDGE_MINTER_CONTRACT_ADDRESS} ${temp_dir}/bridge_minter_address ${AWS_PRIMARY_PROFILE}
+	persist_address_file ${TOKEN_CONTRACT_ADDRESS} ${temp_dir}/token_contract_address ${AWS_PRIMARY_PROFILE}
 
 	# secondary contracts
-	persist_address_file ${BRIDGE_CONTRACT_ADDRESS} ${volume5}/bridge_address ${AWS_SECONDARY_PROFILE}
+	persist_address_file ${BRIDGE_CONTRACT_ADDRESS} ${temp_dir}/bridge_address ${AWS_SECONDARY_PROFILE}
 }
 
 inspect() {

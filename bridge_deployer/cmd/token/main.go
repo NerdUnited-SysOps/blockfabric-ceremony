@@ -40,11 +40,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	deployerAddress, err := bridge_common.GetAddressFromPrivateKey(bridgeMinterDeployerPrivateKey)
 	if err != nil {
 		panic(err)
 	}
-	tokenIssuerAddress := bridge_common.GetDeterministicAddress(deployerAddress, config.Auth.Auth.Nonce.Uint64())
+
+	auth := bridge_common.GetAccountAuth(config.EthClient, bridgeMinterDeployerPrivateKey, bridge_common.London)
+	tokenIssuerAddress := bridge_common.GetDeterministicAddress(deployerAddress, auth.Auth.Nonce.Uint64())
 	tokenOwner := common.HexToAddress(strings.TrimSpace(tokenOwnerAddress))
 	maxSupply := big.NewInt(0)
 	if _, ok := maxSupply.SetString(tokenMaxSupplyArg, 10); !ok {

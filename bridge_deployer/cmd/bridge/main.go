@@ -4,8 +4,6 @@ import (
 	bridge_common "bridge-deployer/common"
 	bridge_config "bridge-deployer/config"
 	bridge_logger "bridge-deployer/logging"
-	bridge_summary "bridge-deployer/summary"
-	bridge_validate "bridge-deployer/validate"
 	"context"
 	"errors"
 	"fmt"
@@ -83,8 +81,6 @@ func main() {
 	fmt.Printf("wrote %d bytes\n", n2)
 	f.Sync()
 
-	bridge_summary.BridgeContract(config)
-	bridge_validate.BridgeContract(config)
 	log.Println("Bridge contract (bridge.sol) deployment complete")
 }
 

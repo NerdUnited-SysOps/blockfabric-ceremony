@@ -41,7 +41,7 @@ upsert_secret() {
 	upsert_key=$1
 	upsert_value=$2
 	profile=$3
-	printer -n "Persisting ${upsert_val} to ${upsert_key}"
+	printer -n "Persisting ${upsert_value} to ${upsert_key}"
 
 	secret=$(aws secretsmanager \
 		put-secret-value \

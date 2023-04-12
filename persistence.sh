@@ -122,10 +122,12 @@ save_log_file() {
 	printer -t "Copying ${LOG_FILE} file to all volumes"
 	echo "\n"
 
-	[ -d ${VOLUMES_DIR}/volume1 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume1/
-	[ -d ${VOLUMES_DIR}/volume2 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume2/
-	[ -d ${VOLUMES_DIR}/volume3 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume3/
-	[ -d ${VOLUMES_DIR}/volume4 ] && cp -v $LOG_FILE ${VOLUMES_DIR}/volume4/
+	now=$(date +"%m_%d_%y")
+
+	[ -d ${VOLUMES_DIR}/volume1 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume1/${now}_ceremony.log"
+	[ -d ${VOLUMES_DIR}/volume2 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume2/${now}_ceremony.log"
+	[ -d ${VOLUMES_DIR}/volume3 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume3/${now}_ceremony.log"
+	[ -d ${VOLUMES_DIR}/volume4 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume4/${now}_ceremony.log"
 
 	echo "\n\n"
 }
@@ -163,6 +165,7 @@ persist_bridge_keys() {
 
 	notary_private_key=$(get_private_key ${VOLUMES_DIR}/volume2/notary)
 	upsert_secret ${AWS_NOTARY_PRIVATE_KEY} $notary_private_key ${AWS_PRIMARY_PROFILE}
+	upsert_secret ${AWS_NOTARY_PRIVATE_KEY} $notary_private_key ${AWS_SECONDARY_PROFILE}
 
 	# contract addresses
 	temp_dir=${BASE_DIR}/tmp
@@ -190,10 +193,10 @@ get_private_key() {
 }
 
 items=(
-	"Persist distribution issuer wallet"
-	"Persist chain variables (cli args, genesis, addresses, etc)"
-	"Save Log File to volumes"
+	"Persist distribution issuer wallet (chain creation)"
 	"Persist bridge keys"
+	"Save Log File to volumes"
+	"Persist operational variables (cli args, variables, addresses, etc)"
 	"Exit"
 )
 
@@ -209,9 +212,9 @@ while true; do
 	select item in "${items[@]}" 
 		case $REPLY in
 			1) persist_distribution_issuer | tee -a ${LOG_FILE}; break;;
-			2) save_ansible_vars | tee -a ${LOG_FILE}; break;;
+			2) persist_bridge_keys | tee -a ${LOG_FILE}; break;;
 			3) save_log_file | tee -a ${LOG_FILE}; break;;
-			4) persist_bridge_keys | tee -a ${LOG_FILE}; break;;
+			4) save_ansible_vars | tee -a ${LOG_FILE}; break;;
 			5) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";

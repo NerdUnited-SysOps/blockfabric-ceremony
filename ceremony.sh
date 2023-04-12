@@ -46,7 +46,7 @@ persistence() {
 }
 
 deploy_bridge() {
-	./bridge.sh
+    ./bridge.sh
 }
 
 dev() {

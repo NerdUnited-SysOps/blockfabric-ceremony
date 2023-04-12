@@ -88,11 +88,11 @@ deploy_bridge_contracts() {
 }
 
 if [ ! "${DEV}" = true ]; then
-	${SCRIPTS_DIR}/get_secrets.sh
-	${SCRIPTS_DIR}/install_dependencies.sh
+	${SCRIPTS_DIR}/get_secrets.sh | tee -a ${LOG_FILE}
+	${SCRIPTS_DIR}/install_dependencies.sh | tee -a ${LOG_FILE}
 fi
 
-create_bridge_wallets
+create_bridge_wallets | tee -a ${LOG_FILE}
 deploy_bridge_contracts
 
 # EOF

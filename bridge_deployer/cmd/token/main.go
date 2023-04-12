@@ -43,7 +43,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	tokenIssuerAddress := bridge_common.GetDeterministicAddress(deployerAddress, config.Auth.Auth.Nonce.Uint64()+1)
+	tokenIssuerAddress := bridge_common.GetDeterministicAddress(deployerAddress, config.Auth.Auth.Nonce.Uint64())
 	tokenOwner := common.HexToAddress(strings.TrimSpace(tokenOwnerAddress))
 	maxSupply := big.NewInt(0)
 	if _, ok := maxSupply.SetString(tokenMaxSupplyArg, 10); !ok {

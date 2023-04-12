@@ -124,7 +124,7 @@ get_deployer_a_private_key() {
         ${TOKEN_SYMBOL} \
         ${TOKEN_DECIMALS} \
         ${TOKEN_MAX_SUPPLY} \
-        $2
+        $2                  \
         $deployer_a_private_key
 
     mv token_contract_address ${BASE_DIR}/tmp/token_contract_address

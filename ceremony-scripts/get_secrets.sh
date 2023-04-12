@@ -91,8 +91,3 @@ write_key "${KEY2}" "${AWS_NODES_SSH_KEY_PATH}"
 GITHUB_PAT=$(get_key "${AWS_GITHUB_CEREMONY_PAT}")
 set_env_var "GITHUB_PAT" "${GITHUB_PAT}"
 
-DEPLOYER_A=$(get_key "${DEPLOYER_A_KEY_NAME}")
-set_env_var "DEPLOYER_A_PRIVATE_KEY" "${DEPLOYER_A}"
-
-DEPLOYER_B=$(get_key "${DEPLOYER_B_KEY_NAME}")
-set_env_var "DEPLOYER_B_PRIVATE_KEY" "${DEPLOYER_B}"

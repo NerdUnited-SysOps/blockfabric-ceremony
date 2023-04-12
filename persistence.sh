@@ -190,7 +190,7 @@ get_private_key() {
 }
 
 items=(
-	"Persist distribution issuer wallet"
+	"Persist distribution issuer wallet (chain creation)"
 	"Save Log File to volumes"
 	"Persist bridge keys"
 	"Persist operational variables (cli args, variables, addresses, etc)"

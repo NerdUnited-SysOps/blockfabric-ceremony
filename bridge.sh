@@ -57,6 +57,7 @@ dev() {
 
 items=(
 	"Deploy Bridge"
+	"Run validation"
 	"Persist assets"
 	"Exit"
 )

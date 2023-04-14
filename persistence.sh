@@ -159,16 +159,14 @@ persist_bridge_keys() {
 	upsert_file ${AWS_APPROVER_PASSWORD} ${VOLUMES_DIR}/volume3/approver/password ${AWS_PRIMARY_PROFILE}
 
 	approver_private_key=$(get_private_key ${VOLUMES_DIR}/volume3/approver)
-	upsert_secret ${BRAND_AWS_APPROVER_PRIVATE_KEY} $approver_private_key ${AWS_PRIMARY_PROFILE}
-	upsert_secret ${BLOCK_FABRIC_AWS_APPROVER_PRIVATE_KEY} $approver_private_key ${AWS_SECONDARY_PROFILE}
+	upsert_secret ${BRAND_AWS_APPROVER_PRIVATE_KEY} $approver_private_key ${AWS_SECONDARY_PROFILE}
 
 	# notary -> brand AWS secrets
 	upsert_file ${AWS_NOTARY_KEYSTORE} ${VOLUMES_DIR}/volume2/notary/keystore ${AWS_SECONDARY_PROFILE}
 	upsert_file ${AWS_NOTARY_PASSWORD} ${VOLUMES_DIR}/volume2/notary/password ${AWS_SECONDARY_PROFILE}
 
 	notary_private_key=$(get_private_key ${VOLUMES_DIR}/volume2/notary)
-	upsert_secret ${AWS_NOTARY_PRIVATE_KEY} $notary_private_key ${AWS_PRIMARY_PROFILE}
-	upsert_secret ${AWS_NOTARY_PRIVATE_KEY} $notary_private_key ${AWS_SECONDARY_PROFILE}
+	upsert_secret ${BLOCK_FABRIC_AWS_NOTARY_PRIVATE_KEY} $notary_private_key ${AWS_PRIMARY_PROFILE}
 
 	# bridge contract address -> brand AWS secrets and Blockfabric
 	upsert_secret ${BRAND_AWS_BRIDGE_CONTRACT_ADDRESS} $BRIDGE_CONTRACT_ADDRESS ${AWS_PRIMARY_PROFILE}

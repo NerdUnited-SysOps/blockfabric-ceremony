@@ -168,18 +168,14 @@ persist_bridge_keys() {
 	notary_private_key=$(get_private_key ${VOLUMES_DIR}/volume2/notary)
 	upsert_secret ${BLOCK_FABRIC_AWS_NOTARY_PRIVATE_KEY} $notary_private_key ${AWS_PRIMARY_PROFILE}
 
-	# bridge contract address -> brand AWS secrets and Blockfabric
-	# upsert_secret ${BRAND_AWS_BRIDGE_CONTRACT_ADDRESS} $BRIDGE_CONTRACT_ADDRESS ${AWS_PRIMARY_PROFILE}
-	# upsert_secret ${BLOCK_FABRIC_AWS_BRIDGE_CONTRACT_ADDRESS} $BRIDGE_CONTRACT_ADDRESS ${AWS_SECONDARY_PROFILE}
-
 	# contract addresses
 	temp_dir=${BASE_DIR}/tmp
-	persist_address_file ${BRAND_AWS_BRIDGE_CONTRACT_ADDRESS} ${temp_dir}/bridge_address ${AWS_PRIMARY_PROFILE}
+	persist_address_file ${BRAND_AWS_BRIDGE_CONTRACT_ADDRESS} ${temp_dir}/bridge_address ${AWS_SECONDARY_PROFILE}
 	persist_address_file ${BRIDGE_MINTER_CONTRACT_ADDRESS} ${temp_dir}/bridge_minter_address ${AWS_PRIMARY_PROFILE}
 	persist_address_file ${TOKEN_CONTRACT_ADDRESS} ${temp_dir}/token_contract_address ${AWS_PRIMARY_PROFILE}
 
 	# secondary contracts
-	persist_address_file ${BLOCK_FABRIC_AWS_BRIDGE_CONTRACT_ADDRESS} ${temp_dir}/bridge_address ${AWS_SECONDARY_PROFILE}
+	persist_address_file ${BLOCK_FABRIC_AWS_BRIDGE_CONTRACT_ADDRESS} ${temp_dir}/bridge_address ${AWS_PRIMARY_PROFILE}
 }
 
 inspect() {

@@ -145,6 +145,7 @@ get_deployer_a_private_key() {
     mv bridge_minter_address ${BASE_DIR}/tmp/bridge_minter_address
  }
 
+# todo - remove?
 deploy_bridge_contracts() {
 
     deployer_a_private_key=$(get_deployer_a_private_key)

@@ -42,6 +42,10 @@ deploy_bridge() {
 	${SCRIPTS_DIR}/deploy_bridge.sh
 }
 
+run_validation() {
+	./validation.sh
+}
+
 persistence() {
 	./persistence.sh
 
@@ -53,6 +57,7 @@ dev() {
 
 items=(
 	"Deploy Bridge"
+	"Run volume validation"
 	"Persist assets"
 	"Exit"
 )
@@ -71,9 +76,10 @@ while true; do
 	select item in "${items[@]}"
 		case $REPLY in
 			1) clear -x; deploy_bridge; break;;
-			2) clear -x; persistence; break;;
-			3) printf "Closing\n\n"; exit 0;;
-			4) clear -x; dev; break;;
+			2) clear -x; run_validation; break;;
+			3) clear -x; persistence; break;;
+			4) printf "Closing\n\n"; exit 0;;
+			5) clear -x; dev; break;;
 			*)
 				printf "\n\nOops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

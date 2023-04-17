@@ -176,7 +176,6 @@ create_bridge_wallets() {
 
 # todo - remove?
 deploy_bridge_contracts() {
-
     deployer_a_private_key=$(get_deployer_a_private_key)
     deployer_b_private_key=$(${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_B_KEY_NAME}")
 
@@ -297,7 +296,7 @@ fund_wallets() {
     printer -t "Funding wallets"
 
     funding_wallet=$(get_di_private_key)
-    amount=5
+    amount=500000000
 
     cd $BRIDGE_DEPLOYER
 
@@ -324,7 +323,7 @@ fund_wallets() {
         "${deployer_a_public_address}" \
         "${funding_wallet}" \
         "${NERD_CHAIN_URL}" \
-        "${amount}"
+        100000000
     cd -
 }
 

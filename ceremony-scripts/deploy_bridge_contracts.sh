@@ -304,27 +304,27 @@ fund_wallets() {
     printer -n "Funding notary" | tee -a ${LOG_FILE}
     notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
     go run cmd/send_coins/send_coins.go \
-        ${notary_address} \
-        ${funding_wallet} \
-        ${NERD_CHAIN_URL} \
+        "${notary_address}" \
+        "${funding_wallet}" \
+        "${NERD_CHAIN_URL}" \
         "${amount}"
 
     printer -n "Funding approver" | tee -a ${LOG_FILE}
     approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
     go run cmd/send_coins/send_coins.go \
-        ${approver_address} \
-        ${funding_wallet} \
-        ${NERD_CHAIN_URL} \
-        ${amount}
+        "${approver_address}" \
+        "${funding_wallet}" \
+        "${NERD_CHAIN_URL}" \
+        "${amount}"
 
     printer -n "Funding deployer" | tee -a ${LOG_FILE}
     deployer_a_private_key=$(get_deployer_a_private_key)
     deployer_a_public_address=$(go run cmd/addressFromPrivateKey/addressFromPrivateKey.go ${deployer_a_private_key})
     go run cmd/send_coins/send_coins.go \
-        ${deployer_a_public_address} \
-        ${funding_wallet} \
-        ${NERD_CHAIN_URL} \
-        ${amount}
+        "${deployer_a_public_address}" \
+        "${funding_wallet}" \
+        "${NERD_CHAIN_URL}" \
+        "${amount}"
     cd -
 }
 

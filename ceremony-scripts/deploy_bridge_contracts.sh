@@ -323,7 +323,7 @@ fund_wallets() {
         "${deployer_a_public_address}" \
         "${funding_wallet}" \
         "${NERD_CHAIN_URL}" \
-        100000000
+        200000000
     cd -
 }
 

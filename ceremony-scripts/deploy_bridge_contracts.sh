@@ -81,7 +81,7 @@ get_address() {
 }
 
 get_deployer_a_private_key() {
-    deployer_a_private_key=$(${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_A_KEY_NAME}")
+    ${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_A_KEY_NAME}"
 }
 
  deploy_bridge() {

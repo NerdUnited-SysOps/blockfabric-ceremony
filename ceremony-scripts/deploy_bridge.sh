@@ -52,47 +52,11 @@ else
 	source ${ENV_FILE}
 fi
 
-printer() {
-	${SCRIPTS_DIR}/printer.sh "$@"
-}
-
-generate_wallet() {
-	${SCRIPTS_DIR}/generate_wallet.sh "$@" &>> ${LOG_FILE}
-}
-
-create_wallet() {
-	wallet_name=$1
-	volume=$2
-	key_path=${VOLUMES_DIR}/${volume}/${wallet_name}
-
-	generate_wallet -o "${key_path}"
-
-	printer -n "Created ${key_path} wallet"
-}
-
-create_bridge_wallets() {
-	printer -t "Creating bridge wallets"
-
-	create_wallet "token_owner" "volume2" &
-	create_wallet "notary" "volume2" &
-	create_wallet "approver" "volume3" &
-	wait
-
-	printer -s "Finished creating bridge wallets"
-}
-
-deploy_bridge_contracts() {
-	printer -t "Deploying bridge contracts"
-	${SCRIPTS_DIR}/deploy_bridge_contracts.sh #>> ${LOG_FILE}
-	printer -s "Finished deploying bridge contracts"
-}
-
 if [ ! "${DEV}" = true ]; then
 	${SCRIPTS_DIR}/get_secrets.sh | tee -a ${LOG_FILE}
 	${SCRIPTS_DIR}/install_dependencies.sh | tee -a ${LOG_FILE}
 fi
 
-create_bridge_wallets | tee -a ${LOG_FILE}
-deploy_bridge_contracts
+${SCRIPTS_DIR}/deploy_bridge_contracts.sh #>> ${LOG_FILE}
 
 # EOF

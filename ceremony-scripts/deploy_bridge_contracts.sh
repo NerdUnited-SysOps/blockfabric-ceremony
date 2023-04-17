@@ -84,6 +84,21 @@ get_deployer_a_private_key() {
     ${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_A_KEY_NAME}"
 }
 
+get_di_private_key() {
+    get_deployer_a_private_key() {
+    keystore=$(${SCRIPTS_DIR}/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}")
+    keystore_file_path=./tmp/issuer_keystore
+    mkdir -p ./tmp
+
+    echo "${keystore}" > ${keystore_file_path}
+
+    password=$(${SCRIPTS_DIR}/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_PASSWORD}")
+
+    inspected_content=$(${ETHKEY} inspect --private --passwordfile <(echo "${password}") "${keystore_file_path}")
+    echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
+}
+}
+
  deploy_bridge() {
     DEPLOYER_CMD=cmd
     printer -n "Deploying L2 Bridge"
@@ -283,7 +298,7 @@ validate_l1_bridge_minter_contract() {
 fund_wallets() {
     printer -t "Funding wallets"
 
-    deployer_a_private_key=$(${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_A_KEY_NAME}")
+    funding_wallet=$(get_di_private_key)
     amount=5
 
     cd $BRIDGE_DEPLOYER
@@ -292,7 +307,7 @@ fund_wallets() {
     notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
     go run cmd/send_coins/send_coins.go \
         ${notary_address} \
-        ${deployer_a_private_key} \
+        ${funding_wallet} \
         ${NERD_CHAIN_URL} \
         "${amount}"
 
@@ -300,15 +315,16 @@ fund_wallets() {
     approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
     go run cmd/send_coins/send_coins.go \
         ${approver_address} \
-        ${deployer_a_private_key} \
+        ${funding_wallet} \
         ${NERD_CHAIN_URL} \
         ${amount}
 
     printer -n "Funding deployer" | tee -a ${LOG_FILE}
-    deployer_a_public_address=$(go run cmd/addressFromPrivateKey/addressFromPrivateKey.go ${deployer_b_private_key})
+    deployer_a_private_key=$(get_deployer_a_private_key)
+    deployer_a_public_address=$(go run cmd/addressFromPrivateKey/addressFromPrivateKey.go ${deployer_a_private_key})
     go run cmd/send_coins/send_coins.go \
         ${deployer_a_public_address} \
-        ${deployer_a_private_key} \
+        ${funding_wallet} \
         ${NERD_CHAIN_URL} \
         ${amount}
     cd -

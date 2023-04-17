@@ -81,16 +81,7 @@ get_address() {
 }
 
 get_deployer_a_private_key() {
-    keystore=$(${SCRIPTS_DIR}/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}")
-    keystore_file_path=./tmp/issuer_keystore
-    mkdir -p ./tmp
-
-    echo "${keystore}" > ${keystore_file_path}
-
-    password=$(${SCRIPTS_DIR}/get_aws_key.sh "${AWS_DISTIRBUTION_ISSUER_PASSWORD}")
-
-    inspected_content=$(${ETHKEY} inspect --private --passwordfile <(echo "${password}") "${keystore_file_path}")
-    echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
+    deployer_a_private_key=$(${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_A_KEY_NAME}")
 }
 
  deploy_bridge() {
@@ -144,6 +135,31 @@ get_deployer_a_private_key() {
 
     mv bridge_minter_address ${BASE_DIR}/tmp/bridge_minter_address
  }
+
+generate_wallet() {
+	${SCRIPTS_DIR}/generate_wallet.sh "$@" &>> ${LOG_FILE}
+}
+
+create_wallet() {
+	wallet_name=$1
+	volume=$2
+	key_path=${VOLUMES_DIR}/${volume}/${wallet_name}
+
+	generate_wallet -o "${key_path}"
+
+	printer -n "Created ${key_path} wallet"
+}
+
+create_bridge_wallets() {
+	printer -t "Creating bridge wallets"
+
+	create_wallet "token_owner" "volume2" &
+	create_wallet "notary" "volume2" &
+	create_wallet "approver" "volume3" &
+	wait
+
+	printer -s "Finished creating bridge wallets"
+}
 
 # todo - remove?
 deploy_bridge_contracts() {
@@ -264,7 +280,43 @@ validate_l1_bridge_minter_contract() {
     cd -
 }
 
+fund_wallets() {
+    printer -t "Funding wallets"
+
+    deployer_a_private_key=$(${SCRIPTS_DIR}/get_aws_key.sh "${DEPLOYER_A_KEY_NAME}")
+    amount=5
+
+    cd $BRIDGE_DEPLOYER
+
+    printer -n "Funding notary" | tee -a ${LOG_FILE}
+    notary_address=$(get_address $NOTARY_ADDRESS_FILE/keystore)
+    go run cmd/send_coins/send_coins.go \
+        ${notary_address} \
+        ${deployer_a_private_key} \
+        ${NERD_CHAIN_URL} \
+        "${amount}"
+
+    printer -n "Funding approver" | tee -a ${LOG_FILE}
+    approver_address=$(get_address $APPROVER_ADDRESS_FILE/keystore)
+    go run cmd/send_coins/send_coins.go \
+        ${approver_address} \
+        ${deployer_a_private_key} \
+        ${NERD_CHAIN_URL} \
+        ${amount}
+
+    printer -n "Funding deployer" | tee -a ${LOG_FILE}
+    deployer_a_public_address=$(go run cmd/addressFromPrivateKey/addressFromPrivateKey.go ${deployer_b_private_key})
+    go run cmd/send_coins/send_coins.go \
+        ${deployer_a_public_address} \
+        ${deployer_a_private_key} \
+        ${NERD_CHAIN_URL} \
+        ${amount}
+    cd -
+}
+
 items=(
+	"Create Bridge Wallets"
+  "Fund wallets (notary, approver, deployer)"
 	"Deploy L2 Bridge"
 	"Validate L2 Bridge"
 	"Deploy L1 Token"
@@ -281,13 +333,15 @@ while true; do
 	PS3=$'\n'"${BRAND_NAME} ${NETWORK_TYPE} | Select option: "
 	select item in "${items[@]}"
 		case $REPLY in
-			1) deploy_l2_bridge_contract; break;;
-			2) validate_l2_bridge_contract; break;;
-			3) deploy_l1_token_contract; break;;
-			4) validate_l1_token_contract; break;;
-			5) deploy_l1_bridge_minter_contract; break;;
-			6) validate_l1_bridge_minter_contract; break;;
-			7) printf "Closing\n\n"; exit 0;;
+			1) create_bridge_wallets | tee -a ${LOG_FILE}; break;;
+			2) fund_wallets | tee -a ${LOG_FILE}; break;;
+			3) deploy_l2_bridge_contract; break;;
+			4) validate_l2_bridge_contract; break;;
+			5) deploy_l1_token_contract; break;;
+			6) validate_l1_token_contract; break;;
+			7) deploy_l1_bridge_minter_contract; break;;
+			8) validate_l1_bridge_minter_contract; break;;
+			9) printf "Closing\n\n"; exit 0;;
 			*)
 				printf "\n\nOops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

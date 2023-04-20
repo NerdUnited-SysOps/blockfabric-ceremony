@@ -4,8 +4,8 @@
 # set -x
 
 
-version=1.0.5
-ceremony_repo_tag=1.0.6
+version=1.0.6
+ceremony_repo_tag=1.0.10
 ceremony_os_version=$(cat ~/version | tail -2)
 network=$1
 brand=$2
@@ -44,6 +44,8 @@ echo   | tee -a "$bootstrap_log"
 echo "                     press ENTER to continue"
 read
 echo
+scp $brand@$genesis:~/sha.sh . > /dev/null 2>&1
+scp $brand@$genesis:~/s3volumesync.sh . > /dev/null 2>&1
 echo " " | tee -a  "$bootstrap_log"
 echo "Cloning public Blockfabric-ceremony repo, tag $ceremony_repo_tag ..."  | tee -a "$bootstrap_log"
 echo
@@ -78,7 +80,7 @@ cp -v ansible.$brand-$network/.env blockfabric-ceremony/ | tee -a "$bootstrap_lo
 ls -la blockfabric-ceremony/.env | tee -a "$bootstrap_log"
 echo | tee -a "$bootstrap_log"
 echo | tee -a "$bootstrap_log"
-head -n 7 blockfabric-ceremony/.env  | tee -a "$bootstrap_log"
+head -n11 blockfabric-ceremony/.env  | tee -a "$bootstrap_log"
 echo
 echo "    If successful, press ENTER"
 read

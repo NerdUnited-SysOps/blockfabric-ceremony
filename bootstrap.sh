@@ -3,8 +3,7 @@
 
 # set -x
 
-
-version=1.0.6
+version=1.0.7
 ceremony_repo_tag=1.0.10
 ceremony_os_version=$(cat ~/version | tail -2)
 network=$1
@@ -41,8 +40,17 @@ echo "  ceremony repo tag:     $ceremony_repo_tag"  | tee -a "$bootstrap_log"
 echo "  network: $network"  | tee -a "$bootstrap_log"
 echo "  brand:   $brand"  | tee -a "$bootstrap_log"
 echo   | tee -a "$bootstrap_log"
-echo "                     press ENTER to continue"
+
+## Hardware Fitness of Purpose steps for the log only
+uname -a >> "$bootstrap_log" ; echo  >> "$bootstrap_log"
+timedatectl status >> "$bootstrap_log"; echo  >> "$bootstrap_log"
+sudo fdisk -l >> "$bootstrap_log";  echo >> "$bootstrap_log"
+lsblk >> "$bootstrap_log"; echo  >> "$bootstrap_log"
+nmcli >> "$bootstrap_log"; echo  >> "$bootstrap_log"
+
+echo "                     press ENTER to continue" | tee -a "$bootstrap_log"
 read
+
 echo
 scp $brand@$genesis:~/sha.sh . > /dev/null 2>&1
 scp $brand@$genesis:~/s3volumesync.sh . > /dev/null 2>&1
@@ -67,6 +75,7 @@ mkdir $HOME/.aws
 scp $brand@$bootstrap:~/credentials.$network $HOME/.aws/credentials | tee -a "$bootstrap_log"
 ls -l ~/.aws/ | tee -a "$bootstrap_log"
 aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
+aws s3 ls --profile brand | grep $network | tee -a "$bootstrap_log"
 echo
 echo
 echo "    If successful, press ENTER"

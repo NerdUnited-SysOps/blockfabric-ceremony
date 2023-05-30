@@ -3,7 +3,7 @@
 
 # set -x
 
-version=1.0.7
+version=1.0.8
 ceremony_repo_tag=1.0.10
 ceremony_os_version=$(cat ~/version | tail -2)
 network=$1
@@ -29,8 +29,8 @@ fi
 
 echo
 ## Modify Firefox's config file to open the brand's blockexplorer on launch
-sed -i "s/brand/$brand/"     /home/user/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
-sed -i "s/network/$network/" /home/user/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
+sed -i "s/brand/$brand/"     $HOME/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
+sed -i "s/network/$network/" $HOME/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
 echo
 echo
 echo "Sarting BOOTSTRAP script version $version" | tee -a "$bootstrap_log"
@@ -54,6 +54,11 @@ read
 echo
 scp $brand@$genesis:~/sha.sh . > /dev/null 2>&1
 scp $brand@$genesis:~/s3volumesync.sh . > /dev/null 2>&1
+scp $brand@$genesis:~/config.template $HOME/.ssh/config > /dev/null 2>&1
+
+sed -i "s/brand/$brand/g"     $HOME/.ssh/config > /dev/null 2>&1
+sed -i "s/network/$network/g" $HOME/.ssh/config > /dev/null 2>&1
+
 echo " " | tee -a  "$bootstrap_log"
 echo "Cloning public Blockfabric-ceremony repo, tag $ceremony_repo_tag ..."  | tee -a "$bootstrap_log"
 echo

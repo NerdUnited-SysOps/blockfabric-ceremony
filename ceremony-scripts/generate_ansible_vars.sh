@@ -160,8 +160,8 @@ all_quorum_vars() {
 	# Creates a set of wallets - only use for testnets
 	put_all_quorum_var "create_genesis_test_wallets" "${TEST_WALLETS}"
 	put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${LOCKUP_TIMESTAMP}\""
-	put_all_quorum_var "total_coin_supply" "\"${TOTAL_COIN_SUPPLY}\""
-	put_all_quorum_var "lace_genesis_distribution_issuer_balance" "\"${DISTIRBUTION_ISSUER_BALANCE}\""
+	put_all_quorum_var "total_coin_supply" "${TOTAL_COIN_SUPPLY}"
+	put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${DISTIRBUTION_ISSUER_BALANCE}"
 	put_all_quorum_var "goquorum_network_id" "${CHAIN_ID}"
 	put_all_quorum_var "goquorum_identity" "${BRAND_NAME}_${NETWORK_TYPE}_{{ inventory_hostname }}"
 	put_all_quorum_var "lace_genesis_lockup_daily_limit" "\"${GENESIS_LOCKUP_DAILY_LIMIT}\""

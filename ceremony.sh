@@ -71,7 +71,7 @@ NC='\033[0m'
 RED='\033[0;31m'
 while true; do
 	COLUMNS=1
-	PS3=$'\n'"${BRAND_NAME} ${NETWORK_TYPE} | Select option: "
+	PS3=$'\n'"${NETWORK_NAME} ${NETWORK_TYPE} | Select option: "
 	select item in "${items[@]}"
 		case $REPLY in
 			1) clear -x; create_blockchain; break;;

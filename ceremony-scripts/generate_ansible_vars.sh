@@ -149,23 +149,22 @@ all_quorum_vars() {
   put_all_quorum_var "lace_genesis_distribution_owner_address" "\"$(get_address $DIST_OWNER_ADDRESS_FILE)\""
   put_all_quorum_var "lace_genesis_distribution_issuer_address" "\"$(get_address $DIST_ISSUER_ADDRESS_FILE | cut -c3-)\""
 
-
-
-# TODO: read address, store in appropriate role var
-#echo "${BRIDGE_APPROVER_ADDRESS_FILE}       $(get_address $BRIDGE_APPROVER_ADDRESS_FILE)"
-#echo "${BRIDGE_NOTARY_ADDRESS_FILE}         $(get_address $BRIDGE_NOTARY_ADDRESS_FILE)"
-#echo "${BRIDGE_FEE_RECEIVER_ADDRESS_FILE}   $(get_address $BRIDGE_FEE_RECEIVER_ADDRESS_FILE)"
-#echo "${TOKEN_OWNER_ADDRESS_FILE}           $(get_address $TOKEN_OWNER_ADDRESS_FILE)"
-#echo "${BRIDGE_MINTER_APPROVER_ADDRESS_FILE}$(get_address $BRIDGE_MINTER_APPROVER_ADDRESS_FILE)"
-#echo "${BRIDGE_MINTER_NOTARY_ADDRESS_FILE}  $(get_address $BRIDGE_MINTER_NOTARY_ADDRESS_FILE)"
-
-
 	put_all_quorum_var "goquorum_genesis_sc_dao_code" "\"0x$(cat ${DAO_RUNTIME_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_lockup_code" "\"0x$(cat ${LOCKUP_RUNTIME_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_distribution_code" "\"0x$(cat ${DIST_RUNTIME_BIN_FILE})\""
 
 	admin_addresses=$(${SCRIPTS_DIR}/create_lockup_storage/create_lockup_storage.sh)
 	sc_lockup_storage=$(echo "{ \"0x0000000000000000000000000000000000000000000000000000000000000000\": \"{{ lace_genesis_lockup_owner_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000002\": \"{{ lace_genesis_lockup_issuer_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000004\": \"{{ lace_genesis_lockup_daily_limit }}\", \"0x0000000000000000000000000000000000000000000000000000000000000005\": \"{{ lace_genesis_lockup_last_dist_timestamp }}\", ${admin_addresses} }")
+
+
+	# Creates a set of wallets - only use for testnets
+	put_all_quorum_var "create_genesis_test_wallets" "${TEST_WALLETS}"
+	put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${LOCKUP_TIMESTAMP}\""
+	put_all_quorum_var "total_coin_supply" "${TOTAL_COIN_SUPPLY}"
+	put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${DISTIRBUTION_ISSUER_BALANCE}"
+	put_all_quorum_var "goquorum_network_id" "${CHAIN_ID}"
+	put_all_quorum_var "goquorum_identity" "${BRAND_NAME}_${NETWORK_TYPE}_{{ inventory_hostname }}"
+	put_all_quorum_var "lace_genesis_lockup_daily_limit" "\"${GENESIS_LOCKUP_DAILY_LIMIT}\""
 
 	sed -i '/goquorum_genesis_sc_lockup_storage/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 	echo "goquorum_genesis_sc_lockup_storage: ${sc_lockup_storage}" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml

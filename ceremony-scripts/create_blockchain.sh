@@ -128,7 +128,7 @@ install_ansible_role() {
 run_ansible() {
 	printer -t "Executing Ansible Playbook"
 	ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook \
-		--forks 20 \
+		--forks 10 \
 		--limit all_quorum \
 		-i ${INVENTORY_PATH} \
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \

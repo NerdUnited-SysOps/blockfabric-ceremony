@@ -3,8 +3,8 @@
 
 # set -x
 
-version=1.0.8
-ceremony_repo_tag=1.0.10
+version=1.1.3
+ceremony_repo_tag=1.1.2
 ceremony_os_version=$(cat ~/version | tail -2)
 network=$1
 brand=$2
@@ -22,15 +22,16 @@ fi
 
 
 # execute these commands to get to this bootstrap.sh script:
-#  ssh-keygen
+#  ssh-keygen -qt ed25519
 #  # will prompt for fingerprint and password
-#  ssh-copy-id brand@bootstrap_server
-#  scp brand@bootstrap_server:bootstrap.sh .
+#  ssh-copy-id brand@$bootstrap
+#  scp brand@$bootstrap:bootstrap.sh .
 
 echo
 ## Modify Firefox's config file to open the brand's blockexplorer on launch
 sed -i "s/brand/$brand/"     $HOME/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
 sed -i "s/network/$network/" $HOME/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
+scp $brand@$genesis:~/gastank.url . > /dev/null 2>&1
 echo
 echo
 echo "Sarting BOOTSTRAP script version $version" | tee -a "$bootstrap_log"
@@ -39,23 +40,28 @@ echo "  ceremony OS version: $ceremony_os_version"  | tee -a "$bootstrap_log"
 echo "  ceremony repo tag:     $ceremony_repo_tag"  | tee -a "$bootstrap_log"
 echo "  network: $network"  | tee -a "$bootstrap_log"
 echo "  brand:   $brand"  | tee -a "$bootstrap_log"
+echo "  go version:     1.19.8"  | tee -a "$bootstrap_log"
+echo "  geth version:   1.10.26-stable8" | tee -a "$bootstrap_log"
+echo "  ethkey version: 1.10.26-stable8" | tee -a "$bootstrap_log"
 echo   | tee -a "$bootstrap_log"
 
-## Hardware Fitness of Purpose steps for the log only
+########################## Hardware Fitness of Purpose steps for the log only
 uname -a >> "$bootstrap_log" ; echo  >> "$bootstrap_log"
 timedatectl status >> "$bootstrap_log"; echo  >> "$bootstrap_log"
 sudo fdisk -l >> "$bootstrap_log";  echo >> "$bootstrap_log"
 lsblk >> "$bootstrap_log"; echo  >> "$bootstrap_log"
 nmcli >> "$bootstrap_log"; echo  >> "$bootstrap_log"
 
-echo "                     press ENTER to continue" | tee -a "$bootstrap_log"
+echo "                     press ENTER to continue"
 read
 
 echo
-scp $brand@$genesis:~/sha.sh . > /dev/null 2>&1
-scp $brand@$genesis:~/s3volumesync.sh . > /dev/null 2>&1
-scp $brand@$genesis:~/config.template $HOME/.ssh/config > /dev/null 2>&1
 
+if [ "$network" = "testnet" ]; then
+  scp $brand@$genesis:~/s3volumesync.sh . > /dev/null 2>&1
+fi
+
+cp $HOME/.ssh/config.template $HOME/.ssh/config > /dev/null 2>&1
 sed -i "s/brand/$brand/g"     $HOME/.ssh/config > /dev/null 2>&1
 sed -i "s/network/$network/g" $HOME/.ssh/config > /dev/null 2>&1
 
@@ -89,19 +95,16 @@ echo "Now secure copy the environment variables file ..."  | tee -a "$bootstrap_
 pat=$(aws secretsmanager --profile blockfabric get-secret-value --secret-id ceremony_pat --query SecretString --output text)
 echo -n " pat is: ..." >> "$bootstrap_log"
 echo $pat | tail -c 5 >> "$bootstrap_log"
-git clone https://blockfabric-admin:$pat@github.com/NerdUnited-SysOps/ansible.$brand-$network.git | tee -a "$bootstrap_log"
-cp -v ansible.$brand-$network/.env blockfabric-ceremony/ | tee -a "$bootstrap_log"
-ls -la blockfabric-ceremony/.env | tee -a "$bootstrap_log"
+
+curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/NerdUnited-SysOps/ansible.$brand-$network/main/.env > ${HOME}/blockfabric-ceremony/.env
+curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/NerdUnited-SysOps/ceremony-env/main/.env >> ${HOME}/blockfabric-ceremony/.env
+
 echo | tee -a "$bootstrap_log"
 echo | tee -a "$bootstrap_log"
-head -n11 blockfabric-ceremony/.env  | tee -a "$bootstrap_log"
+head -n9  ${HOME}/blockfabric-ceremony/.env  | tee -a "$bootstrap_log"
 echo
 echo "    If successful, press ENTER"
 read
-# Now remove ansible repo. Only the .env file was needed and it's now in  blockfabric-ceremony/
-echo "rm -rf ansible.$brand-$network" >> "$bootstrap_log"
-rm -rf ansible.$brand-$network
-echo
 echo
 echo
 echo "    Done. You are now boot-strapped."  | tee -a "$bootstrap_log"

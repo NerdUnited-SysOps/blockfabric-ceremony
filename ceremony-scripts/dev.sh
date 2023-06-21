@@ -57,9 +57,10 @@ reset_files() {
 
 reset_chain() {
 	ansible-playbook --limit all_quorum \
-		-i ${INVENTORY_PATH} \
+ 		-i ${INVENTORY_PATH} \
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
-		${ANSIBLE_DIR}/reset.yaml
+		${ANSIBLE_DIR}/reset.yaml \
+		--forks 10 
 }
 
 run_ansible_playbook() {

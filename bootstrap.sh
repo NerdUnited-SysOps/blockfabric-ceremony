@@ -3,7 +3,7 @@
 
 # set -x
 
-version=1.1.4
+version=1.1.5
 ceremony_repo_tag=1.1.2
 ceremony_os_version=$(cat ~/version | tail -2)
 network=$1
@@ -13,10 +13,10 @@ bootstrap_log=${HOME}/bootstrap.log
 
 ########################## Check args
 if (( $# < 2 )); then
-    echo; echo "Exiting. Expected  (1)  mainnet | testnet  AND  (2) brand_name"; echo
+    echo; echo "Exiting. Expected  (1)  mainnet | testnet  AND  (2) chain_name"; echo
     exit 1
 elif (( $# > 2 )); then
-    echo; echo "Too many arguments.  Only the network AND brand_name are expected."; echo
+    echo; echo "Too many arguments.  Only the network AND chain_name are expected."; echo
     exit 2
 fi
 
@@ -25,6 +25,7 @@ echo
 ## Modify Firefox's config file to open the brand's blockexplorer on launch
 sed -i "s/brand/$brand/"     $HOME/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
 sed -i "s/network/$network/" $HOME/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
+sed -i "s/always/never/g" $HOME/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
 
 ########################## Retrieve gastank's public address for Bridge ceremonies
 scp $brand@$bootstrap:~/gastank.url . > /dev/null 2>&1
@@ -85,7 +86,7 @@ mkdir $HOME/.aws
 scp $brand@$bootstrap:~/credentials.$network $HOME/.aws/credentials | tee -a "$bootstrap_log"
 ls -l ~/.aws/ | tee -a "$bootstrap_log"
 aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
-aws s3 ls --profile brand | grep $network | tee -a "$bootstrap_log"
+aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
 echo
 echo
 echo "    If successful, press ENTER"

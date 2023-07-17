@@ -86,7 +86,7 @@ mkdir $HOME/.aws
 scp $brand@$bootstrap:~/credentials.$network $HOME/.aws/credentials | tee -a "$bootstrap_log"
 ls -l ~/.aws/ | tee -a "$bootstrap_log"
 aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
-aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
+aws s3 ls --profile brand | grep $network | tee -a "$bootstrap_log"
 echo
 echo
 echo "    If successful, press ENTER"

@@ -116,8 +116,9 @@ save_log_file() {
 	echo "\n"
 
 	### Prepend bootstrap.log into ceremony.log before github commits and before it's copied to volumes/
-	if [ -f "${HOME}/bootstrap.log" ]; then
-		COMBINED=$(cat ${HOME}/bootstrap.log; cat ${LOG_FILE})
+	bootstrap_log_file="${HOME}/ceremony.log"
+	if [ -f "${bootstrap_log_file}" ]; then
+		COMBINED=$(cat ${bootstrap_log_file}; cat ${LOG_FILE})
 		echo "$COMBINED" > "${LOG_FILE}"
 	fi
 

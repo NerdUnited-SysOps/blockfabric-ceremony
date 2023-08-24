@@ -96,6 +96,7 @@ check_env_file() {
 get_ansible_vars() {
 	[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
 	[[ -z "${BRAND_ANSIBLE_URL}" ]] && echo ".env is missing BRAND_ANSIBLE_URL variable" && exit 1
+
 	printer -t "Fetching ansible variables"
 
 	if [ ! -d "${ANSIBLE_DIR}" ]; then
@@ -174,29 +175,29 @@ clear -x
 
 printer -b
 
-check_env_file "${SCRIPTS_DIR}/install_dependencies.sh"
-${SCRIPTS_DIR}/install_dependencies.sh -e "${ENV_FILE}"
+[[ ! -f "${SCRIPTS_DIR}/install_dependencies.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/install_dependencies.sh file doesn't exist" && exit 1
+${SCRIPTS_DIR}/install_dependencies.sh -e "${ENV_FILE}" | tee -a "${LOG_FILE}"
 
-check_env_file "${SCRIPTS_DIR}/get_secrets.sh"
-${SCRIPTS_DIR}/get_secrets.sh -e ${ENV_FILE}
+[[ ! -f "${SCRIPTS_DIR}/get_secrets.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/get_secrets.sh file doesn't exist" && exit 1
+${SCRIPTS_DIR}/get_secrets.sh -e ${ENV_FILE} | tee -a "${LOG_FILE}"
 
 get_ansible_vars
 install_ansible_role
 get_inventory
 
-check_env_file "${SCRIPTS_DIR}/get_contract_bytecode.sh"
-${SCRIPTS_DIR}/get_contract_bytecode.sh
+[[ ! -f "${SCRIPTS_DIR}/get_contract_bytecode.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/get_contract_bytecode.sh file doesn't exist" && exit 1
+${SCRIPTS_DIR}/get_contract_bytecode.sh | tee -a "${LOG_FILE}"
 
 VALIDATOR_IPS=$(get_list_of_validator_ips)
 
-check_env_file "${SCRIPTS_DIR}/create_all_wallets.sh"
-${SCRIPTS_DIR}/create_all_wallets.sh -e "${ENV_FILE}" -i "${VALIDATOR_IPS}"
+[[ ! -f "${SCRIPTS_DIR}/create_all_wallets.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/create_all_wallets.sh file doesn't exist" && exit 1
+${SCRIPTS_DIR}/create_all_wallets.sh -e "${ENV_FILE}" -i "${VALIDATOR_IPS}" | tee -a "${LOG_FILE}"
 
-check_env_file "${SCRIPTS_DIR}/generate_dao_storage.sh"
-${SCRIPTS_DIR}/generate_dao_storage.sh -i "$VALIDATOR_IPS"
+[[ ! -f "${SCRIPTS_DIR}/generate_dao_storage.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/generate_dao_storage.sh file doesn't exist" && exit 1
+${SCRIPTS_DIR}/generate_dao_storage.sh -i "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
 
-check_env_file "${SCRIPTS_DIR}/generate_ansible_vars.sh"
-${SCRIPTS_DIR}/generate_ansible_vars.sh -v "$VALIDATOR_IPS"
+[[ ! -f "${SCRIPTS_DIR}/generate_ansible_vars.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/generate_ansible_vars.sh file doesn't exist" && exit 1
+${SCRIPTS_DIR}/generate_ansible_vars.sh -v "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
 
 # Executing ansible returns a non-zero code even when it's successful.
 # Backgrounding the task stops the script from existing.

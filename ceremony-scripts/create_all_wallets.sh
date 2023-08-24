@@ -53,7 +53,8 @@ while getopts a:b:hi:v:e: option; do
 done
 
 if [ ! -f "${ENV_FILE}" ]; then
-	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "${ZSH_ARGZERO}:${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
 else
 	source ${ENV_FILE}
 fi
@@ -62,7 +63,6 @@ fi
 [[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
 
 [[ -z "${VOLUMES_DIR}" ]] && echo ".env is missing VOLUMES_DIR variable" && exit 1
-[[ ! -d "${VOLUMES_DIR}" ]] && echo "VOLUMES_DIR environment variable is not a directory. Expecting it here ${VOLUMES_DIR}" && exit 1
 
 [[ -z "${LOG_FILE}" ]] && echo ".env is missing LOG_FILE variable" && exit 1
 [[ ! -f "${LOG_FILE}" ]] && echo "LOG_FILE environment variable is not a file. Expecting it here ${LOG_FILE}" && exit 1

@@ -27,6 +27,9 @@ else
 	source ${ENV_FILE}
 fi
 
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+
 printer() {
 	[[ ! -f "${SCRIPTS_DIR}/printer.sh" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} ${SCRIPTS_DIR}/printer.sh file doesn't exist" && exit 1
 	${SCRIPTS_DIR}/printer.sh "$@"

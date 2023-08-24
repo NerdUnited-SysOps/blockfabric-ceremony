@@ -7,7 +7,7 @@ SECONDS=0
 usage() {
   echo "This script sets up the validator nodes..."
   echo "Usage: $0 (options) ..."
-  echo "  -f : Path to .env file"
+  echo "  -e : Path to .env file"
   echo "  -i : Install dependencies"
   echo "  -r : Reset the ceremony"
   echo "  -h : Help"
@@ -15,9 +15,9 @@ usage() {
   echo "Example: "
 }
 
-while getopts 'b:d:f:hi' option; do
+while getopts 'b:d:e:hi' option; do
 	case "$option" in
-		f)
+		e)
 			ENV_FILE=${OPTARG}
 			;;
 		h)
@@ -102,11 +102,6 @@ check_env_file() {
 	if [ ! -f "${file_path}" ]; then
 		printer -e "Cannot find ${file_path}"
 	fi
-}
-
-generate_wallet() {
-	[[ ! -f "${SCRIPTS_DIR}/generate_wallet.sh" ]] && echo "Cannot find ${SCRIPTS_DIR}/generate_wallet.sh" && exit 1
-	${SCRIPTS_DIR}/generate_wallet.sh "$@"
 }
 
 get_ansible_vars() {

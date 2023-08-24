@@ -2,50 +2,49 @@
 
 set -e
 
-SCRIPTS_DIR=$(dirname ${(%):-%N})
-ENV_FILE="${BASE_DIR}/.env"
-ETHKEY=${HOME}/go/bin/ethkey
-GETH=${HOME}/go/bin/geth
-
 usage() {
 	echo "Options"
-	echo "  -e : Path to the ethkey binary"
-	echo "  -f : Path to env file"
-	echo "  -g : Path to the geth binary"
-	echo "  -h : This help message"
-	echo "  -s : Script directory to reference other scripts"
+	echo "  -e : Path to the env file"
 }
 
 while getopts e:f:g:hs: option; do
 	case "${option}" in
 		e)
-			ETHKEY=${OPTARG}
-			;;
-		g)
-			GETH=${OPTARG}
+			ENV_FILE=${OPTARG}
 			;;
 		h)
 			usage
 			exit 0
 			;;
-		l)
-			LOG_FILE=${OPTARG}
-			;;
-		s)
-			SCRIPTS_DIR=${OPTARG}
-			;;
 	esac
 done
 
-printer() {
-	${SCRIPTS_DIR}/printer.sh "$@"
-}
-
 if [ ! -f "${ENV_FILE}" ]; then
-	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
 else
 	source ${ENV_FILE}
 fi
+
+check_env() {
+	var_name=$1
+	var_val=$2
+	[[ -z "${var_val}" ]] && echo ".env is missing ${var_name} variable" && exit 1
+}
+
+check_file_path() {
+	file_path=$1
+	[[ ! -f "${file_path}" ]] && echo "Cannot find ${file_path}" && exit 1
+}
+
+printer() {
+	check_file_path "${SCRIPTS_DIR}/printer.sh"
+	${SCRIPTS_DIR}/printer.sh "$@"
+}
+
+check_env "LOG_FILE" "${LOG_FILE}"
+check_env "GETH_PATH" "${GETH_PATH}"
+check_env "ETHKEY_PATH" "${ETHKEY_PATH}"
 
 APT_NODEJS_VERSION=18.10.0+dfsg-6
 APT_NPM_VERSION=9.1.2~ds1-2
@@ -94,14 +93,14 @@ print_status "ansible" "ansible" "${APT_ANSIBLE_VERSION}"
 print_status "curl" "curl" "${APT_CURL_VERSION}"
 
 
-if which ${GETH} &>> ${LOG_FILE}; then
+if which ${GETH_PATH} &>> ${LOG_FILE}; then
 	printer -n "geth Already installed, skipping..."
 else
 	printer -n "geth not found, installing"
 	go install github.com/ethereum/go-ethereum/cmd/geth@${GETH_VERSION} &>> ${LOG_FILE}
 fi
 
-if which ${ETHKEY} &>> ${LOG_FILE}; then
+if which ${ETHKEY_PATH} &>> ${LOG_FILE}; then
 	printer -n "ethkey Already installed, skipping..."
 else
 	printer -n "ethkey not found, installing"

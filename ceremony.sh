@@ -31,20 +31,19 @@ else
 	source ${ENV_FILE}
 fi
 
-[[ ! -f "${ENV_FILE}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
 [[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
 [[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
 [[ -z "${CHAIN_NAME}" ]] && echo ".env is missing CHAIN_NAME variable" && exit 1
 [[ -z "${NETWORK_TYPE}" ]] && echo ".env is missing NETWORK_TYPE variable" && exit 1
 
-
 check_file_path() {
 	file_path=$1
 	if [ ! -f "${file_path}" ]; then
-		echo "Cannot find ${SCRIPTS_DIR}/create_blockchain.sh"
+		echo "Cannot find ${file_path}"
 		exit 1
 	fi
 }
+
 usage() {
 	printf "Welcome! This is an interface for working with the ceremony.\n"
 	printf "You may select from the options below\n\n"

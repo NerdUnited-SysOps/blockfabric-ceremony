@@ -33,14 +33,13 @@ fi
 [[ -z "${CHAIN_NAME}" ]] && echo ".env is missing CHAIN_NAME variable" && exit 1
 [[ -z "${NETWORK_TYPE}" ]] && echo ".env is missing NETWORK_TYPE variable" && exit 1
 
-
-
 usage() {
 	printf "Welcome! This is an interface for working with the ceremony.\n"
 	printf "You may select from the options below\n\n"
 }
 
 create_blockchain() {
+	[[ ! -f "${SCRIPTS_DIR}/create_blockchain.sh" ]] && echo "Cannot find ${SCRIPTS_DIR}/create_blockchain.sh" && exit 1
 	${SCRIPTS_DIR}/create_blockchain.sh
 }
 

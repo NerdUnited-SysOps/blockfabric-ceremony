@@ -4,13 +4,13 @@ set -e
 
 SECONDS=0
 
-SCRIPTS_DIR=$(dirname ${(%):-%N})
-BASE_DIR=$(realpath ${SCRIPTS_DIR}/..)
-VOLUMES_DIR=${BASE_DIR}/volumes
-ANSIBLE_DIR=${BASE_DIR}/ansible
-INVENTORY_PATH=${ANSIBLE_DIR}/inventory
-SCP_USER=admin
-ENV_FILE=${BASE_DIR}/.env
+# SCRIPTS_DIR=$(dirname ${(%):-%N})
+# BASE_DIR=$(realpath ${SCRIPTS_DIR}/..)
+# VOLUMES_DIR=${BASE_DIR}/volumes
+# ANSIBLE_DIR=${BASE_DIR}/ansible
+# INVENTORY_PATH=${ANSIBLE_DIR}/inventory
+# SCP_USER=admin
+# ENV_FILE=${BASE_DIR}/.env
 
 usage() {
   echo "This script sets up the validator nodes..."
@@ -49,32 +49,76 @@ done
 shift $((OPTIND-1))
 
 if [ ! -f "${ENV_FILE}" ]; then
-	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
 else
 	source ${ENV_FILE}
 fi
 
+[[ ! -f "${ENV_FILE}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+
+[[ -z "${BASE_DIR}" ]] && echo ".env is missing BASE_DIR variable" && exit 1
+[[ ! -d "${BASE_DIR}" ]] && echo "BASE_DIR environment variable is not a directory. Expecting it here ${BASE_DIR}" && exit 1
+
+[[ -z "${VOLUMES_DIR}" ]] && echo ".env is missing VOLUMES_DIR variable" && exit 1
+[[ ! -d "${VOLUMES_DIR}" ]] && echo "VOLUMES_DIR environment variable is not a directory. Expecting it here ${VOLUMES_DIR}" && exit 1
+
+[[ -z "${LOG_FILE}" ]] && echo ".env is missing LOG_FILE variable" && exit 1
+[[ ! -f "${LOG_FILE}" ]] && echo "LOG_FILE environment variable is not a file. Expecting it here ${LOG_FILE}" && exit 1
+
+[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
+[[ ! -d "${ANSIBLE_DIR}" ]] && echo "ANSIBLE_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_DIR}" && exit 1
+
 get_list_of_validator_ips () {
+	[[ -z "${INVENTORY_PATH}" ]] && echo ".env is missing INVENTORY_PATH variable" && exit 1
+	[[ ! -f "${INVENTORY_PATH}" ]] && echo "inventory path not found. Expected it here: ${INVENTORY_PATH}" && exit 1
 	ansible validator \
 		--list-hosts \
 		-i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
 }
 
 get_single_rpc_ip () {
+	[[ -z "${INVENTORY_PATH}" ]] && echo ".env is missing INVENTORY_PATH variable" && exit 1
+	[[ ! -f "${INVENTORY_PATH}" ]] && echo "inventory path not found. Expected it here: ${INVENTORY_PATH}" && exit 1
 	ansible rpc \
 		--list-hosts \
 		-i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | head -n 1
 }
 
 printer() {
+	[[ ! -f "${SCRIPTS_DIR}/printer.sh" ]] && echo "Cannot find ${SCRIPTS_DIR}/printer.sh" && exit 1
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
 
+check_env() {
+	var_name=$1
+	var_val=$2
+	[[ -z "${var_val}" ]] && printer -e ".env is missing ${var_name} variable"
+}
+
+check_env_dir() {
+	var_name=$1
+	var_val=$2
+	[[ -z "${var_val}" ]] && printer -e ".env is missing ${var_name} variable"
+}
+
+check_env_file() {
+	file_path=$1
+	if [ ! -f "${file_path}" ]; then
+		printer -e "Cannot find ${SCRIPTS_DIR}/create_blockchain.sh"
+	fi
+}
+
 generate_wallet() {
+	[[ ! -f "${SCRIPTS_DIR}/generate_wallet.sh" ]] && echo "Cannot find ${SCRIPTS_DIR}/generate_wallet.sh" && exit 1
 	${SCRIPTS_DIR}/generate_wallet.sh "$@"
 }
 
 get_ansible_vars() {
+	[[ -z "${BRAND_ANSIBLE_URL}" ]] && echo ".env is missing BRAND_ANSIBLE_URL variable" && exit 1
 	printer -t "Fetching ansible variables"
 
 	if [ ! -d "${ANSIBLE_DIR}" ]; then
@@ -91,6 +135,10 @@ get_ansible_vars() {
 }
 
 get_inventory() {
+	[[ -z "${AWS_CONDUCTOR_SSH_KEY_PATH}" ]] && echo ".env is missing AWS_CONDUCTOR_SSH_KEY_PATH variable" && exit 1
+	[[ -z "${SCP_USER}" ]] && echo ".env is missing SCP_USER variable" && exit 1
+	[[ -z "${CONDUCTOR_NODE_URL}" ]] && echo ".env is missing CONDUCTOR_NODE_URL variable" && exit 1
+	[[ -z "${REMOTE_INVENTORY_PATH}" ]] && echo ".env is missing REMOTE_INVENTORY_PATH variable" && exit 1
 	printer -t "Downloading inventory file"
 
 	scp -o StrictHostKeyChecking=no \
@@ -101,11 +149,15 @@ get_inventory() {
 	if [ -n "${$?}" ] && [ -f "$INVENTORY_PATH" ]; then
 		printer -s "$INVENTORY_PATH exists."
 	else
-		printer -e "Failed to retrieve ${local_file}"
+		printer -e "Failed to retrieve inventory"
 	fi
 }
 
 install_ansible_role() {
+	[[ -z "${ANSIBLE_ROLE_INSTALL_PATH}" ]] && echo ".env is missing ANSIBLE_ROLE_INSTALL_PATH variable" && exit 1
+	[[ -z "${ANSIBLE_ROLE_VERSION}" ]] && echo ".env is missing ANSIBLE_ROLE_VERSION variable" && exit 1
+	[[ -z "${ANSIBLE_ROLE_INSTALL_URL}" ]] && echo ".env is missing ANSIBLE_ROLE_INSTALL_URL variable" && exit 1
+
 	printer -t "Installing Ansible role"
 
 	if [ ! -d "${ANSIBLE_ROLE_INSTALL_PATH}" ]; then
@@ -126,7 +178,11 @@ install_ansible_role() {
 }
 
 run_ansible() {
+	check_env "ANSIBLE_CHAIN_DEPLOY_FORKS" "${ANSIBLE_CHAIN_DEPLOY_FORKS}"
+	check_env "AWS_NODES_SSH_KEY_PATH" "${AWS_NODES_SSH_KEY_PATH}"
+
 	printer -t "Executing Ansible Playbook"
+
 	ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook \
 		--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
 		--limit all_quorum \
@@ -140,25 +196,29 @@ run_ansible() {
 clear -x
 
 printer -b
-if [ ! -f "${ENV_FILE}" ]; then
-	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
-else
-	source ${ENV_FILE}
-fi
 
+check_env_file "${SCRIPTS_DIR}/install_dependencies.sh"
 ${SCRIPTS_DIR}/install_dependencies.sh
 
+check_env_file "${SCRIPTS_DIR}/get_secrets.sh"
 ${SCRIPTS_DIR}/get_secrets.sh -f ${ENV_FILE}
 
 get_ansible_vars
 install_ansible_role
 get_inventory
 
+check_env_file "${SCRIPTS_DIR}/get_contract_bytecode.sh"
 ${SCRIPTS_DIR}/get_contract_bytecode.sh
 
 VALIDATOR_IPS=$(get_list_of_validator_ips)
+
+check_env_file "${SCRIPTS_DIR}/create_all_wallets.sh"
 ${SCRIPTS_DIR}/create_all_wallets.sh -i "${VALIDATOR_IPS}"
+
+check_env_file "${SCRIPTS_DIR}/generate_dao_storage.sh"
 ${SCRIPTS_DIR}/generate_dao_storage.sh -i "$VALIDATOR_IPS"
+
+check_env_file "${SCRIPTS_DIR}/generate_ansible_vars.sh"
 ${SCRIPTS_DIR}/generate_ansible_vars.sh -v "$VALIDATOR_IPS"
 
 # Executing ansible returns a non-zero code even when it's successful.

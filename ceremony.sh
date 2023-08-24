@@ -2,9 +2,6 @@
 
 set -e
 
-ENV_FILE=./.env
-SCRIPTS_DIR=$(realpath ./ceremony-scripts)
-
 usage() {
 	echo "Options"
 	echo "  -e : Envifonment config file"
@@ -22,11 +19,21 @@ while getopts e:hd option; do
 	esac
 done
 
+
+
 if [ ! -f "${ENV_FILE}" ]; then
-	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "Missing .env file. Expected it here: ${ENV_FILE}"
 else
 	source ${ENV_FILE}
 fi
+
+[[ ! -f "${ENV_FILE}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+[[ -z "${CHAIN_NAME}" ]] && echo ".env is missing CHAIN_NAME variable" && exit 1
+[[ -z "${NETWORK_TYPE}" ]] && echo ".env is missing NETWORK_TYPE variable" && exit 1
+
+
 
 usage() {
 	printf "Welcome! This is an interface for working with the ceremony.\n"
@@ -71,7 +78,7 @@ NC='\033[0m'
 RED='\033[0;31m'
 while true; do
 	COLUMNS=1
-	PS3=$'\n'"${NETWORK_NAME} ${NETWORK_TYPE} | Select option: "
+	PS3=$'\n'"${CHAIN_NAME} ${NETWORK_TYPE} | Select option: "
 	select item in "${items[@]}"
 		case $REPLY in
 			1) clear -x; create_blockchain; break;;

@@ -2,36 +2,38 @@
 
 set -e
 
-SCRIPTS_DIR=$(dirname ${(%):-%N})
-ENV_FILE="${SCRIPTS_DIR}/../.env"
-
 usage() {
 	echo "Options"
 	echo "  -e : Path to .env file"
 	echo "  -h : This help message"
-	echo "  -s : Script directory to reference other scripts"
 }
 
-while getopts e:f:g:hl:s: option; do
+while getopts e:h option; do
 	case "${option}" in
-		f)
+		e)
 			ENV_FILE=${OPTARG}
 			;;
 		h)
 			usage
 			exit 0
 			;;
-		s)
-			SCRIPTS_DIR=${OPTARG}
-			;;
 	esac
 done
 
-source ${ENV_FILE}
+if [ ! -f "${ENV_FILE}" ]; then
+	echo "${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
+else
+	source ${ENV_FILE}
+fi
 
 printer() {
+	[[ ! -f "${${SCRIPTS_DIR}/printer.sh}" ]] && echo "${0}:${LINENO} ${${SCRIPTS_DIR}/printer.sh} file doesn't exist" && exit 1
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
+
+[[ -z "${AWS_PRIMARY_PROFILE}" ]] && echo "${0}:${LINENO} .env is missing AWS_PRIMARY_PROFILE" && exit 1
+[[ -z "${AWS_CONDUCTOR_SSH_KEY}" ]] && echo "${0}:${LINENO} .env is missing AWS_CONDUCTOR_SSH_KEY" && exit 1
 
 get_key() {
 	secret_id=$1

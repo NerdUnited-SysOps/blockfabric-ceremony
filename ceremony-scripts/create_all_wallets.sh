@@ -158,10 +158,6 @@ validator_account_wallets() {
 	printer -n "Created validator and account wallets"
 }
 
-bridge_wallets() {
-	${SCRIPTS_DIR}/create_bridge_wallets.sh &>> ${LOG_FILE}
-}
-
 [ -z "${VALIDATOR_IPS}" ] && printer -e "No vaildator IPs"
 
 printer -t "Creating ceremony keys"
@@ -171,7 +167,6 @@ lockup_admin_wallets
 lockup_owner_wallets &
 distribution_owner_wallets &
 distribution_issuer_wallets &
-bridge_wallets &
 wait
 
 validator_account_wallets "$VALIDATOR_IPS"

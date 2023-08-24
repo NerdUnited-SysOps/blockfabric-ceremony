@@ -22,19 +22,19 @@ done
 check_env() {
 	var_name=$1
 	var_val=$2
-	[[ -z "${var_val}" ]] && echo ".env is missing ${var_name} variable" && exit 1
+	[[ -z "${var_val}" ]] && echo "$0:${LINENO} .env is missing ${var_name} variable" && exit 1
 }
 
 if [ ! -f "${ENV_FILE}" ]; then
-	echo "Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
 else
 	source ${ENV_FILE}
 fi
 
-[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
-[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
-[[ -z "${CHAIN_NAME}" ]] && echo ".env is missing CHAIN_NAME variable" && exit 1
-[[ -z "${NETWORK_TYPE}" ]] && echo ".env is missing NETWORK_TYPE variable" && exit 1
+[[ -z "${SCRIPTS_DIR}" ]] && echo "${0}:${LINENO} .env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "${0}:${LINENO} SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+[[ -z "${CHAIN_NAME}" ]] && echo "${0}:${LINENO} .env is missing CHAIN_NAME variable" && exit 1
+[[ -z "${NETWORK_TYPE}" ]] && echo "${0}:${LINENO} .env is missing NETWORK_TYPE variable" && exit 1
 
 check_file_path() {
 	file_path=$1

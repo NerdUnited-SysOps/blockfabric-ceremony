@@ -176,7 +176,7 @@ clear -x
 printer -b
 
 check_env_file "${SCRIPTS_DIR}/install_dependencies.sh"
-${SCRIPTS_DIR}/install_dependencies.sh
+${SCRIPTS_DIR}/install_dependencies.sh -e "${ENV_FILE}"
 
 check_env_file "${SCRIPTS_DIR}/get_secrets.sh"
 ${SCRIPTS_DIR}/get_secrets.sh -f ${ENV_FILE}

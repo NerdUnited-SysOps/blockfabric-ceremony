@@ -42,9 +42,9 @@ printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
 
-check_env "LOG_FILE" "${LOG_FILE}"
-check_env "GETH_PATH" "${GETH_PATH}"
-check_env "ETHKEY_PATH" "${ETHKEY_PATH}"
+[[ -z "${LOG_FILE}" ]] && echo "${0}:${LINENO} .env is missing LOG_FILE" && exit 1
+[[ -z "${GETH_PATH}" ]] && echo "${0}:${LINENO} .env is missing GETH_PATH" && exit 1
+[[ -z "${ETHKEY_PATH}" ]] && echo "${0}:${LINENO} .env is missing ETHKEY_PATH" && exit 1
 
 APT_NODEJS_VERSION=18.10.0+dfsg-6
 APT_NPM_VERSION=9.1.2~ds1-2

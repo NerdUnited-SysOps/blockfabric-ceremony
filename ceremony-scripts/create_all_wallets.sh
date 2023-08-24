@@ -25,7 +25,7 @@ usage() {
 	echo "  -v : Path where all keys will be generated"
 }
 
-while getopts a:b:hi:v: option; do
+while getopts a:b:hi:v:e: option; do
 	case "${option}" in
 		a)
 			ADMIN_KEYS=${OPTARG}

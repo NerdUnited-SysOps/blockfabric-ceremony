@@ -32,9 +32,13 @@ printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
 
-[[ -z "${AWS_PRIMARY_PROFILE}" ]] && echo "${0}:${LINENO} .env is missing AWS_PRIMARY_PROFILE" && exit 1
-[[ -z "${AWS_CONDUCTOR_SSH_KEY}" ]] && echo "${0}:${LINENO} .env is missing AWS_CONDUCTOR_SSH_KEY" && exit 1
-[[ -z "${AWS_CONDUCTOR_SSH_KEY_PATH}" ]] && echo "${0}:${LINENO} .env is missing AWS_CONDUCTOR_SSH_KEY_PATH" && exit 1
+[[ -z "${AWS_PRIMARY_PROFILE}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing AWS_PRIMARY_PROFILE" && exit 1
+[[ -z "${AWS_CONDUCTOR_SSH_KEY}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing AWS_CONDUCTOR_SSH_KEY" && exit 1
+[[ -z "${AWS_CONDUCTOR_SSH_KEY_PATH}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing AWS_CONDUCTOR_SSH_KEY_PATH" && exit 1
+[[ -z "${AWS_NODES_SSH_KEY}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing AWS_NODES_SSH_KEY" && exit 1
+[[ -z "${AWS_NODES_SSH_KEY_PATH}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing AWS_NODES_SSH_KEY_PATH" && exit 1
+[[ -z "${AWS_GITHUB_CEREMONY_PAT}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing AWS_GITHUB_CEREMONY_PAT" && exit 1
+[[ -z "${GITHUB_PAT}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing GITHUB_PAT" && exit 1
 
 get_key() {
 	secret_id=$1

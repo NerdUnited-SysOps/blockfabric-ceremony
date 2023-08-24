@@ -20,22 +20,22 @@ while getopts e:f:g:hs: option; do
 done
 
 if [ ! -f "${ENV_FILE}" ]; then
-	echo "${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "${ZSH_ARGZERO}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
 	exit 1
 else
 	source ${ENV_FILE}
 fi
 
 printer() {
-	[[ ! -f "${SCRIPTS_DIR}/printer.sh" ]] && echo "${0}:${LINENO} ${${SCRIPTS_DIR}/printer.sh} file doesn't exist" && exit 1
+	[[ ! -f "${SCRIPTS_DIR}/printer.sh" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} ${SCRIPTS_DIR}/printer.sh file doesn't exist" && exit 1
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
 
-[[ -z "${LOG_FILE}" ]] && echo "${0}:${LINENO} .env is missing LOG_FILE" && exit 1
-[[ -z "${SCRIPTS_DIR}" ]] && echo "${0}:${LINENO} .env is missing SCRIPTS_DIR" && exit 1
-[[ ! -d "${SCRIPTS_DIR}" ]] && echo "${0}:${LINENO} SCRIPTS_DIR isn't a directory. ${SCRIPTS_DIR}" && exit 1
-[[ -z "${GETH_PATH}" ]] && echo "${0}:${LINENO} .env is missing GETH_PATH" && exit 1
-[[ -z "${ETHKEY_PATH}" ]] && echo "${0}:${LINENO} .env is missing ETHKEY_PATH" && exit 1
+[[ -z "${LOG_FILE}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing LOG_FILE" && exit 1
+[[ -z "${SCRIPTS_DIR}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing SCRIPTS_DIR" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "${ZSH_ARGZERO}:${LINENO} SCRIPTS_DIR isn't a directory. ${SCRIPTS_DIR}" && exit 1
+[[ -z "${GETH_PATH}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing GETH_PATH" && exit 1
+[[ -z "${ETHKEY_PATH}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing ETHKEY_PATH" && exit 1
 
 APT_NODEJS_VERSION=18.10.0+dfsg-6
 APT_NPM_VERSION=9.1.2~ds1-2

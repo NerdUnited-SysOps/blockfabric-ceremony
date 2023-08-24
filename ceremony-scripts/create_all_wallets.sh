@@ -6,13 +6,13 @@ set -e
 #	----------------- Key Generation
 # ############################################################
 
-SCRIPTS_DIR=$(dirname ${(%):-%N})
-BASE_DIR=$(realpath ${SCRIPTS_DIR}/..)
-LOG_FILE=${BASE_DIR}/ceremony.log
-ENV_FILE=${BASE_DIR}/.env
-VOLUMES_DIR=${BASE_DIR}/volumes
-ADMIN_KEY_BATCH_SIZE=5
-ADMIN_KEYS=100
+# SCRIPTS_DIR=$(dirname ${(%):-%N})
+# BASE_DIR=$(realpath ${SCRIPTS_DIR}/..)
+# LOG_FILE=${BASE_DIR}/ceremony.log
+# ENV_FILE=${BASE_DIR}/.env
+# VOLUMES_DIR=${BASE_DIR}/volumes
+# ADMIN_KEY_BATCH_SIZE=5
+# ADMIN_KEYS=100
 
 usage() {
 	echo "Options"
@@ -52,11 +52,21 @@ while getopts a:b:hi:v: option; do
 	esac
 done
 
+[[ ! -f "${ENV_FILE}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+
+[[ -z "${VOLUMES_DIR}" ]] && echo ".env is missing VOLUMES_DIR variable" && exit 1
+[[ ! -d "${VOLUMES_DIR}" ]] && echo "VOLUMES_DIR environment variable is not a directory. Expecting it here ${VOLUMES_DIR}" && exit 1
 if [ ! -f "${ENV_FILE}" ]; then
 	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
 else
 	source ${ENV_FILE}
 fi
+
+[[ -z "${LOG_FILE}" ]] && echo ".env is missing LOG_FILE variable" && exit 1
+[[ ! -f "${LOG_FILE}" ]] && echo "LOG_FILE environment variable is not a file. Expecting it here ${LOG_FILE}" && exit 1
 
 printer() {
 	${SCRIPTS_DIR}/printer.sh "$@" | tee -a ${LOG_FILE}
@@ -67,6 +77,8 @@ generate_wallet() {
 }
 
 lockup_admin_wallets() {
+	[[ -z "${ADMIN_KEYS}" ]] && echo ".env is missing ADMIN_KEYS variable" && exit 1
+
 	vol1=${VOLUMES_DIR}/volume1/lockupAdmins
 	vol2=${VOLUMES_DIR}/volume2/lockupAdmins
 

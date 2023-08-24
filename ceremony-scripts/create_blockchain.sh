@@ -52,17 +52,8 @@ fi
 [[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
 [[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
 
-[[ -z "${BASE_DIR}" ]] && echo ".env is missing BASE_DIR variable" && exit 1
-[[ ! -d "${BASE_DIR}" ]] && echo "BASE_DIR environment variable is not a directory. Expecting it here ${BASE_DIR}" && exit 1
-
-[[ -z "${VOLUMES_DIR}" ]] && echo ".env is missing VOLUMES_DIR variable" && exit 1
-[[ ! -d "${VOLUMES_DIR}" ]] && echo "VOLUMES_DIR environment variable is not a directory. Expecting it here ${VOLUMES_DIR}" && exit 1
-
 [[ -z "${LOG_FILE}" ]] && echo ".env is missing LOG_FILE variable" && exit 1
 [[ ! -f "${LOG_FILE}" ]] && echo "LOG_FILE environment variable is not a file. Expecting it here ${LOG_FILE}" && exit 1
-
-[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
-[[ ! -d "${ANSIBLE_DIR}" ]] && echo "ANSIBLE_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_DIR}" && exit 1
 
 get_list_of_validator_ips () {
 	[[ -z "${INVENTORY_PATH}" ]] && echo ".env is missing INVENTORY_PATH variable" && exit 1
@@ -105,6 +96,8 @@ check_env_file() {
 }
 
 get_ansible_vars() {
+	[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
+	[[ ! -d "${ANSIBLE_DIR}" ]] && echo "ANSIBLE_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_DIR}" && exit 1
 	[[ -z "${BRAND_ANSIBLE_URL}" ]] && echo ".env is missing BRAND_ANSIBLE_URL variable" && exit 1
 	printer -t "Fetching ansible variables"
 
@@ -200,7 +193,7 @@ ${SCRIPTS_DIR}/get_contract_bytecode.sh
 VALIDATOR_IPS=$(get_list_of_validator_ips)
 
 check_env_file "${SCRIPTS_DIR}/create_all_wallets.sh"
-${SCRIPTS_DIR}/create_all_wallets.sh -i "${VALIDATOR_IPS}"
+${SCRIPTS_DIR}/create_all_wallets.sh -e "${ENV_FILE}" -i "${VALIDATOR_IPS}"
 
 check_env_file "${SCRIPTS_DIR}/generate_dao_storage.sh"
 ${SCRIPTS_DIR}/generate_dao_storage.sh -i "$VALIDATOR_IPS"

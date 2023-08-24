@@ -34,6 +34,7 @@ printer() {
 
 [[ -z "${AWS_PRIMARY_PROFILE}" ]] && echo "${0}:${LINENO} .env is missing AWS_PRIMARY_PROFILE" && exit 1
 [[ -z "${AWS_CONDUCTOR_SSH_KEY}" ]] && echo "${0}:${LINENO} .env is missing AWS_CONDUCTOR_SSH_KEY" && exit 1
+[[ -z "${AWS_CONDUCTOR_SSH_KEY_PATH}" ]] && echo "${0}:${LINENO} .env is missing AWS_CONDUCTOR_SSH_KEY_PATH" && exit 1
 
 get_key() {
 	secret_id=$1

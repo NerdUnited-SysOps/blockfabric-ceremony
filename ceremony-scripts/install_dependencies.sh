@@ -27,7 +27,7 @@ else
 fi
 
 printer() {
-	[[ ! -f "${${SCRIPTS_DIR}/printer.sh}" ]] && echo "${0}:${LINENO} ${${SCRIPTS_DIR}/printer.sh} file doesn't exist" && exit 1
+	[[ ! -f "${SCRIPTS_DIR}/printer.sh" ]] && echo "${0}:${LINENO} ${${SCRIPTS_DIR}/printer.sh} file doesn't exist" && exit 1
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
 

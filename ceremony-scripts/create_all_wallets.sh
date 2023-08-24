@@ -52,27 +52,36 @@ while getopts a:b:hi:v: option; do
 	esac
 done
 
-[[ ! -f "${ENV_FILE}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
-
-[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
-[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
-
-[[ -z "${VOLUMES_DIR}" ]] && echo ".env is missing VOLUMES_DIR variable" && exit 1
-[[ ! -d "${VOLUMES_DIR}" ]] && echo "VOLUMES_DIR environment variable is not a directory. Expecting it here ${VOLUMES_DIR}" && exit 1
 if [ ! -f "${ENV_FILE}" ]; then
 	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
 else
 	source ${ENV_FILE}
 fi
 
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+
+[[ -z "${VOLUMES_DIR}" ]] && echo ".env is missing VOLUMES_DIR variable" && exit 1
+[[ ! -d "${VOLUMES_DIR}" ]] && echo "VOLUMES_DIR environment variable is not a directory. Expecting it here ${VOLUMES_DIR}" && exit 1
+
 [[ -z "${LOG_FILE}" ]] && echo ".env is missing LOG_FILE variable" && exit 1
 [[ ! -f "${LOG_FILE}" ]] && echo "LOG_FILE environment variable is not a file. Expecting it here ${LOG_FILE}" && exit 1
 
+file_exists() {
+	file_path=$1
+	if [ ! -f "${file_path}" ]; then
+		echo "Cannot find ${file_path}"
+		exit 1
+	fi
+}
+
 printer() {
+	file_exists "${SCRIPTS_DIR}/printer.sh"
 	${SCRIPTS_DIR}/printer.sh "$@" | tee -a ${LOG_FILE}
 }
 
 generate_wallet() {
+	file_exists "${SCRIPTS_DIR}/generate_wallet.sh"
 	${SCRIPTS_DIR}/generate_wallet.sh "$@" &>> ${LOG_FILE}
 }
 

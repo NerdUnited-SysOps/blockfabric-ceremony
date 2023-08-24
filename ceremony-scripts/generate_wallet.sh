@@ -51,13 +51,18 @@ else
 	source ${ENV_FILE}
 fi
 
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+
+[[ -z "${GETH_PATH}" ]] && echo ".env is missing GETH_PATH variable" && exit 1
+[[ ! -f "${GETH_PATH}" ]] && echo "GETH_PATH environment variable is not a file. Expecting it here ${GETH_PATH}" && exit 1
+
 # These environment variables have DEFAULT values if not set
 [ -z "${GETH_PATH}" ] && GETH_PATH="${HOME}/go/bin/geth"
 
 password=$(pwgen -c 25 -n 1)
 
 new_account_output=$($GETH_PATH account new --password <(echo "${password}"))
-# echo ${new_account_output} >> ${LOG_FILE}
 
 new_keystore_file_path=$(echo ${new_account_output} | sed -n -e 's/.*secret.*:\ *//p')
 address=$(echo ${new_account_output} | sed -n -e 's/.*dress.*:\ *//p')

@@ -28,7 +28,7 @@ else
 fi
 
 printer() {
-	[[ ! -f "${${SCRIPTS_DIR}/printer.sh}" ]] && echo "${0}:${LINENO} ${${SCRIPTS_DIR}/printer.sh} file doesn't exist" && exit 1
+	[[ ! -f "${SCRIPTS_DIR}/printer.sh" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} ${SCRIPTS_DIR}/printer.sh file doesn't exist" && exit 1
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
 
@@ -38,7 +38,6 @@ printer() {
 [[ -z "${AWS_NODES_SSH_KEY}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing AWS_NODES_SSH_KEY" && exit 1
 [[ -z "${AWS_NODES_SSH_KEY_PATH}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing AWS_NODES_SSH_KEY_PATH" && exit 1
 [[ -z "${AWS_GITHUB_CEREMONY_PAT}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing AWS_GITHUB_CEREMONY_PAT" && exit 1
-[[ -z "${GITHUB_PAT}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing GITHUB_PAT" && exit 1
 
 get_key() {
 	secret_id=$1

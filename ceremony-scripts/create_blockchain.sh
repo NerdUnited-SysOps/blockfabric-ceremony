@@ -117,6 +117,8 @@ get_inventory() {
 	[[ -z "${SCP_USER}" ]] && echo ".env is missing SCP_USER variable" && exit 1
 	[[ -z "${CONDUCTOR_NODE_URL}" ]] && echo ".env is missing CONDUCTOR_NODE_URL variable" && exit 1
 	[[ -z "${REMOTE_INVENTORY_PATH}" ]] && echo ".env is missing REMOTE_INVENTORY_PATH variable" && exit 1
+	[[ -z "${INVENTORY_PATH}" ]] && echo ".env is missing INVENTORY_PATH variable" && exit 1
+
 	printer -t "Downloading inventory file"
 
 	scp -o StrictHostKeyChecking=no \

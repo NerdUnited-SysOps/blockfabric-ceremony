@@ -29,7 +29,15 @@ while getopts 'e:h' option; do
 	esac
 done
 
-source ${ENV_FILE}
+if [ ! -f "${ENV_FILE}" ]; then
+	echo "${ZSH_ARGZERO}:${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
+else
+	source ${ENV_FILE}
+fi
+
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
 
 printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"

@@ -19,7 +19,11 @@ while getopts e:hd option; do
 	esac
 done
 
-
+check_env() {
+	var_name=$1
+	var_val=$2
+	[[ -z "${var_val}" ]] && echo ".env is missing ${var_name} variable" && exit 1
+}
 
 if [ ! -f "${ENV_FILE}" ]; then
 	echo "Missing .env file. Expected it here: ${ENV_FILE}"
@@ -33,14 +37,22 @@ fi
 [[ -z "${CHAIN_NAME}" ]] && echo ".env is missing CHAIN_NAME variable" && exit 1
 [[ -z "${NETWORK_TYPE}" ]] && echo ".env is missing NETWORK_TYPE variable" && exit 1
 
+
+check_file_path() {
+	file_path=$1
+	if [ ! -f "${file_path}" ]; then
+		echo "Cannot find ${SCRIPTS_DIR}/create_blockchain.sh"
+		exit 1
+	fi
+}
 usage() {
 	printf "Welcome! This is an interface for working with the ceremony.\n"
 	printf "You may select from the options below\n\n"
 }
 
 create_blockchain() {
-	[[ ! -f "${SCRIPTS_DIR}/create_blockchain.sh" ]] && echo "Cannot find ${SCRIPTS_DIR}/create_blockchain.sh" && exit 1
-	${SCRIPTS_DIR}/create_blockchain.sh
+	check_file_path "${SCRIPTS_DIR}/create_blockchain.sh"
+	${SCRIPTS_DIR}/create_blockchain.sh -e "${ENV_FILE}"
 }
 
 run_validation() {
@@ -56,6 +68,7 @@ deploy_bridge() {
 }
 
 dev() {
+	check_file_path "${SCRIPTS_DIR}/dev.sh"
 	${SCRIPTS_DIR}/dev.sh
 }
 

@@ -4,14 +4,6 @@ set -e
 
 SECONDS=0
 
-# SCRIPTS_DIR=$(dirname ${(%):-%N})
-# BASE_DIR=$(realpath ${SCRIPTS_DIR}/..)
-# VOLUMES_DIR=${BASE_DIR}/volumes
-# ANSIBLE_DIR=${BASE_DIR}/ansible
-# INVENTORY_PATH=${ANSIBLE_DIR}/inventory
-# SCP_USER=admin
-# ENV_FILE=${BASE_DIR}/.env
-
 usage() {
   echo "This script sets up the validator nodes..."
   echo "Usage: $0 (options) ..."
@@ -108,7 +100,7 @@ check_env_dir() {
 check_env_file() {
 	file_path=$1
 	if [ ! -f "${file_path}" ]; then
-		printer -e "Cannot find ${SCRIPTS_DIR}/create_blockchain.sh"
+		printer -e "Cannot find ${file_path}"
 	fi
 }
 

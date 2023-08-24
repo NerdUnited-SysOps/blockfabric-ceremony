@@ -26,23 +26,14 @@ else
 	source ${ENV_FILE}
 fi
 
-check_env() {
-	var_name=$1
-	var_val=$2
-	[[ -z "${var_val}" ]] && echo ".env is missing ${var_name} variable" && exit 1
-}
-
-check_file_path() {
-	file_path=$1
-	[[ ! -f "${file_path}" ]] && echo "Cannot find ${file_path}" && exit 1
-}
-
 printer() {
-	check_file_path "${SCRIPTS_DIR}/printer.sh"
+	[[ ! -f "${${SCRIPTS_DIR}/printer.sh}" ]] && echo "${0}:${LINENO} ${${SCRIPTS_DIR}/printer.sh} file doesn't exist" && exit 1
 	${SCRIPTS_DIR}/printer.sh "$@"
 }
 
 [[ -z "${LOG_FILE}" ]] && echo "${0}:${LINENO} .env is missing LOG_FILE" && exit 1
+[[ -z "${SCRIPTS_DIR}" ]] && echo "${0}:${LINENO} .env is missing SCRIPTS_DIR" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "${0}:${LINENO} SCRIPTS_DIR isn't a directory. ${SCRIPTS_DIR}" && exit 1
 [[ -z "${GETH_PATH}" ]] && echo "${0}:${LINENO} .env is missing GETH_PATH" && exit 1
 [[ -z "${ETHKEY_PATH}" ]] && echo "${0}:${LINENO} .env is missing ETHKEY_PATH" && exit 1
 

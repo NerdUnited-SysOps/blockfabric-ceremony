@@ -179,7 +179,7 @@ check_env_file "${SCRIPTS_DIR}/install_dependencies.sh"
 ${SCRIPTS_DIR}/install_dependencies.sh -e "${ENV_FILE}"
 
 check_env_file "${SCRIPTS_DIR}/get_secrets.sh"
-${SCRIPTS_DIR}/get_secrets.sh -f ${ENV_FILE}
+${SCRIPTS_DIR}/get_secrets.sh -e ${ENV_FILE}
 
 get_ansible_vars
 install_ansible_role

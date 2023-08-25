@@ -2,10 +2,6 @@
 
 set -e
 
-ENV_FILE=./.env
-SCRIPTS_DIR=$(realpath ./ceremony-scripts)
-ETHKEY_PATH=${HOME}/go/bin/ethkey
-
 usage() {
 	echo "Options"
 	echo "  -e : Envifonment config file"
@@ -37,6 +33,9 @@ fi
 
 [[ -z "${LOG_FILE}" ]] && echo ".env is missing LOG_FILE variable" && exit 1
 [[ ! -f "${LOG_FILE}" ]] && echo "LOG_FILE environment variable is not a file. Expecting it here ${LOG_FILE}" && exit 1
+
+[[ -z "${ETHKEY_PATH}" ]] && echo ".env is missing ETHKEY_PATH variable" && exit 1
+[[ ! -f "${ETHKEY_PATH}" ]] && echo "ETHKEY_PATH environment variable is not a file. Expecting it here ${LOG_FILE}" && exit 1
 
 usage() {
 	printf "This is an interface for moving assets generated in the ceremony.\n"
@@ -215,7 +214,6 @@ get_private_key() {
 
 items=(
 	"Persist distribution issuer wallet (chain creation)"
-	"Persist bridge keys"
 	"Save Log File to volumes"
 	"Persist operational variables (cli args, variables, addresses, etc)"
 	"Exit"
@@ -233,10 +231,9 @@ while true; do
 	select item in "${items[@]}" 
 		case $REPLY in
 			1) persist_distribution_issuer | tee -a ${LOG_FILE}; break;;
-			2) persist_bridge_keys | tee -a ${LOG_FILE}; break;;
-			3) save_log_file | tee -a ${LOG_FILE}; break;;
-			4) save_ansible_vars | tee -a ${LOG_FILE}; break;;
-			5) printf "Closing\n\n"; exit 0;;
+			2) save_log_file | tee -a ${LOG_FILE}; break;;
+			3) save_ansible_vars | tee -a ${LOG_FILE}; break;;
+			4) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

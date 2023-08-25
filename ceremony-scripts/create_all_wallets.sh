@@ -13,8 +13,6 @@ usage() {
 	echo "  -e : Envifonment config file"
 	echo "  -h : This help message"
 	echo "  -i : List of IP addresses"
-	echo "  -l : Path to log file"
-	echo "  -v : Path where all keys will be generated"
 }
 
 while getopts a:b:hi:v:e: option; do
@@ -34,12 +32,6 @@ while getopts a:b:hi:v:e: option; do
 			;;
 		i)
 			VALIDATOR_IPS=${OPTARG}
-			;;
-		l)
-			LOG_FILE=${OPTARG}
-			;;
-		v)
-			VOLUMES_DIR=${OPTARG}
 			;;
 	esac
 done

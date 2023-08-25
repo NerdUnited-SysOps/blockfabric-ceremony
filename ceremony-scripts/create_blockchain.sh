@@ -158,8 +158,8 @@ install_ansible_role() {
 }
 
 run_ansible() {
-	check_env "ANSIBLE_CHAIN_DEPLOY_FORKS" "${ANSIBLE_CHAIN_DEPLOY_FORKS}"
-	check_env "AWS_NODES_SSH_KEY_PATH" "${AWS_NODES_SSH_KEY_PATH}"
+	[[ -z "${AWS_NODES_SSH_KEY_PATH}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_NODES_SSH_KEY_PATH variable"
+	[[ -z "${ANSIBLE_CHAIN_DEPLOY_FORKS}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing ANSIBLE_CHAIN_DEPLOY_FORKS variable"
 
 	printer -t "Executing Ansible Playbook"
 
@@ -168,7 +168,7 @@ run_ansible() {
 		--limit all_quorum \
 		-i ${INVENTORY_PATH} \
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
-		${ANSIBLE_DIR}/goquorum.yaml
+		${ANSIBLE_DIR}/goquorum.yaml | tee -a "${LOG_FILE}"
 
 	[ ! $? -eq 0 ] && printer -e "Failed to execute ansible playbook"
 }
@@ -203,7 +203,9 @@ ${SCRIPTS_DIR}/generate_dao_storage.sh \
 	-i "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
 
 [[ ! -f "${SCRIPTS_DIR}/generate_ansible_vars.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/generate_ansible_vars.sh file doesn't exist" && exit 1
-${SCRIPTS_DIR}/generate_ansible_vars.sh -v "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
+${SCRIPTS_DIR}/generate_ansible_vars.sh \
+	-e "${ENV_FILE}" \
+	-v "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
 
 # Executing ansible returns a non-zero code even when it's successful.
 # Backgrounding the task stops the script from existing.

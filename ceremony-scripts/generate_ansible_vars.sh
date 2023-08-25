@@ -6,11 +6,6 @@
 
 set -e
 
-SCRIPTS_DIR=$(dirname ${(%):-%N})
-BASE_DIR=$(realpath ${SCRIPTS_DIR}/..)
-ENV_FILE="${BASE_DIR}/.env"
-ETHKEY=${HOME}/go/bin/ethkey
-
 BOLD='\e[1;31m'         # Bold Red
 REV='\e[1;32m'       # Bold Green
 
@@ -22,9 +17,11 @@ help() {
 	exit 1
 }
 
-OPTSPEC=":hv:r:"
-while getopts "$OPTSPEC" optchar; do
-	case "${optchar}" in
+while getopts e:hv:r: option; do
+	case "${option}" in
+		e)
+			ENV_FILE=${OPTARG}
+			;;
 		v)
 			VALIDATOR_IPS+=$OPTARG
 			;;
@@ -41,10 +38,23 @@ done
 shift "$(( OPTIND - 1 ))"
 
 if [ ! -f "${ENV_FILE}" ]; then
-	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "${ZSH_ARGZERO}:${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
 else
 	source ${ENV_FILE}
 fi
+
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+
+[[ -z "${BASE_DIR}" ]] && echo ".env is missing BASE_DIR variable" && exit 1
+[[ ! -d "${BASE_DIR}" ]] && echo "BASE_DIR environment variable is not a directory. Expecting it here ${BASE_DIR}" && exit 1
+
+[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
+[[ ! -d "${ANSIBLE_DIR}" ]] && echo "ANSIBLE_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_DIR}" && exit 1
+
+[[ -z "${ETHKEY_PATH}" ]] && echo ".env is missing ETHKEY_PATH variable" && exit 1
+[[ ! -f "${ETHKEY_PATH}" ]] && echo "ETHKEY_PATH environment variable is not a file. Expecting it here ${ETHKEY_PATH}" && exit 1
 
 printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"
@@ -68,6 +78,8 @@ check_file() {
 	file_name=$1
 	file_path=$2
 
+	[[ -z "${file_path}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} empty variable ${file_name}"
+
 	if [ ! -f "${file_path}" ]; then
 		printer -e "Missing ${file_name}. Expected it here: ${file_path}"
 	fi
@@ -85,6 +97,8 @@ put_all_quorum_var() {
 	VAR_NAME=$1
 	VAR_VAL=$2
 
+
+
 	mkdir -p ${ANSIBLE_DIR}/group_vars
 	touch ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 
@@ -100,7 +114,7 @@ put_all_quorum_var() {
 inspect() {
 	inspect_path=$1
 
-	${ETHKEY} inspect \
+	${ETHKEY_PATH} inspect \
 		--private \
 		--passwordfile ${inspect_path}/password \
 		${inspect_path}/keystore
@@ -125,7 +139,7 @@ get_address() {
 }
 
 generate_enode_list() {
-	BASE_KEYS_DIR=$BASE_DIR/volumes/volume1
+	BASE_KEYS_DIR=${VOLUMES_DIR}/volume1
 	LAST_IP=${VALIDATOR_IPS##* }
 	COMMA=','
 	ips=(${(@s: :)VALIDATOR_IPS})
@@ -179,7 +193,7 @@ all_quorum_vars() {
 	echo "goquorum_genesis_sc_dao_storage: {${var}}" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 }
 
-BASE_KEYS_DIR=$BASE_DIR/volumes/volume1
+BASE_KEYS_DIR=${VOLUMES_DIR}/volume1
 ANSIBLE_KEY_DIR=${ANSIBLE_DIR}/keys
 ips=(${(@s: :)VALIDATOR_IPS})
 for IP in ${ips}; do

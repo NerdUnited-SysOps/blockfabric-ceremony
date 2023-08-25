@@ -55,11 +55,11 @@ create_blockchain() {
 }
 
 run_validation() {
-	./validation.sh
+	./validation.sh -e "${ENV_FILE}"
 }
 
 persistence() {
-	./persistence.sh
+	./persistence.sh -e "${ENV_FILE}"
 }
 
 deploy_bridge() {

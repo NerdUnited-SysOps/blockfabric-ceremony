@@ -188,7 +188,8 @@ install_ansible_role
 get_inventory
 
 [[ ! -f "${SCRIPTS_DIR}/get_contract_bytecode.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/get_contract_bytecode.sh file doesn't exist" && exit 1
-${SCRIPTS_DIR}/get_contract_bytecode.sh | tee -a "${LOG_FILE}"
+${SCRIPTS_DIR}/get_contract_bytecode.sh \
+	-e "${ENV_FILE}" | tee -a "${LOG_FILE}"
 
 VALIDATOR_IPS=$(get_list_of_validator_ips)
 

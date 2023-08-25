@@ -168,7 +168,7 @@ run_ansible() {
 		--limit all_quorum \
 		-i ${INVENTORY_PATH} \
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
-		${ANSIBLE_DIR}/goquorum.yaml | tee -a "${LOG_FILE}"
+		${ANSIBLE_DIR}/goquorum.yaml
 
 	[ ! $? -eq 0 ] && printer -e "Failed to execute ansible playbook"
 }
@@ -210,7 +210,7 @@ ${SCRIPTS_DIR}/generate_ansible_vars.sh \
 
 # Executing ansible returns a non-zero code even when it's successful.
 # Backgrounding the task stops the script from existing.
-run_ansible &
+run_ansible | tee -a "${LOG_FILE}" &
 wait
 
 duration=$SECONDS

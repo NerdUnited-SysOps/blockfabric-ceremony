@@ -2,8 +2,6 @@
 
 set -e
 
-# SCRIPTS_DIR=$(dirname ${(%):-%N})
-# ENV_FILE=${BASE_DIR}/.env
 # This should be a directory, which is where the keystore and password files will go
 OUTPUT_DIRS="./"
 TITLE="generic wallet"
@@ -26,18 +24,12 @@ while getopts ae:g:h:o:s:t: option; do
 		e)
 			ENV_FILE=${OPTARG}
 			;;
-		g)
-			GETH_PATH=${OPTARG}
-			;;
 		h)
 			usage
 			exit 0
 			;;
 		o)
 			OUTPUT_DIRS=${OPTARG}
-			;;
-		s)
-			SCRIPTS_DIR=${OPTARG}
 			;;
 		t)
 			TITLE=${OPTARG}

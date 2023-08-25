@@ -6,14 +6,6 @@ set -e
 #	----------------- Key Generation
 # ############################################################
 
-# SCRIPTS_DIR=$(dirname ${(%):-%N})
-# BASE_DIR=$(realpath ${SCRIPTS_DIR}/..)
-# LOG_FILE=${BASE_DIR}/ceremony.log
-# ENV_FILE=${BASE_DIR}/.env
-# VOLUMES_DIR=${BASE_DIR}/volumes
-# ADMIN_KEY_BATCH_SIZE=5
-# ADMIN_KEYS=100
-
 usage() {
 	echo "Options"
 	echo "  -a : How many admin lockup admin keys will be created"

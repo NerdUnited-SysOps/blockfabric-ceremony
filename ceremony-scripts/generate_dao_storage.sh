@@ -37,7 +37,6 @@ fi
 [[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
 
 [[ -z "${CONTRACTS_DIR}" ]] && echo ".env is missing CONTRACTS_DIR variable" && exit 1
-[[ ! -d "${CONTRACTS_DIR}" ]] && echo "CONTRACTS_DIR environment variable is not a directory. Expecting it here ${CONTRACTS_DIR}" && exit 1
 
 [[ -z "${VOLUMES_DIR}" ]] && echo ".env is missing VOLUMES_DIR variable" && exit 1
 [[ ! -d "${VOLUMES_DIR}" ]] && echo "VOLUMES_DIR environment variable is not a directory. Expecting it here ${VOLUMES_DIR}" && exit 1

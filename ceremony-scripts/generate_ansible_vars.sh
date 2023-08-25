@@ -94,8 +94,6 @@ put_all_quorum_var() {
 	VAR_NAME=$1
 	VAR_VAL=$2
 
-
-
 	mkdir -p ${ANSIBLE_DIR}/group_vars
 	touch ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 

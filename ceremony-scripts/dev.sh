@@ -25,11 +25,31 @@ else
 	source ${ENV_FILE}
 fi
 
-[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
-[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+[[ -z "${SCRIPTS_DIR}" ]] && echo "${0}:${LINENO} .env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "${0}:${LINENO} SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
 
-[[ -z "${BASE_DIR}" ]] && echo ".env is missing BASE_DIR variable" && exit 1
-[[ ! -d "${BASE_DIR}" ]] && echo "BASE_DIR environment variable is not a directory. Expecting it here ${BASE_DIR}" && exit 1
+[[ -z "${BASE_DIR}" ]] && echo "${0}:${LINENO} .env is missing BASE_DIR variable" && exit 1
+[[ ! -d "${BASE_DIR}" ]] && echo "${0}:${LINENO} BASE_DIR environment variable is not a directory. Expecting it here ${BASE_DIR}" && exit 1
+
+[[ -z "${VOLUMES_DIR}" ]] && echo "${0}:${LINENO} .env is missing VOLUMES_DIR variable" && exit 1
+[[ ! -d "${VOLUMES_DIR}" ]] && echo "${0}:${LINENO} VOLUMES_DIR environment variable is not a directory. Expecting it here ${VOLUMES_DIR}" && exit 1
+
+[[ -z "${ANSIBLE_DIR}" ]] && echo "${0}:${LINENO} .env is missing ANSIBLE_DIR variable" && exit 1
+[[ ! -d "${ANSIBLE_DIR}" ]] && echo "${0}:${LINENO} ANSIBLE_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_DIR}" && exit 1
+
+[[ -z "${LOG_FILE}" ]] && echo "${0}:${LINENO} .env is missing LOG_FILE variable" && exit 1
+[[ ! -f "${LOG_FILE}" ]] && echo "${0}:${LINENO} LOG_FILE environment variable is not a file. Expecting it here ${LOG_FILE}" && exit 1
+
+[[ -z "${INVENTORY_PATH}" ]] && echo "${0}:${LINENO} .env is missing INVENTORY_PATH variable" && exit 1
+[[ ! -f "${INVENTORY_PATH}" ]] && echo "${0}:${LINENO} INVENTORY_PATH environment variable is not a file. Expecting it here ${INVENTORY_PATH}" && exit 1
+
+[[ -z "${AWS_CONDUCTOR_SSH_KEY_PATH}" ]] && echo "${0}:${LINENO} .env is missing AWS_CONDUCTOR_SSH_KEY_PATH variable" && exit 1
+[[ ! -f "${AWS_CONDUCTOR_SSH_KEY_PATH}" ]] && echo "${0}:${LINENO} AWS_CONDUCTOR_SSH_KEY_PATH environment variable is not a file. Expecting it here ${AWS_CONDUCTOR_SSH_KEY_PATH}" && exit 1
+
+[[ -z "${AWS_NODES_SSH_KEY_PATH}" ]] && echo "${0}:${LINENO} .env is missing AWS_NODES_SSH_KEY_PATH variable" && exit 1
+[[ ! -f "${AWS_NODES_SSH_KEY_PATH}" ]] && echo "${0}:${LINENO} AWS_NODES_SSH_KEY_PATH environment variable is not a file. Expecting it here ${AWS_NODES_SSH_KEY_PATH}" && exit 1
+
+[[ -z "${ANSIBLE_ROLE_INSTALL_PATH}" ]] && echo "${0}:${LINENO} .env is missing ANSIBLE_ROLE_INSTALL_PATH variable" && exit 1
 
 usage() {
 	printf "This is an interface for performing development tasks.\n"

@@ -90,7 +90,7 @@ print_logo() {
 }
 
 items=(
-	"Reset chain"
+	"Reset network ${CHAIN_NAME} ${NETWORK_TYPE}"
 	"Reset files"
 	"Run ansible-playbook"
 	"Print logo"

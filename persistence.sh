@@ -12,7 +12,7 @@ usage() {
 	echo "  -h : This help message"
 }
 
-while getopts e:h option; do
+while getopts he: option; do
 	case "${option}" in
 		e) ENV_FILE=${OPTARG};;
 		h)

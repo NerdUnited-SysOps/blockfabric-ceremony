@@ -60,13 +60,13 @@ file_exists() {
 }
 
 printer() {
-	file_exists "${SCRIPTS_DIR}/printer.sh"
+	[[ ! -f "${SCRIPTS_DIR}/printer.sh" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} file doesn't exist" && exit 1
 	${SCRIPTS_DIR}/printer.sh "$@" | tee -a ${LOG_FILE}
 }
 
 generate_wallet() {
-	file_exists "${SCRIPTS_DIR}/generate_wallet.sh"
-	${SCRIPTS_DIR}/generate_wallet.sh "$@" &>> ${LOG_FILE}
+	[[ ! -f "${SCRIPTS_DIR}/generate_wallet.sh" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} file doesn't exist" && exit 1
+	${SCRIPTS_DIR}/generate_wallet.sh -e "${ENV_FILE}" "$@" &>> ${LOG_FILE}
 }
 
 lockup_admin_wallets() {

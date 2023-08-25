@@ -69,16 +69,17 @@ reset_files() {
 reset_chain() {
 	ANSIBLE_FORCE_COLOR=True \
 	ansible-playbook --limit all_quorum \
+		--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
  		-i ${INVENTORY_PATH} \
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
 		${ANSIBLE_DIR}/reset.yaml \
-		--forks 10 
 }
 
 run_ansible_playbook() {
-	ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook \
+	ANSIBLE_HOST_KEY_CHECKING=False \
 		ANSIBLE_FORCE_COLOR=True \
-		--forks 20 \
+		ansible-playbook \
+		--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
 		--limit all_quorum \
 		-i ${INVENTORY_PATH} \
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \

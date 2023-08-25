@@ -163,7 +163,9 @@ run_ansible() {
 
 	printer -t "Executing Ansible Playbook"
 
-	ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook \
+	ANSIBLE_HOST_KEY_CHECKING=False \
+		ANSIBLE_FORCE_COLOR=True \
+		ansible-playbook \
 		--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
 		--limit all_quorum \
 		-i ${INVENTORY_PATH} \

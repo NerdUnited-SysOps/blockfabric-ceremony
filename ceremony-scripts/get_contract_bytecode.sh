@@ -33,7 +33,6 @@ fi
 [[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
 
 [[ -z "${CONTRACTS_DIR}" ]] && echo ".env is missing CONTRACTS_DIR variable" && exit 1
-[[ ! -d "${CONTRACTS_DIR}" ]] && echo "CONTRACTS_DIR environment variable is not a directory. Expecting it here ${CONTRACTS_DIR}" && exit 1
 
 printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"

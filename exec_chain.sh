@@ -20,8 +20,10 @@ while getopts he: option; do
 	esac
 done
 
+shift "$(( OPTIND - 1 ))"
+
 if [ ! -f "${ENV_FILE}" ]; then
-	echo "${ZSH_ARGZERO}:${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
 	exit 1
 else
 	source ${ENV_FILE}

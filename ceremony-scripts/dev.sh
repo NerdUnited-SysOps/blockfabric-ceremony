@@ -67,6 +67,7 @@ reset_files() {
 }
 
 reset_chain() {
+	ANSIBLE_FORCE_COLOR=True \
 	ansible-playbook --limit all_quorum \
  		-i ${INVENTORY_PATH} \
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
@@ -76,6 +77,7 @@ reset_chain() {
 
 run_ansible_playbook() {
 	ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook \
+		ANSIBLE_FORCE_COLOR=True \
 		--forks 20 \
 		--limit all_quorum \
 		-i ${INVENTORY_PATH} \
@@ -110,7 +112,7 @@ while true; do
 	PS3=$'\n'"Select option: "
 	select item in "${items[@]}" 
 		case $REPLY in
-			1) clear -x; reset_chain; break;;
+			1) clear -x; reset_chain | tee -a "${LOG_FILE}"; break;;
 			2) clear -x; reset_files; break;;
 			3) clear -x; run_ansible_playbook; break;;
 			4) clear -x; print_logo; break;;

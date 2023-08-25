@@ -107,7 +107,7 @@ run_validation() {
 }
 
 print_account_range() {
-	./exec_chain.sh "debug.accountRange()" -e "${ENV_FILE}" | tee -a ${LOG_FILE}
+	./exec_chain.sh -e "${ENV_FILE}" "debug.accountRange()" | tee -a ${LOG_FILE}
 	printf "\n\n"
 }
 

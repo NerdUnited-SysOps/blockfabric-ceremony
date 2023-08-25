@@ -8,7 +8,7 @@ usage() {
 	echo "  -h : This help message"
 }
 
-while getopts a:b:hi:v:e: option; do
+while getopts he: option; do
 	case "${option}" in
 		e)
 			ENV_FILE=${OPTARG}
@@ -35,7 +35,6 @@ fi
 [[ -z "${RPC_PATH}" ]] && echo "${0}:${LINENO} .env is missing RPC_PATH variable" && exit 1
 [[ -z "${NODE_USER}" ]] && echo "${0}:${LINENO} .env is missing NODE_USER variable" && exit 1
 [[ -z "${INVENTORY_PATH}" ]] && echo "${0}:${LINENO} .env is missing INVENTORY_PATH variable" && exit 1
-[[ -z "${SSH_HOST}" ]] && echo "${0}:${LINENO} .env is missing SSH_HOST variable" && exit 1
 
 VALIDATION_DIR=$(dirname ${(%):-%N})
 

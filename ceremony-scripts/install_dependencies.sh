@@ -20,7 +20,7 @@ while getopts e:f:g:hs: option; do
 done
 
 if [ ! -f "${ENV_FILE}" ]; then
-	echo "${ZSH_ARGZERO}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
 	exit 1
 else
 	source ${ENV_FILE}

@@ -75,7 +75,7 @@ items=(
 	"Create blockchain"
 	"Run validation"
 	"Persist assets"
-	"Deploy Bridge"
+	# "Deploy Bridge"
 	"Exit"
 )
 
@@ -95,9 +95,9 @@ while true; do
 			1) clear -x; create_blockchain; break;;
 			2) clear -x; run_validation; break;;
 			3) clear -x; persistence; break;;
-			4) clear -x; deploy_bridge; break;;
-			5) printf "Closing\n\n"; exit 1;;
-			6) clear -x; dev; break;;
+			# 4) clear -x; deploy_bridge; break;;
+			4) printf "Closing\n\n"; exit 1;;
+			5) clear -x; dev; break;;
 			*)
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

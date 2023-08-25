@@ -2,28 +2,18 @@
 
 set -e
 
-# Directory of this file
-SCRIPTS_DIR=$(dirname ${(%):-%N})
-ENV_FILE="${SCRIPTS_DIR}/../.env"
-
-BASE_DIR=${SCRIPTS_DIR}/..
-CONTRACTS_DIR=${BASE_DIR}/contracts
-UTIL_SCRIPTS_DIR=${SCRIPTS_DIR}/util
-VOLUMES_DIR=${SCRIPTS_DIR}/../volumes
-
 usage() {
   echo "Usage: $0 (options) ..."
-  echo "  -f : Path to .env file"
+  echo "  -e : Path to .env file"
   echo "  -h : Help"
   echo "  -i : List of IP addresses"
-	echo "  -l : Path to log file"
   echo ""
   echo "Example: "
 }
 
-while getopts 'f:hi:l:' option; do
+while getopts 'e:hi:l:' option; do
 	case "$option" in
-		f)
+		e)
 			ENV_FILE=${OPTARG}
 			;;
 		h)
@@ -32,9 +22,6 @@ while getopts 'f:hi:l:' option; do
 			;;
 		i)
 			IP_ADDRESS_LIST=${OPTARG}
-			;;
-		l)
-			LOG_FILE=${OPTARG}
 			;;
 	esac
 done
@@ -45,6 +32,16 @@ if [ ! -f "${ENV_FILE}" ]; then
 else
 	source ${ENV_FILE}
 fi
+
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+
+[[ -z "${CONTRACTS_DIR}" ]] && echo ".env is missing CONTRACTS_DIR variable" && exit 1
+[[ ! -d "${CONTRACTS_DIR}" ]] && echo "CONTRACTS_DIR environment variable is not a directory. Expecting it here ${CONTRACTS_DIR}" && exit 1
+
+[[ -z "${VOLUMES_DIR}" ]] && echo ".env is missing VOLUMES_DIR variable" && exit 1
+[[ ! -d "${VOLUMES_DIR}" ]] && echo "VOLUMES_DIR environment variable is not a directory. Expecting it here ${VOLUMES_DIR}" && exit 1
+
 
 printer() {
 	[[ ! -f "${SCRIPTS_DIR}/printer.sh" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} ${SCRIPTS_DIR}/printer.sh file doesn't exist" && exit 1

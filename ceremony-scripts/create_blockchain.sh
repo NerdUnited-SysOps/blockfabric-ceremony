@@ -193,10 +193,14 @@ ${SCRIPTS_DIR}/get_contract_bytecode.sh | tee -a "${LOG_FILE}"
 VALIDATOR_IPS=$(get_list_of_validator_ips)
 
 [[ ! -f "${SCRIPTS_DIR}/create_all_wallets.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/create_all_wallets.sh file doesn't exist" && exit 1
-${SCRIPTS_DIR}/create_all_wallets.sh -e "${ENV_FILE}" -i "${VALIDATOR_IPS}" | tee -a "${LOG_FILE}"
+${SCRIPTS_DIR}/create_all_wallets.sh \
+	-e "${ENV_FILE}" \
+	-i "${VALIDATOR_IPS}" | tee -a "${LOG_FILE}"
 
 [[ ! -f "${SCRIPTS_DIR}/generate_dao_storage.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/generate_dao_storage.sh file doesn't exist" && exit 1
-${SCRIPTS_DIR}/generate_dao_storage.sh -i "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
+${SCRIPTS_DIR}/generate_dao_storage.sh \
+	-e "${ENV_FILE}" \
+	-i "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
 
 [[ ! -f "${SCRIPTS_DIR}/generate_ansible_vars.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/generate_ansible_vars.sh file doesn't exist" && exit 1
 ${SCRIPTS_DIR}/generate_ansible_vars.sh -v "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"

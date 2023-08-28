@@ -1,15 +1,12 @@
 #!/usr/bin/env zsh
 
-ENV_FILE=./.env
-SCRIPTS_DIR=$(realpath ./ceremony-scripts)
-
 usage() {
 	echo "Options"
 	echo "  -e : Envifonment config file"
 	echo "  -h : This help message"
 }
 
-while getopts a:b:hi:v: option; do
+while getopts he: option; do
 	case "${option}" in
 		e)
 			ENV_FILE=${OPTARG}
@@ -22,10 +19,14 @@ while getopts a:b:hi:v: option; do
 done
 
 if [ ! -f "${ENV_FILE}" ]; then
-	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
 else
 	source ${ENV_FILE}
 fi
+
+[[ -z "${VOLUMES_DIR}" ]] && echo ".env is missing VOLUMES_DIR variable" && exit 1
+[[ -z "${LOG_FILE}" ]] && echo ".env is missing LOG_FILE variable" && exit 1
 
 # #############################
 # Working with volumes
@@ -53,11 +54,14 @@ inspect_volumes() {
 	volume=$(volume_prompt)
 
 	printf "\n"
-	${SCRIPTS_DIR}/validation/validate_accounts.sh -p ${VOLUMES_DIR}/${volume} | tee -a ${LOG_FILE}
+	${SCRIPTS_DIR}/validation/validate_accounts.sh \
+		-e "${ETHKEY_PATH}" \
+		-p "${VOLUMES_DIR}/${volume}"
 	printf "\n\n"
 }
 
 list_volume_content() {
+	[[ ! -d "${VOLUMES_DIR}" ]] && echo "VOLUMES_DIR environment variable is not a directory. Expecting it here ${VOLUMES_DIR}" && exit 1
 	volume_prompt_intro
 	volume=$(volume_prompt)
 
@@ -96,12 +100,12 @@ list_addreses() {
 
 run_validation() {
 	printf "Validating chain...\n\n"
-	${SCRIPTS_DIR}/validation/run_validation.sh | tee -a ${LOG_FILE}
+	${SCRIPTS_DIR}/validation/run_validation.sh -e "${ENV_FILE}"
 	printf "\n\nNote: It takes a minute for all nodes to catch up with their peers.\n\n"
 }
 
 print_account_range() {
-	./exec_chain.sh "debug.accountRange()" | tee -a ${LOG_FILE}
+	./exec_chain.sh -e "${ENV_FILE}" "debug.accountRange()" | tee -a ${LOG_FILE}
 	printf "\n\n"
 }
 
@@ -128,18 +132,18 @@ NC='\033[0m'
 RED='\033[0;31m'
 while true; do
 	COLUMNS=1
-	PS3=$'\n'"${NETWORK_NAME} ${NETWORK_TYPE} | Select option: "
+	PS3=$'\n'"${CHAIN_NAME} ${NETWORK_TYPE} | Select option: "
 	select item in "${items[@]}"
 		case $REPLY in
-			1) clear -x; run_validation; break;;
+			1) clear -x; run_validation | tee -a ${LOG_FILE}; break;;
 			2) clear -x; list_volume_content; break;;
 			3) clear -x; list_addreses; break;;
-			4) clear -x; inspect_volumes; break;;
+			4) clear -x; inspect_volumes | tee -a ${LOG_FILE}; break;;
 			5) clear -x; print_account_range; break;;
 			6) clear -x; list_volume_sizes; break;;
 			7) printf "Closing.\n\n"; exit 0;;
 			*)
-				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
+				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage
 				break;
 		esac

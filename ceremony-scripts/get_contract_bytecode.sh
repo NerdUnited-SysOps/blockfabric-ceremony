@@ -2,13 +2,6 @@
 
 set -e
 
-SCRIPTS_DIR=$(dirname ${(%):-%N})
-ENV_FILE="${SCRIPTS_DIR}/../.env"
-
-BASE_DIR=${SCRIPTS_DIR}/..
-CONTRACTS_DIR=${BASE_DIR}/contracts
-UTIL_SCRIPTS_DIR=${SCRIPTS_DIR}/util
-
 usage() {
 	echo "Usage: $0 (options) ..."
 	echo "  -f : Path to .env file"
@@ -29,7 +22,17 @@ while getopts 'e:h' option; do
 	esac
 done
 
-source ${ENV_FILE}
+if [ ! -f "${ENV_FILE}" ]; then
+	echo "${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
+else
+	source ${ENV_FILE}
+fi
+
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+
+[[ -z "${CONTRACTS_DIR}" ]] && echo ".env is missing CONTRACTS_DIR variable" && exit 1
 
 printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"

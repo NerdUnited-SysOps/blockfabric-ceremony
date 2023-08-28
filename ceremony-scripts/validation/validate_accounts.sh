@@ -4,7 +4,7 @@ set -e
 
 # This should be a directory, which is where the keystore and password files will go
 FIND_PATH="./"
-ETHKEY=${HOME}/go/bin/ethkey
+ETHKEY_PATH=${HOME}/go/bin/ethkey
 
 usage() {
 	echo "Options"
@@ -16,7 +16,7 @@ usage() {
 while getopts e:hp: option; do
 	case "${option}" in
 		e)
-			ETHKEY=${OPTARG}
+			ETHKEY_PATH=${OPTARG}
 			;;
 		h)
 			usage
@@ -30,7 +30,7 @@ done
 
 inspect() {
 	inspect_path=$1
-	${ETHKEY} inspect \
+	${ETHKEY_PATH} inspect \
 		--passwordfile ${inspect_path}/password \
 		${inspect_path}/keystore
 }

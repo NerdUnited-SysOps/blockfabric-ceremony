@@ -2,50 +2,40 @@
 
 set -e
 
-SCRIPTS_DIR=$(dirname ${(%):-%N})
-ENV_FILE="${BASE_DIR}/.env"
-ETHKEY=${HOME}/go/bin/ethkey
-GETH=${HOME}/go/bin/geth
-
 usage() {
 	echo "Options"
-	echo "  -e : Path to the ethkey binary"
-	echo "  -f : Path to env file"
-	echo "  -g : Path to the geth binary"
-	echo "  -h : This help message"
-	echo "  -s : Script directory to reference other scripts"
+	echo "  -e : Path to the env file"
 }
 
 while getopts e:f:g:hs: option; do
 	case "${option}" in
 		e)
-			ETHKEY=${OPTARG}
-			;;
-		g)
-			GETH=${OPTARG}
+			ENV_FILE=${OPTARG}
 			;;
 		h)
 			usage
 			exit 0
 			;;
-		l)
-			LOG_FILE=${OPTARG}
-			;;
-		s)
-			SCRIPTS_DIR=${OPTARG}
-			;;
 	esac
 done
 
-printer() {
-	${SCRIPTS_DIR}/printer.sh "$@"
-}
-
 if [ ! -f "${ENV_FILE}" ]; then
-	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
 else
 	source ${ENV_FILE}
 fi
+
+printer() {
+	[[ ! -f "${SCRIPTS_DIR}/printer.sh" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} ${SCRIPTS_DIR}/printer.sh file doesn't exist" && exit 1
+	${SCRIPTS_DIR}/printer.sh "$@"
+}
+
+[[ -z "${LOG_FILE}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing LOG_FILE" && exit 1
+[[ -z "${SCRIPTS_DIR}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing SCRIPTS_DIR" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "${ZSH_ARGZERO}:${LINENO} SCRIPTS_DIR isn't a directory. ${SCRIPTS_DIR}" && exit 1
+[[ -z "${GETH_PATH}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing GETH_PATH" && exit 1
+[[ -z "${ETHKEY_PATH}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing ETHKEY_PATH" && exit 1
 
 APT_NODEJS_VERSION=18.10.0+dfsg-6
 APT_NPM_VERSION=9.1.2~ds1-2
@@ -94,14 +84,14 @@ print_status "ansible" "ansible" "${APT_ANSIBLE_VERSION}"
 print_status "curl" "curl" "${APT_CURL_VERSION}"
 
 
-if which ${GETH} &>> ${LOG_FILE}; then
+if which ${GETH_PATH} &>> ${LOG_FILE}; then
 	printer -n "geth Already installed, skipping..."
 else
 	printer -n "geth not found, installing"
 	go install github.com/ethereum/go-ethereum/cmd/geth@${GETH_VERSION} &>> ${LOG_FILE}
 fi
 
-if which ${ETHKEY} &>> ${LOG_FILE}; then
+if which ${ETHKEY_PATH} &>> ${LOG_FILE}; then
 	printer -n "ethkey Already installed, skipping..."
 else
 	printer -n "ethkey not found, installing"

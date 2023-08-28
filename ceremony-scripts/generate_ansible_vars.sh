@@ -6,11 +6,6 @@
 
 set -e
 
-SCRIPTS_DIR=$(dirname ${(%):-%N})
-BASE_DIR=$(realpath ${SCRIPTS_DIR}/..)
-ENV_FILE="${BASE_DIR}/.env"
-ETHKEY=${HOME}/go/bin/ethkey
-
 BOLD='\e[1;31m'         # Bold Red
 REV='\e[1;32m'       # Bold Green
 
@@ -22,9 +17,11 @@ help() {
 	exit 1
 }
 
-OPTSPEC=":hv:r:"
-while getopts "$OPTSPEC" optchar; do
-	case "${optchar}" in
+while getopts e:hv:r: option; do
+	case "${option}" in
+		e)
+			ENV_FILE=${OPTARG}
+			;;
 		v)
 			VALIDATOR_IPS+=$OPTARG
 			;;
@@ -41,10 +38,22 @@ done
 shift "$(( OPTIND - 1 ))"
 
 if [ ! -f "${ENV_FILE}" ]; then
-	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "${ZSH_ARGZERO}:${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
 else
 	source ${ENV_FILE}
 fi
+
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+
+[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
+[[ ! -d "${ANSIBLE_DIR}" ]] && echo "ANSIBLE_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_DIR}" && exit 1
+
+[[ -z "${ETHKEY_PATH}" ]] && echo ".env is missing ETHKEY_PATH variable" && exit 1
+[[ ! -f "${ETHKEY_PATH}" ]] && echo "ETHKEY_PATH environment variable is not a file. Expecting it here ${ETHKEY_PATH}" && exit 1
+
+[[ -z "${DISTRIBUTION_CONTRACT_BALANCE}" ]] && echo "${0}:${LINENO} .env is missing DISTRIBUTION_CONTRACT_BALANCE variable" && exit 1
 
 printer() {
 	${SCRIPTS_DIR}/printer.sh "$@"
@@ -55,18 +64,20 @@ printer -t "Creating ansible vars"
 [ -z "$VALIDATOR_IPS" ] && echo 'Missing -v' >&2 && help
 
 # These environment variables have DEFAULT values if not set
-[ -z "${DAO_CONTRACT_ARCHIVE_DIR}" ] && DAO_CONTRACT_ARCHIVE_DIR="$BASE_DIR/contracts/sc_dao/$DAO_VERSION"
+[ -z "${DAO_CONTRACT_ARCHIVE_DIR}" ] && DAO_CONTRACT_ARCHIVE_DIR="$CONTRACTS_DIR/sc_dao/$DAO_VERSION"
 [ -z "${DAO_RUNTIME_BIN_FILE}" ] && DAO_RUNTIME_BIN_FILE="$DAO_CONTRACT_ARCHIVE_DIR/ValidatorSmartContractAllowList.bin-runtime"
-[ -z "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] && LOCKUP_CONTRACT_ARCHIVE_DIR="$BASE_DIR/contracts/sc_lockup/$LOCKUP_VERSION"
+[ -z "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] && LOCKUP_CONTRACT_ARCHIVE_DIR="$CONTRACTS_DIR/sc_lockup/$LOCKUP_VERSION"
 [ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/Distribution.bin-runtime"
-[ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/distributionOwner"
-[ -z "${DIST_ISSUER_ADDRESS_FILE}" ] && DIST_ISSUER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/distributionIssuer"
-[ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="$BASE_DIR/volumes/volume1/lockupOwner"
+[ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$VOLUMES_DIR/volume1/distributionOwner"
+[ -z "${DIST_ISSUER_ADDRESS_FILE}" ] && DIST_ISSUER_ADDRESS_FILE="$VOLUMES_DIR/volume1/distributionIssuer"
+[ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="$VOLUMES_DIR/volume1/lockupOwner"
 [ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/Lockup.bin-runtime"
 
 check_file() {
 	file_name=$1
 	file_path=$2
+
+	[[ -z "${file_path}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} empty variable ${file_name}"
 
 	if [ ! -f "${file_path}" ]; then
 		printer -e "Missing ${file_name}. Expected it here: ${file_path}"
@@ -100,7 +111,7 @@ put_all_quorum_var() {
 inspect() {
 	inspect_path=$1
 
-	${ETHKEY} inspect \
+	${ETHKEY_PATH} inspect \
 		--private \
 		--passwordfile ${inspect_path}/password \
 		${inspect_path}/keystore
@@ -125,7 +136,7 @@ get_address() {
 }
 
 generate_enode_list() {
-	BASE_KEYS_DIR=$BASE_DIR/volumes/volume1
+	BASE_KEYS_DIR=${VOLUMES_DIR}/volume1
 	LAST_IP=${VALIDATOR_IPS##* }
 	COMMA=','
 	ips=(${(@s: :)VALIDATOR_IPS})
@@ -162,8 +173,9 @@ all_quorum_vars() {
 	put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${LOCKUP_TIMESTAMP}\""
 	put_all_quorum_var "total_coin_supply" "${TOTAL_COIN_SUPPLY}"
 	put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${DISTIRBUTION_ISSUER_BALANCE}"
+	put_all_quorum_var "goquorum_genesis_sc_distribution_balance" "${DISTRIBUTION_CONTRACT_BALANCE}"
 	put_all_quorum_var "goquorum_network_id" "${CHAIN_ID}"
-	put_all_quorum_var "goquorum_identity" "${NETWORK_NAME}_${NETWORK_TYPE}_{{ inventory_hostname }}"
+	put_all_quorum_var "goquorum_identity" "${CHAIN_NAME}_${NETWORK_TYPE}_{{ inventory_hostname }}"
 	put_all_quorum_var "lace_genesis_lockup_daily_limit" "\"${GENESIS_LOCKUP_DAILY_LIMIT}\""
 
 	sed -i '/goquorum_genesis_sc_lockup_storage/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
@@ -174,12 +186,12 @@ all_quorum_vars() {
 	echo "goquorum_enode_list: [${enode_list}]" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 
 	# Kinda janky, but gets the job done - grabs the contents of Storage.txt and puts it in a variable
-	var="$(tail -n+6 ./contracts/sc_dao/$DAO_VERSION/Storage.txt | head -n -2 | tr -d "[:blank:]\n")"
+	var="$(tail -n+6 $CONTRACTS_DIR/sc_dao/$DAO_VERSION/Storage.txt | head -n -2 | tr -d "[:blank:]\n")"
 	sed -i '/goquorum_genesis_sc_dao_storage/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 	echo "goquorum_genesis_sc_dao_storage: {${var}}" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
 }
 
-BASE_KEYS_DIR=$BASE_DIR/volumes/volume1
+BASE_KEYS_DIR=${VOLUMES_DIR}/volume1
 ANSIBLE_KEY_DIR=${ANSIBLE_DIR}/keys
 ips=(${(@s: :)VALIDATOR_IPS})
 for IP in ${ips}; do

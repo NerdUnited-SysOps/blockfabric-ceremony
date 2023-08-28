@@ -6,14 +6,6 @@ set -e
 #	----------------- Key Generation
 # ############################################################
 
-SCRIPTS_DIR=$(dirname ${(%):-%N})
-BASE_DIR=$(realpath ${SCRIPTS_DIR}/..)
-LOG_FILE=${BASE_DIR}/ceremony.log
-ENV_FILE=${BASE_DIR}/.env
-VOLUMES_DIR=${BASE_DIR}/volumes
-ADMIN_KEY_BATCH_SIZE=5
-ADMIN_KEYS=100
-
 usage() {
 	echo "Options"
 	echo "  -a : How many admin lockup admin keys will be created"
@@ -21,11 +13,9 @@ usage() {
 	echo "  -e : Envifonment config file"
 	echo "  -h : This help message"
 	echo "  -i : List of IP addresses"
-	echo "  -l : Path to log file"
-	echo "  -v : Path where all keys will be generated"
 }
 
-while getopts a:b:hi:v: option; do
+while getopts a:b:hi:v:e: option; do
 	case "${option}" in
 		a)
 			ADMIN_KEYS=${OPTARG}
@@ -43,30 +33,45 @@ while getopts a:b:hi:v: option; do
 		i)
 			VALIDATOR_IPS=${OPTARG}
 			;;
-		l)
-			LOG_FILE=${OPTARG}
-			;;
-		v)
-			VOLUMES_DIR=${OPTARG}
-			;;
 	esac
 done
 
 if [ ! -f "${ENV_FILE}" ]; then
-	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "${ZSH_ARGZERO}:${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
 else
 	source ${ENV_FILE}
 fi
 
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+
+[[ -z "${VOLUMES_DIR}" ]] && echo ".env is missing VOLUMES_DIR variable" && exit 1
+
+[[ -z "${LOG_FILE}" ]] && echo ".env is missing LOG_FILE variable" && exit 1
+[[ ! -f "${LOG_FILE}" ]] && echo "LOG_FILE environment variable is not a file. Expecting it here ${LOG_FILE}" && exit 1
+
+file_exists() {
+	file_path=$1
+	if [ ! -f "${file_path}" ]; then
+		echo "Cannot find ${file_path}"
+		exit 1
+	fi
+}
+
 printer() {
+	[[ ! -f "${SCRIPTS_DIR}/printer.sh" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} file doesn't exist" && exit 1
 	${SCRIPTS_DIR}/printer.sh "$@" | tee -a ${LOG_FILE}
 }
 
 generate_wallet() {
-	${SCRIPTS_DIR}/generate_wallet.sh "$@" &>> ${LOG_FILE}
+	[[ ! -f "${SCRIPTS_DIR}/generate_wallet.sh" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} file doesn't exist" && exit 1
+	${SCRIPTS_DIR}/generate_wallet.sh -e "${ENV_FILE}" "$@" &>> ${LOG_FILE}
 }
 
 lockup_admin_wallets() {
+	[[ -z "${ADMIN_KEYS}" ]] && echo ".env is missing ADMIN_KEYS variable" && exit 1
+
 	vol1=${VOLUMES_DIR}/volume1/lockupAdmins
 	vol2=${VOLUMES_DIR}/volume2/lockupAdmins
 
@@ -137,10 +142,6 @@ validator_account_wallets() {
 	printer -n "Created validator and account wallets"
 }
 
-bridge_wallets() {
-	${SCRIPTS_DIR}/create_bridge_wallets.sh &>> ${LOG_FILE}
-}
-
 [ -z "${VALIDATOR_IPS}" ] && printer -e "No vaildator IPs"
 
 printer -t "Creating ceremony keys"
@@ -150,7 +151,6 @@ lockup_admin_wallets
 lockup_owner_wallets &
 distribution_owner_wallets &
 distribution_issuer_wallets &
-bridge_wallets &
 wait
 
 validator_account_wallets "$VALIDATOR_IPS"

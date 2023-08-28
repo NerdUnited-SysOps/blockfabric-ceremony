@@ -2,17 +2,13 @@
 
 set -e
 
-ENV_FILE=./.env
-SCRIPTS_DIR=$(realpath ./ceremony-scripts)
-ETHKEY=${HOME}/go/bin/ethkey
-
 usage() {
 	echo "Options"
 	echo "  -e : Envifonment config file"
 	echo "  -h : This help message"
 }
 
-while getopts e:h option; do
+while getopts he: option; do
 	case "${option}" in
 		e) ENV_FILE=${OPTARG};;
 		h)
@@ -23,10 +19,23 @@ while getopts e:h option; do
 done
 
 if [ ! -f "${ENV_FILE}" ]; then
-	printer -e "Missing .env file. Expected it here: ${ENV_FILE}"
+	echo "${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
 else
 	source ${ENV_FILE}
 fi
+
+[[ -z "${SCRIPTS_DIR}" ]] && echo ".env is missing SCRIPTS_DIR variable" && exit 1
+[[ ! -d "${SCRIPTS_DIR}" ]] && echo "SCRIPTS_DIR environment variable is not a directory. Expecting it here ${SCRIPTS_DIR}" && exit 1
+
+[[ -z "${VOLUMES_DIR}" ]] && echo ".env is missing VOLUMES_DIR variable" && exit 1
+[[ ! -d "${VOLUMES_DIR}" ]] && echo "VOLUMES_DIR environment variable is not a directory. Expecting it here ${VOLUMES_DIR}" && exit 1
+
+[[ -z "${LOG_FILE}" ]] && echo ".env is missing LOG_FILE variable" && exit 1
+[[ ! -f "${LOG_FILE}" ]] && echo "LOG_FILE environment variable is not a file. Expecting it here ${LOG_FILE}" && exit 1
+
+[[ -z "${ETHKEY_PATH}" ]] && echo ".env is missing ETHKEY_PATH variable" && exit 1
+[[ ! -f "${ETHKEY_PATH}" ]] && echo "ETHKEY_PATH environment variable is not a file. Expecting it here ${LOG_FILE}" && exit 1
 
 usage() {
 	printf "This is an interface for moving assets generated in the ceremony.\n"
@@ -97,6 +106,10 @@ upsert_file() {
 }
 
 save_ansible_vars() {
+	[[ -z "${BRAND_ANSIBLE_URL}" ]] && echo ".env is missing BRAND_ANSIBLE_URL variable" && exit 1
+	[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
+	[[ ! -d "${ANSIBLE_DIR}" ]] && echo "ANSIBLE_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_DIR}" && exit 1
+
 	[ -d ${ANSIBLE_DIR} ] || git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} 
 	now=$(date +"%m_%d_%y")
 	##	
@@ -115,13 +128,6 @@ save_log_file() {
 	printer -t "Copying ${LOG_FILE} file to all volumes"
 	echo "\n"
 
-	### Prepend bootstrap.log into ceremony.log before github commits and before it's copied to volumes/
-	bootstrap_log_file="${HOME}/ceremony.log"
-	if [ -f "${bootstrap_log_file}" ]; then
-		COMBINED=$(cat ${bootstrap_log_file}; cat ${LOG_FILE})
-		echo "$COMBINED" > "${LOG_FILE}"
-	fi
-
 	echo "Finished: $(date)" >> "${LOG_FILE}"
 	### bootstrap.log will already have a Started: timestamp
 
@@ -136,6 +142,10 @@ save_log_file() {
 }
 
 persist_distribution_issuer() {
+	[[ -z "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_DISTIRBUTION_ISSUER_KEYSTORE variable" && exit 1
+	[[ -z "${AWS_PRIMARY_PROFILE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_PRIMARY_PROFILE variable" && exit 1
+	[[ -z "${AWS_DISTIRBUTION_ISSUER_PASSWORD}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_DISTIRBUTION_ISSUER_PASSWORD variable" && exit 1
+
 	# Get the private key (or the keystore & password)
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_KEYSTORE} ${VOLUMES_DIR}/volume1/distributionIssuer/keystore ${AWS_PRIMARY_PROFILE}
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_PASSWORD} ${VOLUMES_DIR}/volume1/distributionIssuer/password ${AWS_PRIMARY_PROFILE}
@@ -155,6 +165,14 @@ persist_address_file() {
 }
 
 persist_bridge_keys() {	
+	[[ -z "${AWS_APPROVER_KEYSTORE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_APPROVER_KEYSTORE variable" && exit 1
+	[[ -z "${AWS_APPROVER_PASSWORD}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_APPROVER_PASSWORD variable" && exit 1
+	[[ -z "${BRAND_AWS_APPROVER_PRIVATE_KEY}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing BRAND_AWS_APPROVER_PRIVATE_KEY variable" && exit 1
+	[[ -z "${AWS_PRIMARY_PROFILE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_PRIMARY_PROFILE variable" && exit 1
+	[[ -z "${AWS_SECONDARY_PROFILE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_SECONDARY_PROFILE variable" && exit 1
+	[[ -z "${AWS_NOTARY_KEYSTORE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_NOTARY_KEYSTORE variable" && exit 1
+	[[ -z "${AWS_NOTARY_PASSWORD}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_NOTARY_PASSWORD variable" && exit 1
+
 	# approver -> blockadmin AWS secrets
 	upsert_file ${AWS_APPROVER_KEYSTORE} ${VOLUMES_DIR}/volume3/approver/keystore ${AWS_PRIMARY_PROFILE}
 	upsert_file ${AWS_APPROVER_PASSWORD} ${VOLUMES_DIR}/volume3/approver/password ${AWS_PRIMARY_PROFILE}
@@ -182,7 +200,7 @@ persist_bridge_keys() {
 inspect() {
 	inspect_path=$1
 
-	${ETHKEY} inspect \
+	${ETHKEY_PATH} inspect \
 		--private \
 		--passwordfile ${inspect_path}/password \
 		${inspect_path}/keystore
@@ -196,7 +214,6 @@ get_private_key() {
 
 items=(
 	"Persist distribution issuer wallet (chain creation)"
-	"Persist bridge keys"
 	"Save Log File to volumes"
 	"Persist operational variables (cli args, variables, addresses, etc)"
 	"Exit"
@@ -210,16 +227,15 @@ NC='\033[0m'
 RED='\033[0;31m'
 while true; do
 	COLUMNS=1
-	PS3=$'\n'"${NETWORK_NAME} ${NETWORK_TYPE} | Select option: "
+	PS3=$'\n'"${CHAIN_NAME} ${NETWORK_TYPE} | Select option: "
 	select item in "${items[@]}" 
 		case $REPLY in
 			1) persist_distribution_issuer | tee -a ${LOG_FILE}; break;;
-			2) persist_bridge_keys | tee -a ${LOG_FILE}; break;;
-			3) save_log_file | tee -a ${LOG_FILE}; break;;
-			4) save_ansible_vars | tee -a ${LOG_FILE}; break;;
-			5) printf "Closing\n\n"; exit 0;;
+			2) save_log_file | tee -a ${LOG_FILE}; break;;
+			3) save_ansible_vars | tee -a ${LOG_FILE}; break;;
+			4) printf "Closing\n\n"; exit 0;;
 			*) 
-				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
+				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage
 				break;
 		esac

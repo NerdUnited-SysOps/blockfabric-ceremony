@@ -153,16 +153,12 @@ if [ "$type2" = "bridge" ]; then
   echo "    If successful, press ENTER"
   read
 
-  ########################## Retrieve gastank's public address for Bridge ceremonies
-  scp $chain@genesis.blockfabric.net:~/gastank.url $base/ceremony-artifacts/ > /dev/null 2>&1
-  
+  ########################## Show gastank's public address and balance for Bridge ceremonies
+  echo "https://etherscan.io/address/0xA2747b375982A1DE21FB2A5D0e9DB2e2C1AE0d79"
+
   ############# Command to verify token owner pk
   scp $chain@$bootstrap:~/verify_tokenowner $base/ceremony-artifacts/ > /dev/null 2>&1
 
-  ############  Show gastank url
-echo;echo
-  cat $base/ceremony-artifacts/gastank.url
-echo
 fi
 
 ########################## Done
@@ -173,4 +169,4 @@ echo
 echo
 echo "END OF BOOTSTRAP PROCESS FOR $type1 $type2 $type3 $type4 " | tee -a "$bootstrap_log"
 echo | tee -a "$bootstrap_log"
-echo | tee -a "$bootstrap_log" 
+echo | tee -a "$bootstrap_log"

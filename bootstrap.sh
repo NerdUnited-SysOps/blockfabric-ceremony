@@ -3,54 +3,58 @@
 
 # set -x
 
-version=2.0.0
-ceremony_repo_tag=2.0.0
-additions_repo_tag=2.0.2
+version=2.1.1
+chain_repo_tag=2.0.0
+additions_repo_tag=2.1.0
+ansible_repo_tag=main
+ceremonyenv_repo_tag=main
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
-network=$1
-chain=$2
-type1=$3
-type2=$4
-type3=$5
+export network=$1
+export chain=$2
+type=$3
 base="${HOME}"
 bootstrap=genesis.blockfabric.net
-bootstrap_log=$base/ceremony-artifacts/ceremony.log
+bootstrap_log=$base/ceremony-artifacts/bootstrap.log
 
 cd $base
 mkdir -p $base/ceremony-artifacts/
 clear
 
-########################## Check args
+########################## Check args, minimum 3 required
 if (( $# < 3 )); then
     echo
-    echo "Expected  (1)  network [ mainnet | testnet ] "
-    echo "          (2)  chain name"
-    echo "          (3)  ceremony type. 1 required, multiple allowed "
-    echo "               [ chain | bridge | lockup_swap | halving ]"
+    echo "Required: (1)  network     [ mainnet | testnet ] "
+    echo "          (2)  chain name  "
+    echo "          (3)  additional ceremony types. 1 required, multiple allowed separated by a space "
+    echo "               [ chain | bridge | timelock | lockup_swap | multisig | halvening | admin_fix ]"
     echo
     exit 1
 fi
 
+##########################  First, reset the bootstrap log file
+: > $bootstrap_log
+
+########################## Start by showing arguments and versions
+echo "Starting BOOTSTRAP PROCESS, version $version" | tee -a "$bootstrap_log"
+echo "  date: $(date)" | tee -a "$bootstrap_log"
+echo "  network, chain, type(s):        $@"  | tee -a "$bootstrap_log"
+echo "  ceremony OS version:            $ceremony_os_version"  | tee -a "$bootstrap_log"
+echo "  ceremony repo tag:              $chain_repo_tag"  | tee -a "$bootstrap_log"
+echo "  additions repo tag:             $additions_repo_tag"  | tee -a "$bootstrap_log"
+echo "  ansible repo tag:               $ansible_repo_tag"  | tee -a "$bootstrap_log"
+echo "  ceremony_env repo tag:  $ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
+echo "  go version:                     1.19.8"  | tee -a "$bootstrap_log"
+echo "  geth version:                   1.10.26-stable8" | tee -a "$bootstrap_log"
+echo "  ethkey version:         1.10.26-stable8" | tee -a "$bootstrap_log"
+echo   | tee -a "$bootstrap_log"
+
+
 ########################## Prep Firefox homepage for block explorer
 echo
 ## Modify Firefox's config file to open the chain's blockexplorer on launch
-sed -i "s/brand/$chain/"     ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
+sed -i "s/chain/$chain/"     ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
 sed -i "s/network/$network/" ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
 sed -i "s/always/never/g" ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
-
-########################## Start by showing versions
-echo "Starting BOOTSTRAP PROCESS, version $version" | tee -a "$bootstrap_log"
-echo "  date: $(date)" | tee -a "$bootstrap_log"
-echo "  ceremony OS version: $ceremony_os_version"  | tee -a "$bootstrap_log"
-echo "  ceremony repo tag:    $ceremony_repo_tag"  | tee -a "$bootstrap_log"
-echo "  additions repo tag:	$additions_repo_tag"  | tee -a "$bootstrap_log"
-echo "  network:		$network"  | tee -a "$bootstrap_log"
-echo "  chain:		$chain"  | tee -a "$bootstrap_log"
-echo "  type:			$type1 $type2 $type3"  | tee -a "$bootstrap_log"
-echo "  go version:     	1.19.8"  | tee -a "$bootstrap_log"
-echo "  geth version:   	1.10.26-stable8" | tee -a "$bootstrap_log"
-echo "  ethkey version: 	1.10.26-stable8" | tee -a "$bootstrap_log"
-echo   | tee -a "$bootstrap_log"
 
 ########################## Hardware Fitness of Purpose steps for the log only
 uname -a >> "$bootstrap_log"
@@ -61,18 +65,20 @@ nmcli >> "$bootstrap_log"
 echo "                     press ENTER to continue"
 read
 echo
+
+#########################  Testnet Tools
 if [ "$network" = "testnet" ]; then
-  scp $chain@$$bootstrap:~/s3volumesync.sh $base > /dev/null 2>&1
+  scp -pr $chain@$genesis:~/testnettools $base/testnettools > /dev/null 2>&1
+  $base/testnettools/testnet_config.sh $network $chain
 fi
 
 ########################## SSH config
 cp ${HOME}/.ssh/config.template ${HOME}/.ssh/config > /dev/null 2>&1
-sed -i "s/brand/$chain/g"     ${HOME}/.ssh/config > /dev/null 2>&1
+sed -i "s/chain/$chain/g"     ${HOME}/.ssh/config > /dev/null 2>&1
 sed -i "s/network/$network/g" ${HOME}/.ssh/config > /dev/null 2>&1
 
-
 ########################## AWS credentials
-echo "Creating local AWS configurtion and list S3 as a test ..." | tee -a "$bootstrap_log"
+echo;echo;echo;echo "========== Creating local AWS configurtion and list S3 bucket to verify ==========" | tee -a "$bootstrap_log"
 mkdir ${HOME}/.aws > /dev/null 2>&1
 scp $chain@$bootstrap:~/credentials.$network ${HOME}/.aws/credentials | tee -a "$bootstrap_log"
 ls -l ${HOME}/.aws/ | tee -a "$bootstrap_log"
@@ -85,88 +91,79 @@ read
 
 ########################## Retrieve github token
 pat=$(aws secretsmanager --profile blockfabric get-secret-value --secret-id ceremony_pat --query SecretString --output text)
-echo -n " pat is: ..." >>  "$bootstrap_log" 
+echo -n " pat is: ..." >>  "$bootstrap_log"
 echo $pat | tail -c 5 >> "$bootstrap_log"
 
-########################## If a chain, clone blockfabric-ceremony
-if [ "$type1" = "chain" ]; then 
+
+########################  2 functions are used; clone_repos() & get_env_files()
+function clone_repos()
+{
+  clear
+  local_type="$1"
+  gh_user=""
   echo " " | tee -a  "$bootstrap_log"
-  echo "*** Preparing for $chain Chain: ***"
-  echo "Cloning public Blockfabric-ceremony repo, tag=$ceremony_repo_tag ..."  | tee -a "$bootstrap_log"
-  echo
+  echo;echo;echo;echo "========== Preparing to clone repo for $chain $local_type: =========="
+
+  if [ "$local_type" = "chain" ]; then
+    gh_enterprise="NerdUnited-SysOps"
+    repo="blockfabric-ceremony"
+    repo_tag="$chain_repo_tag"
+  else
+    gh_enterprise="NerdCoreSdk"
+    gh_user="blockfabric-admin:${pat}@"
+    repo="blockfabric-ceremony-additions"
+    repo_tag="$additions_repo_tag"
+  fi
+  repo_dir="$base/$repo"
+
+  echo "Cloning $repo repo with tag:$repo_tag..." | tee -a "$bootstrap_log"
   cd $base
-  echo "git clone -b $ceremony_repo_tag https://github.com/NerdUnited-SysOps/blockfabric-ceremony.git"  | tee -a "$bootstrap_log"
-  git clone -b $ceremony_repo_tag https://github.com/NerdUnited-SysOps/blockfabric-ceremony.git | tee -a "$bootstrap_log"
-  echo; echo -n "  "
-  ls blockfabric-ceremony -d >> "$bootstrap_log"
-  echo | tee -a "$bootstrap_log"
-  ls -la blockfabric-ceremony >> "$bootstrap_log"
-  echo
-  echo "    If successful, press ENTER"
-  read
-  echo; echo
+  if [ ! -d $repo_dir ]; then
+    ## git -c advice.detachedHead=false checkout <refspec>
+    git config --global advice.statusHints false
+    git clone --quiet -b $repo_tag https://${gh_user}github.com/$gh_enterprise/$repo.git | tee -a "$bootstrap_log"
+    ls $repo -d >> "$bootstrap_log"
+    echo | tee -a "$bootstrap_log"
+    ls -la $repo >> "$bootstrap_log"
+  else
+    echo "  -- repo already exists, no need to clone again"
+  fi
+} ## end of clone function
 
-## Get ansible and shared .env config files - concat into single file
-  echo "Now retrieve the $chain $network chain environment variables file ..."  | tee -a "$bootstrap_log"
-  curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/NerdUnited-SysOps/ansible.$chain-$network/main/.env > $base/blockfabric-ceremony/ansible.env
-  curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/NerdUnited-SysOps/ceremony-env/2.0.1/shared/$type1.env > $base/blockfabric-ceremony/shared.env
-  cat $base/blockfabric-ceremony/ansible.env $base/blockfabric-ceremony/shared.env > $base/blockfabric-ceremony/.env
-  
-  echo | tee -a "$bootstrap_log"
-  echo | tee -a "$bootstrap_log"
-  cat  $base/blockfabric-ceremony/ansible.env  | tee -a "$bootstrap_log"
-  tail -n 1 $base/blockfabric-ceremony/shared.env  | tee -a "$bootstrap_log"
-  echo; echo "    If successful, press ENTER"
-  read
-  echo; echo
-fi 
+function get_env_files()   #combine the Type and the Shared .env files into single file
+{
+  local_type=$1
+  gh_enterprise="NerdUnited-SysOps"
+  ansible_repo="ansible.$chain-$network"
+  ceremonyenv_repo="ceremony-env"
 
-########################## If bridge, halving, other, then clone multi repo
-echo "*** Preparing for $chain $type2 $type3 $type4:***"
-if [ "$type2" = "bridge" ]; then 
-  cd $base  
-  echo "Cloning $type2 $type3 $type4 repo(s), tag=$additions_repo_tag ..."  | tee -a "$bootstrap_log"
-  echo
-  cd $base
-  echo "git clone -b $additions_repo_tag  https://blockfabric-admin:ghp_pat@github.com/NerdCoreSdk/blockfabric-ceremony-additions.git" | tee -a "$bootstrap_log"
-  git clone -b $additions_repo_tag https://blockfabric-admin:$pat@github.com/NerdCoreSdk/blockfabric-ceremony-additions.git | tee -a "$bootstrap_log"
-  echo; echo -n "  "
-  ls blockfabric-ceremony-additions -d >> "$bootstrap_log"
-  echo | tee -a "$bootstrap_log"
-  ls -la blockfabric-ceremony-additions >> "$bootstrap_log"
-  echo
-  echo "    If successful, press ENTER"
-  read
+  echo;echo;echo;echo "========== Now retrieve the $chain $network $local_type environment variables files =========="  | tee -a "$bootstrap_log"
+  curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/$gh_enterprise/$ansible_repo/$ansible_repo_tag/$network/$local_type/.env > $repo_dir/$local_type.env
+  cat $repo_dir/$local_type.env
 
-  ## Get .env config file
-  echo "Now retrieve the   $type2 $type3 $type4   config/environment variables file ..."  | tee -a "$bootstrap_log"
+  curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/$gh_enterprise/$ceremonyenv_repo/$ceremonyenv_repo_tag/shared/$local_type.env >> $repo_dir/$local_type.env
+  tail -n 1 $repo_dir/$local_type.env  | tee -a "$bootstrap_log"
+  ## not needed: cat $repo_dir/ansible.env $repo_dir/shared.env > $repo_dir/$env_type.env
+} ## end of env function
 
-  curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/NerdUnited-SysOps/ansible.$chain-$network/main/$network/$type2/.env > $base/blockfabric-ceremony-additions/type.env
-  curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/NerdUnited-SysOps/ceremony-env/2.0.1/shared/$type2.env >> $base/blockfabric-ceremony-additions/shared.env
-  cat $base/blockfabric-ceremony-additions/type.env $base/blockfabric-ceremony-additions/shared.env > $base/blockfabric-ceremony-additions/.env
-    
-  echo | tee -a "$bootstrap_log"
-  echo | tee -a "$bootstrap_log"
-  cat $base/blockfabric-ceremony-additions/type.env  | tee -a "$bootstrap_log"
-  tail -n 1 $base/blockfabric-ceremony-additions/shared.env  | tee -a "$bootstrap_log"
-  echo
-  echo "    If successful, press ENTER"
-  read
+######################## Process the various types of ceremonies (arguments)
+while test $# -gt 0
+do
+  type=$3
+  repo_dir=""
+  ## $3, $4, $5, etc are the 'types' of ceremonies to run. $1 and $2 are not. Shift at the end  will cycle thru the args
+  if  [ ! -z "$type" ]; then
+    clone_repos $type
+    get_env_files $type
 
-  ########################## Show gastank's public address and balance for Bridge ceremonies
-  echo "https://etherscan.io/address/0xA2747b375982A1DE21FB2A5D0e9DB2e2C1AE0d79"
+    echo; echo "    If successful, press ENTER"; read
+    echo; echo
+  fi
+  shift ## move to the next argument
+done
 
-  ############# Command to verify token owner pk
-  scp $chain@$bootstrap:~/verify_tokenowner $base/ceremony-artifacts/ > /dev/null 2>&1
-
-fi
-
-########################## Done
-echo "    Done. You are now boot-strapped for $network $chain."  | tee -a "$bootstrap_log"
-echo
-echo "    Continue with the Ceremony Script." | tee -a "$bootstrap_log"
-echo
-echo
-echo "END OF BOOTSTRAP PROCESS FOR $type1 $type2 $type3 $type4 " | tee -a "$bootstrap_log"
+echo; echo
+echo "=============== END OF BOOTSTRAP PROCESS FOR $network $chain ===============" | tee -a "$bootstrap_log"
+echo "===============     Continue with the Ceremony Script    ===============" | tee -a "$bootstrap_log"
 echo | tee -a "$bootstrap_log"
 echo | tee -a "$bootstrap_log"

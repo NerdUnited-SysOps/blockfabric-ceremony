@@ -3,9 +3,9 @@
 
 # set -x
 
-version=2.1.1
+version=2.1.3
 chain_repo_tag=2.0.0
-additions_repo_tag=2.1.0
+additions_repo_tag=2.2.0
 ansible_repo_tag=main
 ceremonyenv_repo_tag=main
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
@@ -22,6 +22,9 @@ clear
 
 ########################## Check args, minimum 3 required
 if (( $# < 3 )); then
+    echo
+    echo "bootstrap.sh ver. $version"
+    echo
     echo
     echo "Required: (1)  network     [ mainnet | testnet ] "
     echo "          (2)  chain name  "
@@ -66,11 +69,6 @@ echo "                     press ENTER to continue"
 read
 echo
 
-#########################  Testnet Tools
-if [ "$network" = "testnet" ]; then
-  scp -pr $chain@$genesis:~/testnettools $base/testnettools > /dev/null 2>&1
-  $base/testnettools/testnet_config.sh $network $chain
-fi
 
 ########################## SSH config
 cp ${HOME}/.ssh/config.template ${HOME}/.ssh/config > /dev/null 2>&1
@@ -84,7 +82,6 @@ scp $chain@$bootstrap:~/credentials.$network ${HOME}/.aws/credentials | tee -a "
 ls -l ${HOME}/.aws/ | tee -a "$bootstrap_log"
 aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
 aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
-echo
 echo
 echo "    If successful, press ENTER"
 read
@@ -150,7 +147,8 @@ function get_env_files()   #combine the Type and the Shared .env files into sing
 while test $# -gt 0
 do
   type=$3
-  repo_dir=""
+  repo_dir=
+  bridge="no"
   ## $3, $4, $5, etc are the 'types' of ceremonies to run. $1 and $2 are not. Shift at the end  will cycle thru the args
   if  [ ! -z "$type" ]; then
     clone_repos $type
@@ -159,11 +157,27 @@ do
     echo; echo "    If successful, press ENTER"; read
     echo; echo
   fi
+  if [ "$type" = "bridge_optionb" ]; then
+    scp $chain@$genesis:~/wallets.url $base/ > /dev/null 2>&1
+  fi
   shift ## move to the next argument
 done
 
-echo; echo
+echo
 echo "=============== END OF BOOTSTRAP PROCESS FOR $network $chain ===============" | tee -a "$bootstrap_log"
+echo
+if [ -f $base/wallets.url ]; then
+  echo "       Check these balance first:"
+  cat $base/wallets.url
+fi
+echo
 echo "===============     Continue with the Ceremony Script    ===============" | tee -a "$bootstrap_log"
 echo | tee -a "$bootstrap_log"
 echo | tee -a "$bootstrap_log"
+
+#########################  Testnet Tools
+if [ "$network" = "testnet" ]; then
+  scp -pr $chain@$genesis:~/testnettools $base/testnettools > /dev/null 2>&1
+  echo "Run ~/testnettools/labtop_config.sh $network $chain <labtop_port> type(s)"
+  echo "see ~/testnettools/labtop.instructions for more lab details"
+fi

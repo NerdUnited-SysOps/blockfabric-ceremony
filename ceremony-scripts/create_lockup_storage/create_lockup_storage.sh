@@ -1,7 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 
-SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source ${SCRIPT_DIR}/../../.common.sh
+if [ ! -f "${ENV_FILE}" ]; then
+	echo "${ZSH_ARGZERO}:${0}:${LINENO} Missing .env file. Expected it here: ${ENV_FILE}"
+	exit 1
+else
+	source ${ENV_FILE}
+fi
 
 VOL=${VOLUMES_DIR}/volume1/lockupAdmins
 

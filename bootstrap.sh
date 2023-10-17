@@ -3,8 +3,8 @@
 
 # set -x
 
-version=2.1.3
-chain_repo_tag=2.0.0
+version=2.1.5
+chain_repo_tag=2.0.1
 additions_repo_tag=2.2.0
 ansible_repo_tag=main
 ceremonyenv_repo_tag=main
@@ -40,15 +40,15 @@ fi
 ########################## Start by showing arguments and versions
 echo "Starting BOOTSTRAP PROCESS, version $version" | tee -a "$bootstrap_log"
 echo "  date: $(date)" | tee -a "$bootstrap_log"
-echo "  network, chain, type(s):        $@"  | tee -a "$bootstrap_log"
-echo "  ceremony OS version:            $ceremony_os_version"  | tee -a "$bootstrap_log"
-echo "  ceremony repo tag:              $chain_repo_tag"  | tee -a "$bootstrap_log"
-echo "  additions repo tag:             $additions_repo_tag"  | tee -a "$bootstrap_log"
-echo "  ansible repo tag:               $ansible_repo_tag"  | tee -a "$bootstrap_log"
-echo "  ceremony_env repo tag:  $ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
-echo "  go version:                     1.19.8"  | tee -a "$bootstrap_log"
-echo "  geth version:                   1.10.26-stable8" | tee -a "$bootstrap_log"
-echo "  ethkey version:         1.10.26-stable8" | tee -a "$bootstrap_log"
+echo "  network, chain, type(s):	$@"  | tee -a "$bootstrap_log"
+echo "  ceremony OS version:		$ceremony_os_version"  | tee -a "$bootstrap_log"
+echo "  ceremony repo tag:		$chain_repo_tag"  | tee -a "$bootstrap_log"
+echo "  additions repo tag:		$additions_repo_tag"  | tee -a "$bootstrap_log"
+echo "  ansible repo tag:		$ansible_repo_tag"  | tee -a "$bootstrap_log"
+echo "  ceremony_env repo tag:	$ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
+echo "  go version:			1.19.8"  | tee -a "$bootstrap_log"
+echo "  geth version:   		1.10.26-stable8" | tee -a "$bootstrap_log"
+echo "  ethkey version:		1.10.26-stable8" | tee -a "$bootstrap_log"
 echo   | tee -a "$bootstrap_log"
 
 
@@ -64,6 +64,7 @@ uname -a >> "$bootstrap_log"
 timedatectl status >> "$bootstrap_log"
 sudo fdisk -l >> "$bootstrap_log"
 lsblk >> "$bootstrap_log"
+mount >> "$bootstrap_log"
 nmcli >> "$bootstrap_log"
 echo "                     press ENTER to continue"
 read
@@ -73,6 +74,7 @@ echo
 ########################## SSH config
 cp ${HOME}/.ssh/config.template ${HOME}/.ssh/config > /dev/null 2>&1
 sed -i "s/chain/$chain/g"     ${HOME}/.ssh/config > /dev/null 2>&1
+sed -i "s/brand/$chain/g"     ${HOME}/.ssh/config > /dev/null 2>&1
 sed -i "s/network/$network/g" ${HOME}/.ssh/config > /dev/null 2>&1
 
 ########################## AWS credentials

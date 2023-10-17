@@ -47,12 +47,18 @@ echo "Finished: $(date)" >> "${LOG_FILE}"
 
 	now=$(date +"%m_%d_%y")
 
+	log_name="${now}_${CEREMONY_TYPE}_ceremony.log"
+	[ -d ${VOLUMES_DIR}/volume1 ] && cp -v ${LOG_FILE} "${VOLUMES_DIR}/volume1/${log_name}"
+	[ -d ${VOLUMES_DIR}/volume2 ] && cp -v ${LOG_FILE} "${VOLUMES_DIR}/volume2/${log_name}"
+	[ -d ${VOLUMES_DIR}/volume3 ] && cp -v ${LOG_FILE} "${VOLUMES_DIR}/volume3/${log_name}"
+	[ -d ${VOLUMES_DIR}/volume4 ] && cp -v ${LOG_FILE} "${VOLUMES_DIR}/volume4/${log_name}"
+
 	repo="${SHARED_DIR}/ansible"
 	[ -d ${repo} ] || git clone ${BRAND_ARTIFACT_REPO_URL} ${repo} | tee -a ${LOG_FILE}
 
 	if [ -d "${repo}" ]; then
 		mkdir -p "${repo}/${NETWORK_TYPE}/${CEREMONY_TYPE}"
-		cp "${LOG_FILE}" "${repo}/${NETWORK_TYPE}/${CEREMONY_TYPE}/${now}_${CEREMONY_TYPE}_ceremony.log" | tee -a ${LOG_FILE}
+		cp "${LOG_FILE}" "${repo}/${NETWORK_TYPE}/${CEREMONY_TYPE}/${log_name}" | tee -a ${LOG_FILE}
 		git -C ${repo}/ checkout -B "${NETWORK_TYPE}-${CEREMONY_TYPE}-${now}" | tee -a ${LOG_FILE}
 		git -C ${repo}/ add . &>> ${LOG_FILE} | tee -a ${LOG_FILE}
 

@@ -26,7 +26,7 @@ else
 fi
 
 [[ -z "${ANSIBLE_DIR}" ]] && echo "${0}:${LINENO} .env is missing ANSIBLE_DIR variable" && exit 1
-[[ -z "${BRAND_ARTIFACT_REPO_URL}" ]] && echo "${0}:${LINENO} .env is missing BRAND_ARTIFACT_REPO_URL variable" && exit 1
+[[ -z "${BRAND_ANSIBLE_URL}" ]] && echo "${0}:${LINENO} .env is missing BRAND_ANSIBLE_URL variable" && exit 1
 [[ -z "${CEREMONY_TYPE}" ]] && echo "${0}:${LINENO} .env is missing CEREMONY_TYPE variable" && exit 1
 [[ -z "${LOG_FILE}" ]] && echo "${0}:${LINENO} .env is missing LOG_FILE variable" && exit 1
 [[ -z "${NETWORK_TYPE}" ]] && echo "${0}:${LINENO} .env is missing NETWORK_TYPE variable" && exit 1
@@ -54,7 +54,7 @@ echo "Finished: $(date)" >> "${LOG_FILE}"
 	[ -d ${VOLUMES_DIR}/volume4 ] && cp -v ${LOG_FILE} "${VOLUMES_DIR}/volume4/${log_name}"
 
 	repo="${SHARED_DIR}/ansible"
-	[ -d ${repo} ] || git clone ${BRAND_ARTIFACT_REPO_URL} ${repo} | tee -a ${LOG_FILE}
+	[ -d ${repo} ] || git clone ${BRAND_ANSIBLE_URL} ${repo} | tee -a ${LOG_FILE}
 
 	if [ -d "${repo}" ]; then
 		mkdir -p "${repo}/${NETWORK_TYPE}/${CEREMONY_TYPE}"

@@ -101,7 +101,7 @@ get_ansible_vars() {
 	if [ ! -d "${ANSIBLE_DIR}" ]; then
 		source ${ENV_FILE}
 
-		if git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} &>> ${LOG_FILE}; then
+		if git clone ${BRAND_ANSIBLE_URL} "${SHARED_DIR}/ansible" &>> ${LOG_FILE}; then
 			printer -s "Fetched variables"
 		else
 			printer -e "Failed to fetch variables"

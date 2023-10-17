@@ -3,8 +3,8 @@
 
 # set -x
 
-version=2.1.5
-chain_repo_tag=2.0.1
+version=2.1.6
+chain_repo_tag=2.0.2
 additions_repo_tag=2.2.0
 ansible_repo_tag=main
 ceremonyenv_repo_tag=main
@@ -76,6 +76,9 @@ cp ${HOME}/.ssh/config.template ${HOME}/.ssh/config > /dev/null 2>&1
 sed -i "s/chain/$chain/g"     ${HOME}/.ssh/config > /dev/null 2>&1
 sed -i "s/brand/$chain/g"     ${HOME}/.ssh/config > /dev/null 2>&1
 sed -i "s/network/$network/g" ${HOME}/.ssh/config > /dev/null 2>&1
+
+########################## Other Utility files
+scp $chain@$bootstrap:~/clean.sh ${HOME}/ > /dev/null 2>&1
 
 ########################## AWS credentials
 echo;echo;echo;echo "========== Creating local AWS configurtion and list S3 bucket to verify ==========" | tee -a "$bootstrap_log"

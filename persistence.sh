@@ -106,22 +106,7 @@ upsert_file() {
 }
 
 save_ansible_vars() {
-	[[ -z "${BRAND_ANSIBLE_URL}" ]] && echo ".env is missing BRAND_ANSIBLE_URL variable" && exit 1
-	[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
-	[[ ! -d "${ANSIBLE_DIR}" ]] && echo "ANSIBLE_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_DIR}" && exit 1
-
-	[ -d ${ANSIBLE_DIR} ] || git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} 
-	now=$(date +"%m_%d_%y")
-	##	
-	cp "${LOG_FILE}" "${ANSIBLE_DIR}/${now}_ceremony.log"
-	git config --global user.name "ceremony-script"
-	git config --global user.email "ceremony@email.com"
-	git -C ${ANSIBLE_DIR}/ checkout -B "ceremony-artifacts-${now}"
-	git -C ${ANSIBLE_DIR}/ add ${ANSIBLE_DIR}/ &>> ${LOG_FILE}
-	git -C ${ANSIBLE_DIR}/ commit -m "Committing produced artifacts"
-	git -C ${ANSIBLE_DIR}/ push origin HEAD --force --porcelain &>> ${LOG_FILE}
-
-	printer -s "Persisted artifacts"
+	"${SCRIPTS_DIR}/persist_log.sh"
 }
 
 save_log_file() {

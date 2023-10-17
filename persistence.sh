@@ -106,7 +106,7 @@ upsert_file() {
 }
 
 save_ansible_vars() {
-	"${SCRIPTS_DIR}/persist_log.sh"
+	"${SCRIPTS_DIR}/persist_log.sh" -e "${ENV_FILE}"
 }
 
 persist_distribution_issuer() {

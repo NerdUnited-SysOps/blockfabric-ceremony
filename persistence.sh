@@ -199,7 +199,7 @@ while true; do
 		case $REPLY in
 			1) persist_distribution_issuer | tee -a ${LOG_FILE}; break;;
 			2) save_ansible_vars | tee -a ${LOG_FILE}; break;;
-			4) printf "Closing\n\n"; exit 0;;
+			3) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

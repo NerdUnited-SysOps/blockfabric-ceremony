@@ -93,15 +93,17 @@ check_env_file() {
 }
 
 get_ansible_vars() {
+	source ${ENV_FILE}
 	[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
 	[[ -z "${BRAND_ANSIBLE_URL}" ]] && echo ".env is missing BRAND_ANSIBLE_URL variable" && exit 1
 
 	printer -t "Fetching ansible variables"
 
-	if [ ! -d "${ANSIBLE_DIR}" ]; then
-		source ${ENV_FILE}
+	repo_dir="${SHARED_DIR}/ansible"
+	[ -d "${repo_dir}" ] && rm -rf "${repo_dir}"
+	if [ ! -d "${repo_dir}" ]; then
 
-		if git clone ${BRAND_ANSIBLE_URL} "${SHARED_DIR}/ansible" &>> ${LOG_FILE}; then
+		if git clone ${BRAND_ANSIBLE_URL} "${repo_dir}" &>> ${LOG_FILE}; then
 			printer -s "Fetched variables"
 		else
 			printer -e "Failed to fetch variables"

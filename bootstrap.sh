@@ -3,9 +3,9 @@
 
 # set -x
 
-version=2.1.7
+version=2.1.9
 chain_repo_tag=2.0.2
-additions_repo_tag=2.3.1
+additions_repo_tag=2.3.2
 ansible_repo_tag=main
 ceremonyenv_repo_tag=main
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
@@ -29,7 +29,7 @@ if (( $# < 3 )); then
     echo "Required: (1)  network     [ mainnet | testnet ] "
     echo "          (2)  chain name  "
     echo "          (3)  additional ceremony types. 1 required, multiple allowed separated by a space "
-    echo "               [ chain | bridge_optionb | timelock | lockup_swap | multisig | halvening | admin_fix ]"
+    echo "               [ chain | bridge_optionb | binance_bridge | timelock | lockup_swap | multisig | halvening | admin_fix ]"
     echo
     exit 1
 fi
@@ -40,15 +40,15 @@ fi
 ########################## Start by showing arguments and versions
 echo "Starting BOOTSTRAP PROCESS, version $version" | tee -a "$bootstrap_log"
 echo "  date: $(date)" | tee -a "$bootstrap_log"
-echo "  network, chain, type(s):        $@"  | tee -a "$bootstrap_log"
-echo "  ceremony OS version:            $ceremony_os_version"  | tee -a "$bootstrap_log"
-echo "  ceremony repo tag:              $chain_repo_tag"  | tee -a "$bootstrap_log"
-echo "  additions repo tag:             $additions_repo_tag"  | tee -a "$bootstrap_log"
-echo "  ansible repo tag:               $ansible_repo_tag"  | tee -a "$bootstrap_log"
-echo "  ceremony_env repo tag:  $ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
-echo "  go version:                     1.19.8"  | tee -a "$bootstrap_log"
-echo "  geth version:                   1.10.26-stable8" | tee -a "$bootstrap_log"
-echo "  ethkey version:         1.10.26-stable8" | tee -a "$bootstrap_log"
+echo "  network, chain, type(s):	$@"  | tee -a "$bootstrap_log"
+echo "  ceremony OS version:		$ceremony_os_version"  | tee -a "$bootstrap_log"
+echo "  ceremony repo tag:		$chain_repo_tag"  | tee -a "$bootstrap_log"
+echo "  additions repo tag:		$additions_repo_tag"  | tee -a "$bootstrap_log"
+echo "  ansible repo tag:		$ansible_repo_tag"  | tee -a "$bootstrap_log"
+echo "  ceremony_env repo tag:	$ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
+echo "  go version:			1.19.8"  | tee -a "$bootstrap_log"
+echo "  geth version:   		1.10.26-stable8" | tee -a "$bootstrap_log"
+echo "  ethkey version:		1.10.26-stable8" | tee -a "$bootstrap_log"
 echo   | tee -a "$bootstrap_log"
 
 
@@ -86,7 +86,8 @@ mkdir ${HOME}/.aws > /dev/null 2>&1
 scp $chain@$bootstrap:~/credentials.$network ${HOME}/.aws/credentials | tee -a "$bootstrap_log"
 ls -l ${HOME}/.aws/ | tee -a "$bootstrap_log"
 aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
-aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
+## not needed in this version 2.1.9
+## aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
 echo
 echo "    If successful, press ENTER"
 read
@@ -162,7 +163,7 @@ do
     echo; echo "    If successful, press ENTER"; read
     echo; echo
   fi
-  if [ "$type" = "bridge_optionb" ]; then
+  if [ "$type" = "bridge_optionb" ] || [ "$type" = "binance_bridge" ]; then
     scp $chain@$genesis:~/wallets.url $base/ > /dev/null 2>&1
   fi
   shift ## move to the next argument

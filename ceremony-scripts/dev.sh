@@ -198,7 +198,7 @@ set_decimal() {
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
 		${ANSIBLE_DIR}/copy_nodekeys.yaml
 
-	find ./keys -type f -name 'nodekey' -print0 | xargs -0 -I {} sh -c 'mv {} "$(dirname {})/../../../../"'
+	find "${ANSIBLE_DIR}/keys" -type f -name 'nodekey' -print0 | xargs -0 -I {} sh -c 'mv {} "$(dirname {})/../../../../"'
 
 	reset_chain
 	ANSIBLE_HOST_KEY_CHECKING=False \

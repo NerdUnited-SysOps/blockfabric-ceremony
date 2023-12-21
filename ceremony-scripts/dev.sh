@@ -218,10 +218,10 @@ set_decimal() {
 
 	reset_chain
 
-	put_all_quorum_var "lace_genesis_lockup_daily_limit" "${GENESIS_LOCKUP_DAILY_LIMIT}"
+	put_all_quorum_var "lace_genesis_lockup_daily_limit" "\"${GENESIS_LOCKUP_DAILY_LIMIT}\""
 	put_all_quorum_var "total_coin_supply" "${TOTAL_COIN_SUPPLY}"
 	put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${DISTIRBUTION_ISSUER_BALANCE}"
-	put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "${LOCKUP_TIMESTAMP}"
+	put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${LOCKUP_TIMESTAMP}\""
 
 	ANSIBLE_HOST_KEY_CHECKING=False \
 		ANSIBLE_FORCE_COLOR=True \

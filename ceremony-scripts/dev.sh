@@ -44,6 +44,11 @@ usage() {
 	printf "You may select from the options below\n\n"
 }
 
+printer() {
+	[[ ! -f "${SCRIPTS_DIR}/printer.sh" ]] && echo "Cannot find ${SCRIPTS_DIR}/printer.sh" && exit 1
+	${SCRIPTS_DIR}/printer.sh "$@"
+}
+
 reset_files() {
 	printf "Executing: sudo rm -rf ${CONTRACTS_DIR} ${VOLUMES_DIR} ${ANSIBLE_DIR} ${LOG_FILE} ${AWS_CONDUCTOR_SSH_KEY_PATH} ${AWS_NODES_SSH_KEY_PATH} ${ANSIBLE_ROLE_INSTALL_PATH}\n\n"
 
@@ -179,28 +184,30 @@ set_decimal() {
 	[[ -z "${INVENTORY_PATH}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing INVENTORY_PATH variable"
 	[[ -z "${ANSIBLE_DIR}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing ANSIBLE_DIR variable"
 	[[ -z "${ANSIBLE_CHAIN_DEPLOY_FORKS}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing ANSIBLE_CHAIN_DEPLOY_FORKS variable"
+	${SCRIPTS_DIR}/get_secrets.sh -e ${ENV_FILE} | tee -a "${LOG_FILE}"
 	get_ansible_vars
 	get_inventory
 	install_ansible_role
 
-	# Save stuff
-	# nodekeys (have to grab them from the validators)
-
-	# reset_chain
-
-	# Update stuff
-	# Update the genesis file
-	# 	Copy to a new location and update the new copy
-	# update the nodekey locations
-
-	# deploy new chain
-	# Verify new chain
-	# * uses new genesis file
-	# * uses old nodekey
-
 	ANSIBLE_HOST_KEY_CHECKING=False \
 		ANSIBLE_FORCE_COLOR=True \
 		ansible-playbook \
+		--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
+		--limit all_quorum \
+		-i ${INVENTORY_PATH} \
+		--private-key=${AWS_NODES_SSH_KEY_PATH} \
+		${ANSIBLE_DIR}/copy_nodekeys.yaml
+
+	find ./keys -type f -name 'nodekey' -print0 | xargs -0 -I {} sh -c 'mv {} "$(dirname {})/../../../../"'
+
+	reset_chain
+	ANSIBLE_HOST_KEY_CHECKING=False \
+		ANSIBLE_FORCE_COLOR=True \
+		ansible-playbook \
+		--extra-vars "lace_genesis_lockup_daily_limit=${GENESIS_LOCKUP_DAILY_LIMIT}" \
+		--extra-vars "total_coin_supply=${TOTAL_COIN_SUPPLY}" \
+		--extra-vars "lace_genesis_distribution_issuer_balance=${DISTIRBUTION_ISSUER_BALANCE}" \
+		--extra-vars "lace_genesis_lockup_last_dist_timestamp=${LOCKUP_TIMESTAMP}" \
 		--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
 		--limit all_quorum \
 		-i ${INVENTORY_PATH} \
@@ -234,7 +241,7 @@ while true; do
 			2) clear -x; reset_files; break;;
 			3) clear -x; run_ansible_playbook; break;;
 			4) clear -x; print_logo; break;;
-			5) clear -x; set_decimals; break;;
+			5) clear -x; set_decimal; break;;
 			6) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";

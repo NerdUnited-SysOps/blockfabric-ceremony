@@ -92,11 +92,128 @@ print_logo() {
 	printf "\n\n"
 }
 
+get_ansible_vars() {
+	[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
+	[[ -z "${BRAND_ANSIBLE_URL}" ]] && echo ".env is missing BRAND_ANSIBLE_URL variable" && exit 1
+
+	printer -t "Fetching ansible variables"
+
+	if [ ! -d "${ANSIBLE_DIR}" ]; then
+		source ${ENV_FILE}
+
+		if git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} &>> ${LOG_FILE}; then
+			printer -s "Fetched variables"
+		else
+			printer -e "Failed to fetch variables"
+		fi
+	else
+		printer -n "Ansible variables present, skipping"
+	fi
+}
+
+get_inventory() {
+	[[ -z "${AWS_CONDUCTOR_SSH_KEY_PATH}" ]] && echo ".env is missing AWS_CONDUCTOR_SSH_KEY_PATH variable" && exit 1
+	[[ -z "${SCP_USER}" ]] && echo ".env is missing SCP_USER variable" && exit 1
+	[[ -z "${CONDUCTOR_NODE_URL}" ]] && echo ".env is missing CONDUCTOR_NODE_URL variable" && exit 1
+	[[ -z "${REMOTE_INVENTORY_PATH}" ]] && echo ".env is missing REMOTE_INVENTORY_PATH variable" && exit 1
+	[[ -z "${INVENTORY_PATH}" ]] && echo ".env is missing INVENTORY_PATH variable" && exit 1
+
+	printer -t "Downloading inventory file"
+
+	scp -o StrictHostKeyChecking=no \
+		-i ${AWS_CONDUCTOR_SSH_KEY_PATH} \
+		"${SCP_USER}"@"${CONDUCTOR_NODE_URL}":"${REMOTE_INVENTORY_PATH}" \
+		"${INVENTORY_PATH}"
+
+	if [ -n "${$?}" ] && [ -f "$INVENTORY_PATH" ]; then
+		printer -s "$INVENTORY_PATH exists."
+	else
+		printer -e "Failed to retrieve inventory"
+	fi
+}
+
+run_ansible() {
+	[[ -z "${AWS_NODES_SSH_KEY_PATH}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_NODES_SSH_KEY_PATH variable"
+	[[ -z "${ANSIBLE_CHAIN_DEPLOY_FORKS}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing ANSIBLE_CHAIN_DEPLOY_FORKS variable"
+
+	printer -t "Executing Ansible Playbook"
+
+	ANSIBLE_HOST_KEY_CHECKING=False \
+		ANSIBLE_FORCE_COLOR=True \
+		ansible-playbook \
+		--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
+		--limit all_quorum \
+		-i ${INVENTORY_PATH} \
+		--private-key=${AWS_NODES_SSH_KEY_PATH} \
+		${ANSIBLE_DIR}/goquorum.yaml
+
+	[ ! $? -eq 0 ] && printer -e "Failed to execute ansible playbook"
+}
+
+install_ansible_role() {
+	[[ -z "${ANSIBLE_ROLE_INSTALL_PATH}" ]] && echo ".env is missing ANSIBLE_ROLE_INSTALL_PATH variable" && exit 1
+	[[ -z "${ANSIBLE_ROLE_VERSION}" ]] && echo ".env is missing ANSIBLE_ROLE_VERSION variable" && exit 1
+	[[ -z "${ANSIBLE_ROLE_INSTALL_URL}" ]] && echo ".env is missing ANSIBLE_ROLE_INSTALL_URL variable" && exit 1
+
+	printer -t "Installing Ansible role"
+
+	if [ ! -d "${ANSIBLE_ROLE_INSTALL_PATH}" ]; then
+		mkdir -p ${ANSIBLE_ROLE_INSTALL_PATH}
+
+		if git clone \
+			--depth 1 \
+			--branch ${ANSIBLE_ROLE_VERSION} \
+			${ANSIBLE_ROLE_INSTALL_URL} ${ANSIBLE_ROLE_INSTALL_PATH} &>> ${LOG_FILE}
+		then
+			printer -s "Installed role"
+		else
+			printer -e "Failed to install ansible role"
+		fi
+	else
+		printer -n "Ansible role present, skipping"
+	fi
+}
+
+set_decimal() {
+	[[ -z "${AWS_NODES_SSH_KEY_PATH}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_NODES_SSH_KEY_PATH variable"
+	[[ -z "${INVENTORY_PATH}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing INVENTORY_PATH variable"
+	[[ -z "${ANSIBLE_DIR}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing ANSIBLE_DIR variable"
+	[[ -z "${ANSIBLE_CHAIN_DEPLOY_FORKS}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing ANSIBLE_CHAIN_DEPLOY_FORKS variable"
+	get_ansible_vars
+	get_inventory
+	install_ansible_role
+
+	# Save stuff
+	# nodekeys (have to grab them from the validators)
+
+	# reset_chain
+
+	# Update stuff
+	# Update the genesis file
+	# 	Copy to a new location and update the new copy
+	# update the nodekey locations
+
+	# deploy new chain
+	# Verify new chain
+	# * uses new genesis file
+	# * uses old nodekey
+
+	ANSIBLE_HOST_KEY_CHECKING=False \
+		ANSIBLE_FORCE_COLOR=True \
+		ansible-playbook \
+		--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
+		--limit all_quorum \
+		-i ${INVENTORY_PATH} \
+		--private-key=${AWS_NODES_SSH_KEY_PATH} \
+		${ANSIBLE_DIR}/goquorum.yaml
+}
+
 items=(
 	"Reset network ${CHAIN_NAME} ${NETWORK_TYPE}"
 	"Reset files"
 	"Run ansible-playbook"
 	"Print logo"
+	"Set Decimals"
 	"Exit"
 )
 
@@ -117,7 +234,8 @@ while true; do
 			2) clear -x; reset_files; break;;
 			3) clear -x; run_ansible_playbook; break;;
 			4) clear -x; print_logo; break;;
-			5) printf "Closing\n\n"; exit 0;;
+			5) clear -x; set_decimals; break;;
+			6) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

@@ -179,6 +179,22 @@ install_ansible_role() {
 	fi
 }
 
+put_all_quorum_var() {
+	VAR_NAME=$1
+	VAR_VAL=$2
+
+	mkdir -p ${ANSIBLE_DIR}/group_vars
+	touch ${ANSIBLE_DIR}/group_vars/all_quorum.yml
+
+	FILE_NAME=${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	if grep -q "^${VAR_NAME}" "${FILE_NAME}"
+	then
+		sed -i "s/${VAR_NAME}:.*/${VAR_NAME}: ${VAR_VAL}/g" "${FILE_NAME}"
+	else
+		echo "${VAR_NAME}: ${VAR_VAL}" >> "${FILE_NAME}"
+	fi
+}
+
 set_decimal() {
 	[[ -z "${AWS_NODES_SSH_KEY_PATH}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_NODES_SSH_KEY_PATH variable"
 	[[ -z "${INVENTORY_PATH}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing INVENTORY_PATH variable"
@@ -198,16 +214,18 @@ set_decimal() {
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
 		${ANSIBLE_DIR}/copy_nodekeys.yaml
 
-	find "${ANSIBLE_DIR}/keys" -type f -name 'nodekey' -print0 | xargs -0 -I {} sh -c 'mv {} "$(dirname {})/../../../../"'
+	 find "${ANSIBLE_DIR}/keys" -type f -name 'nodekey.bak' -print0 | xargs -0 -I {} sh -c 'mv {} "$(dirname {})/../../nodekey"'
 
 	reset_chain
+
+	put_all_quorum_var "lace_genesis_lockup_daily_limit" "${GENESIS_LOCKUP_DAILY_LIMIT}"
+	put_all_quorum_var "total_coin_supply" "${TOTAL_COIN_SUPPLY}"
+	put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${DISTIRBUTION_ISSUER_BALANCE}"
+	put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "${LOCKUP_TIMESTAMP}"
+
 	ANSIBLE_HOST_KEY_CHECKING=False \
 		ANSIBLE_FORCE_COLOR=True \
 		ansible-playbook \
-		--extra-vars "lace_genesis_lockup_daily_limit=${GENESIS_LOCKUP_DAILY_LIMIT}" \
-		--extra-vars "total_coin_supply=${TOTAL_COIN_SUPPLY}" \
-		--extra-vars "lace_genesis_distribution_issuer_balance=${DISTIRBUTION_ISSUER_BALANCE}" \
-		--extra-vars "lace_genesis_lockup_last_dist_timestamp=${LOCKUP_TIMESTAMP}" \
 		--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
 		--limit all_quorum \
 		-i ${INVENTORY_PATH} \

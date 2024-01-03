@@ -43,7 +43,7 @@ print_date() {
 	if (( "${year}" == "22" )); then
 		printed_year="twenty two"
 	else
-		printed_year="twenty three"
+		printed_year="twenty four"
 	fi
 
 	printf "two thousand ${printed_year}"

@@ -214,23 +214,38 @@ set_decimal() {
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
 		${ANSIBLE_DIR}/copy_nodekeys.yaml
 
-	 find "${ANSIBLE_DIR}/keys" -type f -name 'nodekey.bak' -print0 | xargs -0 -I {} sh -c 'mv {} "$(dirname {})/../../nodekey"'
+	find "${ANSIBLE_DIR}/keys" -type f -name 'nodekey.bak' -print0 | xargs -0 -I {} sh -c 'mv {} "$(dirname {})/../../nodekey"'
+	find "${ANSIBLE_DIR}/keys" -name nodekey
+	echo ""
+	ls -laR "${ANSIBLE_DIR}/keys" | grep nodekey
+	echo ""
+	echo "Total key count: $(ls "${ANSIBLE_DIR}/keys" | wc -l)"
+	echo ""
 
-	reset_chain
+	printf "Continue with resseting the chain. [y]es or [n]o: "
 
-	put_all_quorum_var "lace_genesis_lockup_daily_limit" "\"${GENESIS_LOCKUP_DAILY_LIMIT}\""
-	put_all_quorum_var "total_coin_supply" "${TOTAL_COIN_SUPPLY}"
-	put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${DISTIRBUTION_ISSUER_BALANCE}"
-	put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${LOCKUP_TIMESTAMP}\""
+	read should_execute
 
-	ANSIBLE_HOST_KEY_CHECKING=False \
-		ANSIBLE_FORCE_COLOR=True \
-		ansible-playbook \
-		--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
-		--limit all_quorum \
-		-i ${INVENTORY_PATH} \
-		--private-key=${AWS_NODES_SSH_KEY_PATH} \
-		${ANSIBLE_DIR}/goquorum.yaml
+	if [[ ! "${should_execute}" = "y" ]]; then
+		echo "Aborting execution"
+	else
+		echo "Continuing executing"
+		reset_chain
+
+		put_all_quorum_var "lace_genesis_lockup_daily_limit" "\"${GENESIS_LOCKUP_DAILY_LIMIT}\""
+		put_all_quorum_var "total_coin_supply" "${TOTAL_COIN_SUPPLY}"
+		put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${DISTIRBUTION_ISSUER_BALANCE}"
+		put_all_quorum_var "lace_genesis_lockup_last_dist_timestamp" "\"${LOCKUP_TIMESTAMP}\""
+
+		ANSIBLE_HOST_KEY_CHECKING=False \
+			ANSIBLE_FORCE_COLOR=True \
+			ansible-playbook \
+			--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
+			--limit all_quorum \
+			-i ${INVENTORY_PATH} \
+			--private-key=${AWS_NODES_SSH_KEY_PATH} \
+			${ANSIBLE_DIR}/goquorum.yaml
+	fi
 }
 
 items=(

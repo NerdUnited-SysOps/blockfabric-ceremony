@@ -97,7 +97,7 @@ while true; do
 			3) clear -x; persistence; break;;
 			# 4) clear -x; deploy_bridge; break;;
 			4) printf "Closing\n\n"; exit 1;;
-			5) clear -x; dev; break;;
+			5) clear -x; dev | tee -a ${LOG_FILE}"; break;;
 			*)
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

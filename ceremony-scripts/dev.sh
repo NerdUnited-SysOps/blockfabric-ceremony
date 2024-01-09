@@ -222,7 +222,7 @@ set_decimal() {
 	echo "Total key count: $(ls "${ANSIBLE_DIR}/keys" | wc -l)"
 	echo ""
 
-	printf "Continue with resseting the chain. [y]es or [n]o: "
+	printf "Continue with resetting the chain. [y]es or [n]o: "
 
 	read should_execute
 

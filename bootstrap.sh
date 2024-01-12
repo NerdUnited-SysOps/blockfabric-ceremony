@@ -3,8 +3,8 @@
 
 # set -x
 
-version=2.1.9
-chain_repo_tag=2.0.2
+version=2.1.10
+chain_repo_tag=2.0.4
 additions_repo_tag=2.3.2
 ansible_repo_tag=main
 ceremonyenv_repo_tag=main
@@ -14,7 +14,7 @@ export chain=$2
 type=$3
 base="${HOME}"
 bootstrap=genesis.blockfabric.net
-bootstrap_log=$base/ceremony-artifacts/bootstrap.log
+bootstrap_log=$base/ceremony-artifacts/ceremony.log
 
 cd $base
 mkdir -p $base/ceremony-artifacts/
@@ -29,7 +29,7 @@ if (( $# < 3 )); then
     echo "Required: (1)  network     [ mainnet | testnet ] "
     echo "          (2)  chain name  "
     echo "          (3)  additional ceremony types. 1 required, multiple allowed separated by a space "
-    echo "               [ chain | bridge_optionb | binance_bridge | timelock | lockup_swap | multisig | halvening | admin_fix ]"
+    echo "               [ chain | bridge_optionb | binance_bridge | timelock | lockup_swap | multisig | halvening | admin_fix | reset_decimal ]"
     echo
     exit 1
 fi
@@ -40,15 +40,15 @@ fi
 ########################## Start by showing arguments and versions
 echo "Starting BOOTSTRAP PROCESS, version $version" | tee -a "$bootstrap_log"
 echo "  date: $(date)" | tee -a "$bootstrap_log"
-echo "  network, chain, type(s):	$@"  | tee -a "$bootstrap_log"
-echo "  ceremony OS version:		$ceremony_os_version"  | tee -a "$bootstrap_log"
-echo "  ceremony repo tag:		$chain_repo_tag"  | tee -a "$bootstrap_log"
-echo "  additions repo tag:		$additions_repo_tag"  | tee -a "$bootstrap_log"
-echo "  ansible repo tag:		$ansible_repo_tag"  | tee -a "$bootstrap_log"
-echo "  ceremony_env repo tag:	$ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
-echo "  go version:			1.19.8"  | tee -a "$bootstrap_log"
-echo "  geth version:   		1.10.26-stable8" | tee -a "$bootstrap_log"
-echo "  ethkey version:		1.10.26-stable8" | tee -a "$bootstrap_log"
+echo "  network, chain, type(s):        $@"  | tee -a "$bootstrap_log"
+echo "  ceremony OS version:            $ceremony_os_version"  | tee -a "$bootstrap_log"
+echo "  ceremony repo tag:              $chain_repo_tag"  | tee -a "$bootstrap_log"
+echo "  additions repo tag:             $additions_repo_tag"  | tee -a "$bootstrap_log"
+echo "  ansible repo tag:               $ansible_repo_tag"  | tee -a "$bootstrap_log"
+echo "  ceremony_env repo tag:  $ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
+echo "  go version:                     1.19.8"  | tee -a "$bootstrap_log"
+echo "  geth version:                   1.10.26-stable8" | tee -a "$bootstrap_log"
+echo "  ethkey version:         1.10.26-stable8" | tee -a "$bootstrap_log"
 echo   | tee -a "$bootstrap_log"
 
 
@@ -107,7 +107,7 @@ function clone_repos()
   echo " " | tee -a  "$bootstrap_log"
   echo;echo;echo;echo "========== Preparing to clone repo for $chain $local_type: =========="
 
-  if [ "$local_type" = "chain" ]; then
+  if [ "$local_type" = "chain" ] || [ "$local_type" = "reset_decimal" ]; then
     gh_enterprise="NerdUnited-SysOps"
     repo="blockfabric-ceremony"
     repo_tag="$chain_repo_tag"

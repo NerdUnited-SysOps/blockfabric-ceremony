@@ -1,11 +1,12 @@
+"bootstrap.sh" 188L, 7299B                                                                                                                                                                                                 3,0-1         Top
 #!/usr/bin/zsh
 # introduce credentials to ceremony
 
 # set -x
 
-version=2.1.10
+version=2.1.12
 chain_repo_tag=2.0.4
-additions_repo_tag=2.3.2
+additions_repo_tag=2.3.3
 ansible_repo_tag=main
 ceremonyenv_repo_tag=main
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
@@ -86,8 +87,7 @@ mkdir ${HOME}/.aws > /dev/null 2>&1
 scp $chain@$bootstrap:~/credentials.$network ${HOME}/.aws/credentials | tee -a "$bootstrap_log"
 ls -l ${HOME}/.aws/ | tee -a "$bootstrap_log"
 aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
-## not needed in this version 2.1.9
-## aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
+aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
 echo
 echo "    If successful, press ENTER"
 read

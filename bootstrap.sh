@@ -1,21 +1,20 @@
-"bootstrap.sh" 188L, 7299B                                                                                                                                                                                                 3,0-1         Top
 #!/usr/bin/zsh
 # introduce credentials to ceremony
 
 # set -x
 
-version=2.1.12
-chain_repo_tag=2.0.4
-additions_repo_tag=2.3.3
-ansible_repo_tag=main
-ceremonyenv_repo_tag=main
+version=2.1.14
+chain_repo_tag="2.0.4"
+additions_repo_tag="2.4.0"
+ansible_repo_tag="main"
+ceremonyenv_repo_tag="2.4.0"
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
 export network=$1
 export chain=$2
 type=$3
 base="${HOME}"
 bootstrap=genesis.blockfabric.net
-bootstrap_log=$base/ceremony-artifacts/ceremony.log
+bootstrap_log=$base/ceremony-artifacts/"${type}"_ceremony.log
 
 cd $base
 mkdir -p $base/ceremony-artifacts/
@@ -30,7 +29,7 @@ if (( $# < 3 )); then
     echo "Required: (1)  network     [ mainnet | testnet ] "
     echo "          (2)  chain name  "
     echo "          (3)  additional ceremony types. 1 required, multiple allowed separated by a space "
-    echo "               [ chain | bridge_optionb | binance_bridge | timelock | lockup_swap | multisig | halvening | admin_fix | reset_decimal ]"
+    echo "               [ admin_fix | binance_bridge | bridge_optionb | chain | halvening | lockup_swap | multisig | reset_decimal | timelock ]"
     echo
     exit 1
 fi
@@ -137,16 +136,16 @@ function get_env_files()   #combine the Type and the Shared .env files into sing
 {
   local_type=$1
   gh_enterprise="NerdUnited-SysOps"
+  gh_enterprise_env="NerdCoreSDK"
   ansible_repo="ansible.$chain-$network"
-  ceremonyenv_repo="ceremony-env"
+  ceremonyenv_repo="blockfabric-ceremony-additions"
 
   echo;echo;echo;echo "========== Now retrieve the $chain $network $local_type environment variables files =========="  | tee -a "$bootstrap_log"
   curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/$gh_enterprise/$ansible_repo/$ansible_repo_tag/$network/$local_type/.env > $repo_dir/$local_type.env
   cat $repo_dir/$local_type.env
 
-  curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/$gh_enterprise/$ceremonyenv_repo/$ceremonyenv_repo_tag/shared/$local_type.env >> $repo_dir/$local_type.env
+  curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/$gh_enterprise_env/$ceremonyenv_repo/$ceremonyenv_repo_tag/envs/shared/$local_type.env >> $repo_dir/$local_type.env
   tail -n 1 $repo_dir/$local_type.env  | tee -a "$bootstrap_log"
-  ## not needed: cat $repo_dir/ansible.env $repo_dir/shared.env > $repo_dir/$env_type.env
 } ## end of env function
 
 ######################## Process the various types of ceremonies (arguments)

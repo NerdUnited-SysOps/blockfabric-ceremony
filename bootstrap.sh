@@ -3,9 +3,9 @@
 
 # set -x
 
-version=2.1.15
+version=2.1.17
 chain_repo_tag="2.0.4"
-additions_repo_tag="2.5.1"
+additions_repo_tag="2.5.2"
 ansible_repo_tag="main"
 ceremonyenv_repo_tag="2.5.1"
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
@@ -168,8 +168,14 @@ do
   shift ## move to the next argument
 done
 
+###### Add-on utilities
 scp $chain@$genesis:~/cplog.sh $base/ > /dev/null 2>&1
 scp $chain@$genesis:~/mountusb.sh $base/ > /dev/null 2>&1
+scp $chain@$genesis:~/generate_keystore.sh $base/ > /dev/null 2>&1
+
+#######################
+
+
 
 echo
 echo "=============== END OF BOOTSTRAP PROCESS FOR $network $chain ===============" | tee -a "$bootstrap_log"

@@ -3,11 +3,11 @@
 
 # set -x
 
-version=2.1.17
+version=2.1.19
 chain_repo_tag="2.0.4"
-additions_repo_tag="2.5.2"
+additions_repo_tag="2.6.0"
 ansible_repo_tag="main"
-ceremonyenv_repo_tag="2.5.1"
+ceremonyenv_repo_tag="2.6.0"
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
 export network=$1
 export chain=$2
@@ -29,7 +29,7 @@ if (( $# < 3 )); then
     echo "Required: (1)  network     [ mainnet | testnet ] "
     echo "          (2)  chain name  "
     echo "          (3)  additional ceremony types. 1 required, multiple allowed separated by a space "
-    echo "               [ admin_fix | binance_bridge | bridge_optionb | chain | halvening | lockup_swap | multisig | reset_decimal | timelock ]"
+    echo "               [ admin_fix | binance_bridge | bridge_optionb | chain | halvening | lockup_swap | multisig | reset_decimal | timelock | voting ]"
     echo
     exit 1
 fi
@@ -86,7 +86,8 @@ mkdir ${HOME}/.aws > /dev/null 2>&1
 scp $chain@$bootstrap:~/credentials.$network ${HOME}/.aws/credentials | tee -a "$bootstrap_log"
 ls -l ${HOME}/.aws/ | tee -a "$bootstrap_log"
 aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
-aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
+## aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
+## S3 in chain profile not needed for v2.1.18
 echo
 echo "    If successful, press ENTER"
 read
@@ -162,9 +163,7 @@ do
     echo; echo "    If successful, press ENTER"; read
     echo; echo
   fi
-  if [ "$type" = "bridge_optionb" ] || [ "$type" = "binance_bridge" ]; then
-    scp $chain@$genesis:~/wallets.url $base/ > /dev/null 2>&1
-  fi
+
   shift ## move to the next argument
 done
 
@@ -172,6 +171,7 @@ done
 scp $chain@$genesis:~/cplog.sh $base/ > /dev/null 2>&1
 scp $chain@$genesis:~/mountusb.sh $base/ > /dev/null 2>&1
 scp $chain@$genesis:~/generate_keystore.sh $base/ > /dev/null 2>&1
+scp $chain@$genesis:~/wallets.url $base/ > /dev/null 2>&1
 
 #######################
 
@@ -195,3 +195,4 @@ if [ "$network" = "testnet" ]; then
   echo "Run ~/testnettools/labtop_config.sh $network $chain <labtop_port> type(s)"
   echo "see ~/testnettools/labtop.instructions for more lab details"
 fi
+

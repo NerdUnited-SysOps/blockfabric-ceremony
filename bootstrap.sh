@@ -3,7 +3,7 @@
 
 # set -x
 
-version=2.1.20
+version=2.1.21
 chain_repo_tag="2.0.4"
 additions_repo_tag="2.6.1"
 ansible_repo_tag="main"

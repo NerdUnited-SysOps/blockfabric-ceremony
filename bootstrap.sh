@@ -3,11 +3,11 @@
 
 # set -x
 
-version=2.1.19
+version=2.1.20
 chain_repo_tag="2.0.4"
-additions_repo_tag="2.6.0"
+additions_repo_tag="2.6.1"
 ansible_repo_tag="main"
-ceremonyenv_repo_tag="2.6.0"
+ceremonyenv_repo_tag="2.6.1"
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
 export network=$1
 export chain=$2
@@ -45,10 +45,10 @@ echo "  ceremony OS version:            $ceremony_os_version"  | tee -a "$bootst
 echo "  ceremony repo tag:              $chain_repo_tag"  | tee -a "$bootstrap_log"
 echo "  additions repo tag:             $additions_repo_tag"  | tee -a "$bootstrap_log"
 echo "  ansible repo tag:               $ansible_repo_tag"  | tee -a "$bootstrap_log"
-echo "  ceremony_env repo tag:  $ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
+echo "  ceremony_env repo tag:	  $ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
 echo "  go version:                     1.19.8"  | tee -a "$bootstrap_log"
 echo "  geth version:                   1.10.26-stable8" | tee -a "$bootstrap_log"
-echo "  ethkey version:         1.10.26-stable8" | tee -a "$bootstrap_log"
+echo "  ethkey version:		  1.10.26-stable8" | tee -a "$bootstrap_log"
 echo   | tee -a "$bootstrap_log"
 
 
@@ -83,7 +83,7 @@ scp $chain@$bootstrap:~/clean.sh ${HOME}/ > /dev/null 2>&1
 ########################## AWS credentials
 echo;echo;echo;echo "========== Creating local AWS configurtion and list S3 bucket to verify ==========" | tee -a "$bootstrap_log"
 mkdir ${HOME}/.aws > /dev/null 2>&1
-scp $chain@$bootstrap:~/credentials.$network ${HOME}/.aws/credentials | tee -a "$bootstrap_log"
+scp $chain@$bootstrap:~/credentials.$network.$chain ${HOME}/.aws/credentials | tee -a "$bootstrap_log"
 ls -l ${HOME}/.aws/ | tee -a "$bootstrap_log"
 aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
 ## aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"

@@ -3,11 +3,11 @@
 
 # set -x
 
-version=2.1.21
+version=2.1.24
 chain_repo_tag="2.0.4"
-additions_repo_tag="2.6.1"
+additions_repo_tag="2.7.0"
 ansible_repo_tag="main"
-ceremonyenv_repo_tag="2.6.1"
+ceremonyenv_repo_tag="2.7.0"
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
 export network=$1
 export chain=$2
@@ -190,7 +190,7 @@ echo | tee -a "$bootstrap_log"
 echo | tee -a "$bootstrap_log"
 
 #########################  Testnet Tools
-if [ "$network" = "testnet" ]; then
+if [ "$network" != "mainnet" ]; then
   scp -pr $chain@$genesis:~/testnettools $base/testnettools > /dev/null 2>&1
   echo "Run ~/testnettools/labtop_config.sh $network $chain <labtop_port> type(s)"
   echo "see ~/testnettools/labtop.instructions for more lab details"

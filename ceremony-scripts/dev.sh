@@ -32,7 +32,7 @@ fi
 [[ ! -d "${BASE_DIR}" ]] && echo "${0}:${LINENO} BASE_DIR environment variable is not a directory. Expecting it here ${BASE_DIR}" && exit 1
 
 [[ -z "${VOLUMES_DIR}" ]] && echo "${0}:${LINENO} .env is missing VOLUMES_DIR variable" && exit 1
-[[ -z "${ANSIBLE_DIR}" ]] && echo "${0}:${LINENO} .env is missing ANSIBLE_DIR variable" && exit 1
+[[ -z "${ANSIBLE_CEREMONY_DIR}" ]] && echo "${0}:${LINENO} .env is missing ANSIBLE_CEREMONY_DIR variable" && exit 1
 [[ -z "${LOG_FILE}" ]] && echo "${0}:${LINENO} .env is missing LOG_FILE variable" && exit 1
 [[ -z "${INVENTORY_PATH}" ]] && echo "${0}:${LINENO} .env is missing INVENTORY_PATH variable" && exit 1
 [[ -z "${AWS_CONDUCTOR_SSH_KEY_PATH}" ]] && echo "${0}:${LINENO} .env is missing AWS_CONDUCTOR_SSH_KEY_PATH variable" && exit 1
@@ -72,7 +72,7 @@ reset_chain() {
 		--forks "${ANSIBLE_CHAIN_DEPLOY_FORKS}" \
  		-i ${INVENTORY_PATH} \
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
-		${ANSIBLE_DIR}/reset.yaml \
+		${ANSIBLE_CEREMONY_DIR}/reset.yaml \
 }
 
 run_ansible_playbook() {
@@ -83,7 +83,7 @@ run_ansible_playbook() {
 		--limit all_quorum \
 		-i ${INVENTORY_PATH} \
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
-		${ANSIBLE_DIR}/goquorum.yaml
+		${ANSIBLE_CEREMONY_DIR}/goquorum.yaml
 }
 
 print_logo() {

@@ -107,13 +107,13 @@ upsert_file() {
 
 save_ansible_vars() {
 	[[ -z "${BRAND_ANSIBLE_URL}" ]] && echo ".env is missing BRAND_ANSIBLE_URL variable" && exit 1
-	[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
-	[[ ! -d "${ANSIBLE_DIR}" ]] && echo "ANSIBLE_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_DIR}" && exit 1
+	[[ -z "${ANSIBLE_CEREMONY_DIR}" ]] && echo ".env is missing ANSIBLE_CEREMONY_DIR variable" && exit 1
+	[[ ! -d "${ANSIBLE_CEREMONY_DIR}" ]] && echo "ANSIBLE_CEREMONY_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_CEREMONY_DIR}" && exit 1
 
 	[ -d ${ANSIBLE_DIR} ] || git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} 
 	now=$(date +"%m_%d_%y")
 	##	
-	cp "${LOG_FILE}" "${ANSIBLE_DIR}/${now}_ceremony.log"
+	cp "${LOG_FILE}" "${ANSIBLE_CEREMONY_DIR}/${now}_ceremony.log"
 	git config --global user.name "ceremony-script"
 	git config --global user.email "ceremony@email.com"
 	git -C ${ANSIBLE_DIR}/ checkout -B "ceremony-artifacts-${now}"

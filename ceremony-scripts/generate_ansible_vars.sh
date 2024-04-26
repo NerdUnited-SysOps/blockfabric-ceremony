@@ -96,10 +96,10 @@ put_all_quorum_var() {
 	VAR_NAME=$1
 	VAR_VAL=$2
 
-	mkdir -p ${ANSIBLE_DIR}/group_vars
-	touch ${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	mkdir -p ${ANSIBLE_CEREMONY_DIR}/group_vars
+	touch ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 
-	FILE_NAME=${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	FILE_NAME=${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 	if grep -q "^${VAR_NAME}" "${FILE_NAME}"
 	then
 		sed -i "s/${VAR_NAME}:.*/${VAR_NAME}: ${VAR_VAL}/g" "${FILE_NAME}"
@@ -178,21 +178,21 @@ all_quorum_vars() {
 	put_all_quorum_var "goquorum_identity" "${CHAIN_NAME}_${NETWORK_TYPE}_{{ inventory_hostname }}"
 	put_all_quorum_var "lace_genesis_lockup_daily_limit" "\"${GENESIS_LOCKUP_DAILY_LIMIT}\""
 
-	sed -i '/goquorum_genesis_sc_lockup_storage/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
-	echo "goquorum_genesis_sc_lockup_storage: ${sc_lockup_storage}" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	sed -i '/goquorum_genesis_sc_lockup_storage/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
+	echo "goquorum_genesis_sc_lockup_storage: ${sc_lockup_storage}" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 
 	enode_list=$(generate_enode_list)
-	sed -i '/goquorum_enode_list/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
-	echo "goquorum_enode_list: [${enode_list}]" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	sed -i '/goquorum_enode_list/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
+	echo "goquorum_enode_list: [${enode_list}]" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 
 	# Kinda janky, but gets the job done - grabs the contents of Storage.txt and puts it in a variable
 	var="$(tail -n+6 $CONTRACTS_DIR/sc_dao/$DAO_VERSION/Storage.txt | head -n -2 | tr -d "[:blank:]\n")"
-	sed -i '/goquorum_genesis_sc_dao_storage/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
-	echo "goquorum_genesis_sc_dao_storage: {${var}}" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	sed -i '/goquorum_genesis_sc_dao_storage/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
+	echo "goquorum_genesis_sc_dao_storage: {${var}}" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 }
 
 BASE_KEYS_DIR=${VOLUMES_DIR}/volume1
-ANSIBLE_KEY_DIR=${ANSIBLE_DIR}/keys
+ANSIBLE_KEY_DIR=${ANSIBLE_CEREMONY_DIR}/keys
 ips=(${(@s: :)VALIDATOR_IPS})
 for IP in ${ips}; do
 	mkdir -p ${ANSIBLE_KEY_DIR}/${IP}

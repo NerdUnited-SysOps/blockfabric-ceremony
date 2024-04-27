@@ -164,7 +164,7 @@ all_quorum_vars() {
 	put_all_quorum_var "goquorum_genesis_sc_lockup_code" "\"0x$(cat ${LOCKUP_RUNTIME_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_distribution_code" "\"0x$(cat ${DIST_RUNTIME_BIN_FILE})\""
 
-	admin_addresses=$(${SCRIPTS_DIR}/create_lockup_storage/create_lockup_storage.sh)
+	admin_addresses=$(${SCRIPTS_DIR}/create_lockup_storage/create_lockup_storage.sh -e "${ENV_FILE}")
 	sc_lockup_storage=$(echo "{ \"0x0000000000000000000000000000000000000000000000000000000000000000\": \"{{ lace_genesis_lockup_owner_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000002\": \"{{ lace_genesis_lockup_issuer_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000004\": \"{{ lace_genesis_lockup_daily_limit }}\", \"0x0000000000000000000000000000000000000000000000000000000000000005\": \"{{ lace_genesis_lockup_last_dist_timestamp }}\", ${admin_addresses} }")
 
 

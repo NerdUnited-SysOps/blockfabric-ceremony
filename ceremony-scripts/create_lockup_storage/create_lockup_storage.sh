@@ -38,7 +38,7 @@ fi
 set -x
 SCRIPT_DIR=$(realpath $(dirname $0))
 
-VOL=${VOLUMES_DIR}/volume1/lockupAdmins
+VOL=${VOLUMES_DIR}/volume2/lockupAdmins
 
 addresses=$(ls $VOL)
 

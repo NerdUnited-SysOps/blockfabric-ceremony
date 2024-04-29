@@ -72,7 +72,6 @@ generate_wallet() {
 lockup_admin_wallets() {
 	[[ -z "${ADMIN_KEYS}" ]] && echo ".env is missing ADMIN_KEYS variable" && exit 1
 
-	vol1=${VOLUMES_DIR}/volume1/lockupAdmins
 	vol2=${VOLUMES_DIR}/volume2/lockupAdmins
 
 	for i in {1..$ADMIN_KEYS}; do
@@ -89,7 +88,6 @@ lockup_admin_wallets() {
 }
 
 lockup_owner_wallets() {
-	vol1=${VOLUMES_DIR}/volume1/lockupOwner
 	vol3=${VOLUMES_DIR}/volume3/lockupOwner
 
 	generate_wallet -o "${vol1} ${vol3}"
@@ -99,7 +97,6 @@ lockup_owner_wallets() {
 
 distribution_owner_wallets() {
 	printer
-	vol1=${VOLUMES_DIR}/volume1/distributionOwner
 	vol3=${VOLUMES_DIR}/volume3/distributionOwner
 	vol4=${VOLUMES_DIR}/volume4/distributionOwner
 
@@ -109,7 +106,6 @@ distribution_owner_wallets() {
 }
 
 distribution_issuer_wallets() {
-	vol1=${VOLUMES_DIR}/volume1/distributionIssuer
 	vol2=${VOLUMES_DIR}/volume2/distributionIssuer
 
 	generate_wallet -o "${vol1} ${vol2}"

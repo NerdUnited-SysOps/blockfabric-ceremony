@@ -14,7 +14,7 @@ function getDistributionIssuerAddress() {
 
 function chainBalance() {
 	accounts = debug.accountRange().accounts
-		return Object.keys(accounts).reduce(function(acc, x) {return acc + parseInt(eth.getBalance(x))
+		return Object.keys(accounts).reduce(function(acc, x) {return acc + parseFloat(eth.getBalance(x))
 	}, 0)
 }
 

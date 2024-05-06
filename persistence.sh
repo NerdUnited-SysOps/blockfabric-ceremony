@@ -149,6 +149,9 @@ persist_distribution_issuer() {
 	# Get the private key (or the keystore & password)
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_KEYSTORE} ${VOLUMES_DIR}/volume2/distributionIssuer/keystore ${AWS_PRIMARY_PROFILE}
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_PASSWORD} ${VOLUMES_DIR}/volume2/distributionIssuer/password ${AWS_PRIMARY_PROFILE}
+
+	distribution_issuer_pk=$(get_private_key ${VOLUMES_DIR}/volume2/distributionIssuer)
+	upsert_secret "FUNDING_PK" $distribution_issuer_pk ${AWS_PRIMARY_PROFILE}
 }
 
 persist_address_file() {

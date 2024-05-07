@@ -151,7 +151,7 @@ persist_distribution_issuer() {
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_PASSWORD} ${VOLUMES_DIR}/volume2/distributionIssuer/password ${AWS_PRIMARY_PROFILE}
 
 	distribution_issuer_pk=$(get_private_key ${VOLUMES_DIR}/volume2/distributionIssuer)
-	upsert_secret "FUNDING_PK" $distribution_issuer_pk ${AWS_PRIMARY_PROFILE}
+	upsert_secret "L2_FUNDING_PK" $distribution_issuer_pk ${AWS_PRIMARY_PROFILE}
 }
 
 persist_address_file() {

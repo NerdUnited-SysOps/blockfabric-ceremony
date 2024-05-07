@@ -117,7 +117,7 @@ save_ansible_vars() {
 	cp "${LOG_FILE}" "${ANSIBLE_CEREMONY_DIR}/${now}_${CEREMONY_TYPE}_ceremony.log"
 	git config --global user.name "ceremony-script"
 	git config --global user.email "ceremony@email.com"
-	git -C ${ANSIBLE_DIR}/ checkout -B "ceremony-artifacts-${now}"
+	git -C ${ANSIBLE_DIR}/ checkout -B "${CEREMONY_TYPE}-${now}"
 	git -C ${ANSIBLE_DIR}/ add ${ANSIBLE_DIR}/ &>> ${LOG_FILE}
 	git -C ${ANSIBLE_DIR}/ commit -m "Committing produced artifacts"
 	git -C ${ANSIBLE_DIR}/ push origin HEAD --force --porcelain &>> ${LOG_FILE}

@@ -40,12 +40,13 @@ SCRIPT_DIR=$(realpath $(dirname $0))
 VOL=${VOLUMES_DIR}/volume2/lockupAdmins
 
 addresses=$(ls $VOL)
+addresses_array=(${(f)addresses})
 
 cd ${SCRIPT_DIR} > /dev/null
 
 npm i &>> ${LOG_FILE}
 
-node ${SCRIPT_DIR}/createStorage.js $addresses
+node ${SCRIPT_DIR}/createStorage.js $addresses_array
 
 cd - > /dev/null
 

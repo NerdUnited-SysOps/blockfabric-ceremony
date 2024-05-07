@@ -133,10 +133,10 @@ save_log_file() {
 
 	now=$(date +"%m_%d_%y")
 
-	[ -d ${VOLUMES_DIR}/volume1 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume1/${now}_ceremony.log"
-	[ -d ${VOLUMES_DIR}/volume2 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume2/${now}_ceremony.log"
-	[ -d ${VOLUMES_DIR}/volume3 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume3/${now}_ceremony.log"
-	[ -d ${VOLUMES_DIR}/volume4 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume4/${now}_ceremony.log"
+	[ -d ${VOLUMES_DIR}/volume1 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume1/${now}_${CEREMONY_TYPE}_ceremony.log"
+	[ -d ${VOLUMES_DIR}/volume2 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume2/${now}_${CEREMONY_TYPE}_ceremony.log"
+	[ -d ${VOLUMES_DIR}/volume3 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume3/${now}_${CEREMONY_TYPE}_ceremony.log"
+	[ -d ${VOLUMES_DIR}/volume4 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume4/${now}_${CEREMONY_TYPE}_ceremony.log"
 
 	echo "\n\n"
 }
@@ -145,6 +145,7 @@ persist_distribution_issuer() {
 	[[ -z "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_DISTIRBUTION_ISSUER_KEYSTORE variable" && exit 1
 	[[ -z "${AWS_PRIMARY_PROFILE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_PRIMARY_PROFILE variable" && exit 1
 	[[ -z "${AWS_DISTIRBUTION_ISSUER_PASSWORD}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_DISTIRBUTION_ISSUER_PASSWORD variable" && exit 1
+	save_log_file
 
 	# Get the private key (or the keystore & password)
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_KEYSTORE} ${VOLUMES_DIR}/volume2/distributionIssuer/keystore ${AWS_PRIMARY_PROFILE}
@@ -217,7 +218,6 @@ get_private_key() {
 
 items=(
 	"Persist distribution issuer wallet (chain creation)"
-	"Save Log File to volumes"
 	"Persist operational variables (cli args, variables, addresses, etc)"
 	"Exit"
 )
@@ -234,9 +234,8 @@ while true; do
 	select item in "${items[@]}" 
 		case $REPLY in
 			1) persist_distribution_issuer | tee -a ${LOG_FILE}; break;;
-			2) save_log_file | tee -a ${LOG_FILE}; break;;
-			3) save_ansible_vars | tee -a ${LOG_FILE}; break;;
-			4) printf "Closing\n\n"; exit 0;;
+			2) save_ansible_vars | tee -a ${LOG_FILE}; break;;
+			3) printf "Closing\n\n"; exit 0;;
 			*) 
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

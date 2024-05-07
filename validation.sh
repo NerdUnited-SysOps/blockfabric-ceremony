@@ -41,7 +41,7 @@ volume_prompt() {
 	volume=""
 
 	PS3=$'\n'"Select volume: "
-	select item in volume1 volume2 volume3 volume4; do
+	select item in volume1 volume2; do
 		case $REPLY in
 			*) volume="volume${REPLY}"; break;;
 		esac
@@ -116,9 +116,7 @@ usage() {
 
 items=(
 	"General health"
-	"List volume contents"
 	"List addresses"
-	"Validate keystore and password"
 	"Print chain accounts"
 	"List volume sizes"
 	"Exit"
@@ -136,12 +134,10 @@ while true; do
 	select item in "${items[@]}"
 		case $REPLY in
 			1) clear -x; run_validation | tee -a ${LOG_FILE}; break;;
-			2) clear -x; list_volume_content; break;;
-			3) clear -x; list_addreses; break;;
-			4) clear -x; inspect_volumes | tee -a ${LOG_FILE}; break;;
-			5) clear -x; print_account_range; break;;
-			6) clear -x; list_volume_sizes; break;;
-			7) printf "Closing.\n\n"; exit 0;;
+			2) clear -x; list_addreses; break;;
+			3) clear -x; print_account_range; break;;
+			4) clear -x; list_volume_sizes; break;;
+			5) printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

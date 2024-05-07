@@ -88,7 +88,7 @@ lockup_admin_wallets() {
 }
 
 lockup_owner_wallets() {
-	vol3=${VOLUMES_DIR}/volume3/lockupOwner
+	vol3=${VOLUMES_DIR}/volume2/lockupOwner
 
 	generate_wallet -o "${vol1} ${vol3}"
 
@@ -97,8 +97,7 @@ lockup_owner_wallets() {
 
 distribution_owner_wallets() {
 	printer
-	vol3=${VOLUMES_DIR}/volume3/distributionOwner
-	vol4=${VOLUMES_DIR}/volume4/distributionOwner
+	vol3=${VOLUMES_DIR}/volume2/distributionOwner
 
 	generate_wallet -o "${vol1} ${vol3} ${vol4}"
 

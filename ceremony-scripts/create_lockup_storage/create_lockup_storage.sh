@@ -35,7 +35,6 @@ else
        source ${ENV_FILE}
 fi
 
-set -x
 SCRIPT_DIR=$(realpath $(dirname $0))
 
 VOL=${VOLUMES_DIR}/volume2/lockupAdmins

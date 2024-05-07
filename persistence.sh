@@ -114,7 +114,7 @@ save_ansible_vars() {
 	[ -d ${ANSIBLE_DIR} ] || git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} 
 	now=$(date +"%m_%d_%y")
 	##	
-	cp "${LOG_FILE}" "${ANSIBLE_CEREMONY_DIR}/${now}_ceremony.log"
+	cp "${LOG_FILE}" "${ANSIBLE_CEREMONY_DIR}/${now}_${CEREMONY_TYPE}_ceremony.log"
 	git config --global user.name "ceremony-script"
 	git config --global user.email "ceremony@email.com"
 	git -C ${ANSIBLE_DIR}/ checkout -B "ceremony-artifacts-${now}"

@@ -59,7 +59,7 @@ run_validation() {
 }
 
 persistence() {
-	./persistence.sh -e "${ENV_FILE}"
+	./persistence.sh -e "${ENV_FILE}" | tee -a "${LOG_FILE}"
 }
 
 deploy_bridge() {

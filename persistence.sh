@@ -125,6 +125,15 @@ save_ansible_vars() {
 	printer -s "Persisted artifacts"
 }
 
+copy_log() {
+	now=$(date +"%m_%d_%y")
+     volume=$1
+     if [ -d ${VOLUMES_DIR}/$volume/ ]; then
+             cp -v $LOG_FILE "${VOLUMES_DIR}/$volume/${now}_${CEREMONY_TYPE}_ceremony.log" | tee -a ${LOG_FILE}
+             cp -v $SHARED_DIR/bootstrap.log "${VOLUMES_DIR}/$volume/${now}_${CEREMONY_TYPE}_bootstrap.log" | tee -a ${LOG_FILE}
+     fi
+}
+
 save_log_file() {
 	printer -t "Copying ${LOG_FILE} file to all volumes"
 	echo "\n"
@@ -134,10 +143,10 @@ save_log_file() {
 
 	now=$(date +"%m_%d_%y")
 
-	[ -d ${VOLUMES_DIR}/volume1 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume1/${now}_${CEREMONY_TYPE}_ceremony.log"
-	[ -d ${VOLUMES_DIR}/volume2 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume2/${now}_${CEREMONY_TYPE}_ceremony.log"
-	[ -d ${VOLUMES_DIR}/volume3 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume3/${now}_${CEREMONY_TYPE}_ceremony.log"
-	[ -d ${VOLUMES_DIR}/volume4 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume4/${now}_${CEREMONY_TYPE}_ceremony.log"
+	copy_log "volume1"
+	copy_log "volume2"
+	copy_log "volume3"
+	copy_log "volume4"
 	printer -s "Complete"
 }
 

@@ -114,7 +114,8 @@ save_ansible_vars() {
 	[ -d ${ANSIBLE_DIR} ] || git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} 
 	now=$(date +"%m_%d_%y")
 	##	
-	cp "${LOG_FILE}" "${ANSIBLE_CEREMONY_DIR}/${now}_${CEREMONY_TYPE}_ceremony.log"
+	cp "${LOG_FILE}" "${ANSIBLE_DIR}/${NETWORK_TYPE}/${CEREMONY_TYPE}/${now}_${CEREMONY_TYPE}_ceremony.log" | tee -a ${LOG_FILE}
+	cp "${SHARED_DIR}/${CEREMONY_TYPE}_bootstrap.log" "${ANSIBLE_DIR}/${NETWORK_TYPE}/${CEREMONY_TYPE}/${now}_${CEREMONY_TYPE}_bootstrap.log" | tee -a ${LOG_FILE}
 	git config --global user.name "ceremony-script"
 	git config --global user.email "ceremony@email.com"
 	git -C ${ANSIBLE_DIR}/ checkout -B "${CEREMONY_TYPE}-${now}"
@@ -130,7 +131,7 @@ copy_log() {
      volume=$1
      if [ -d ${VOLUMES_DIR}/$volume/ ]; then
              cp -v $LOG_FILE "${VOLUMES_DIR}/$volume/${now}_${CEREMONY_TYPE}_ceremony.log" | tee -a ${LOG_FILE}
-             cp -v $SHARED_DIR/bootstrap.log "${VOLUMES_DIR}/$volume/${now}_${CEREMONY_TYPE}_bootstrap.log" | tee -a ${LOG_FILE}
+             cp -v "${SHARED_DIR}/${CEREMONY_TYPE}_bootstrap.log" "${VOLUMES_DIR}/$volume/${now}_${CEREMONY_TYPE}_bootstrap.log" | tee -a ${LOG_FILE}
      fi
 }
 

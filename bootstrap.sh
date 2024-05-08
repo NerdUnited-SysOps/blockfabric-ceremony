@@ -3,18 +3,18 @@
 
 # set -x
 
-version=2.1.26
-chain_repo_tag="2.0.4"
-additions_repo_tag="2.7.2"
+version=2.2.0
+chain_repo_tag="2.1.0"
+additions_repo_tag="2.7.3"
 ansible_repo_tag="main"
-ceremonyenv_repo_tag="2.7.2"
+ceremonyenv_repo_tag="2.7.3"
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
 export network=$1
 export chain=$2
 type=$3
 base="${HOME}"
 bootstrap=genesis.blockfabric.net
-bootstrap_log=$base/ceremony-artifacts/"${type}"_ceremony.log
+bootstrap_log=$base/ceremony-artifacts/bootstrap.log
 
 cd $base
 mkdir -p $base/ceremony-artifacts/
@@ -45,10 +45,10 @@ echo "  ceremony OS version:            $ceremony_os_version"  | tee -a "$bootst
 echo "  ceremony repo tag:              $chain_repo_tag"  | tee -a "$bootstrap_log"
 echo "  additions repo tag:             $additions_repo_tag"  | tee -a "$bootstrap_log"
 echo "  ansible repo tag:               $ansible_repo_tag"  | tee -a "$bootstrap_log"
-echo "  ceremony_env repo tag:	  $ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
+echo "  ceremony_env repo tag:    $ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
 echo "  go version:                     1.19.8"  | tee -a "$bootstrap_log"
 echo "  geth version:                   1.10.26-stable8" | tee -a "$bootstrap_log"
-echo "  ethkey version:		  1.10.26-stable8" | tee -a "$bootstrap_log"
+echo "  ethkey version:           1.10.26-stable8" | tee -a "$bootstrap_log"
 echo   | tee -a "$bootstrap_log"
 
 
@@ -195,4 +195,3 @@ if [ "$network" != "mainnet" ]; then
   echo "Run ~/testnettools/labtop_config.sh $network $chain <labtop_port> type(s)"
   echo "see ~/testnettools/labtop.instructions for more lab details"
 fi
-

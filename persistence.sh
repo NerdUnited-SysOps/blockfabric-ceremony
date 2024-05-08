@@ -107,21 +107,31 @@ upsert_file() {
 
 save_ansible_vars() {
 	[[ -z "${BRAND_ANSIBLE_URL}" ]] && echo ".env is missing BRAND_ANSIBLE_URL variable" && exit 1
-	[[ -z "${ANSIBLE_DIR}" ]] && echo ".env is missing ANSIBLE_DIR variable" && exit 1
-	[[ ! -d "${ANSIBLE_DIR}" ]] && echo "ANSIBLE_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_DIR}" && exit 1
+	[[ -z "${ANSIBLE_CEREMONY_DIR}" ]] && echo ".env is missing ANSIBLE_CEREMONY_DIR variable" && exit 1
+	[[ ! -d "${ANSIBLE_CEREMONY_DIR}" ]] && echo "ANSIBLE_CEREMONY_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_CEREMONY_DIR}" && exit 1
+	printer -t "Persisting Values"
 
 	[ -d ${ANSIBLE_DIR} ] || git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} 
 	now=$(date +"%m_%d_%y")
 	##	
-	cp "${LOG_FILE}" "${ANSIBLE_DIR}/${now}_ceremony.log"
+	cp "${LOG_FILE}" "${ANSIBLE_CEREMONY_DIR}/${now}_${CEREMONY_TYPE}_ceremony.log"
 	git config --global user.name "ceremony-script"
 	git config --global user.email "ceremony@email.com"
-	git -C ${ANSIBLE_DIR}/ checkout -B "ceremony-artifacts-${now}"
+	git -C ${ANSIBLE_DIR}/ checkout -B "${CEREMONY_TYPE}-${now}"
 	git -C ${ANSIBLE_DIR}/ add ${ANSIBLE_DIR}/ &>> ${LOG_FILE}
 	git -C ${ANSIBLE_DIR}/ commit -m "Committing produced artifacts"
 	git -C ${ANSIBLE_DIR}/ push origin HEAD --force --porcelain &>> ${LOG_FILE}
 
 	printer -s "Persisted artifacts"
+}
+
+copy_log() {
+	now=$(date +"%m_%d_%y")
+     volume=$1
+     if [ -d ${VOLUMES_DIR}/$volume/ ]; then
+             cp -v $LOG_FILE "${VOLUMES_DIR}/$volume/${now}_${CEREMONY_TYPE}_ceremony.log" | tee -a ${LOG_FILE}
+             cp -v $SHARED_DIR/bootstrap.log "${VOLUMES_DIR}/$volume/${now}_${CEREMONY_TYPE}_bootstrap.log" | tee -a ${LOG_FILE}
+     fi
 }
 
 save_log_file() {
@@ -133,68 +143,25 @@ save_log_file() {
 
 	now=$(date +"%m_%d_%y")
 
-	[ -d ${VOLUMES_DIR}/volume1 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume1/${now}_ceremony.log"
-	[ -d ${VOLUMES_DIR}/volume2 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume2/${now}_ceremony.log"
-	[ -d ${VOLUMES_DIR}/volume3 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume3/${now}_ceremony.log"
-	[ -d ${VOLUMES_DIR}/volume4 ] && cp -v $LOG_FILE "${VOLUMES_DIR}/volume4/${now}_ceremony.log"
-
-	echo "\n\n"
+	copy_log "volume1"
+	copy_log "volume2"
+	copy_log "volume3"
+	copy_log "volume4"
+	printer -s "Complete"
 }
 
 persist_distribution_issuer() {
 	[[ -z "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_DISTIRBUTION_ISSUER_KEYSTORE variable" && exit 1
 	[[ -z "${AWS_PRIMARY_PROFILE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_PRIMARY_PROFILE variable" && exit 1
 	[[ -z "${AWS_DISTIRBUTION_ISSUER_PASSWORD}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_DISTIRBUTION_ISSUER_PASSWORD variable" && exit 1
+	printer -t "Saving Values"
 
 	# Get the private key (or the keystore & password)
-	upsert_file ${AWS_DISTIRBUTION_ISSUER_KEYSTORE} ${VOLUMES_DIR}/volume1/distributionIssuer/keystore ${AWS_PRIMARY_PROFILE}
-	upsert_file ${AWS_DISTIRBUTION_ISSUER_PASSWORD} ${VOLUMES_DIR}/volume1/distributionIssuer/password ${AWS_PRIMARY_PROFILE}
-}
+	upsert_file ${AWS_DISTIRBUTION_ISSUER_KEYSTORE} ${VOLUMES_DIR}/volume2/distributionIssuer/keystore ${AWS_PRIMARY_PROFILE}
+	upsert_file ${AWS_DISTIRBUTION_ISSUER_PASSWORD} ${VOLUMES_DIR}/volume2/distributionIssuer/password ${AWS_PRIMARY_PROFILE}
 
-persist_address_file() {
-	key_name=$1
-	file_path=$2
-	profile=$3
-	printer -n "Persisting ${file_path} to ${key_name}"
-
-	if [ -f "${file_path}" ]; then
-		upsert_file ${key_name} ${file_path} ${profile}
-	else
-		printer -e "Missing ${file_path}"
-	fi
-}
-
-persist_bridge_keys() {	
-	[[ -z "${AWS_APPROVER_KEYSTORE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_APPROVER_KEYSTORE variable" && exit 1
-	[[ -z "${AWS_APPROVER_PASSWORD}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_APPROVER_PASSWORD variable" && exit 1
-	[[ -z "${BRAND_AWS_APPROVER_PRIVATE_KEY}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing BRAND_AWS_APPROVER_PRIVATE_KEY variable" && exit 1
-	[[ -z "${AWS_PRIMARY_PROFILE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_PRIMARY_PROFILE variable" && exit 1
-	[[ -z "${AWS_SECONDARY_PROFILE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_SECONDARY_PROFILE variable" && exit 1
-	[[ -z "${AWS_NOTARY_KEYSTORE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_NOTARY_KEYSTORE variable" && exit 1
-	[[ -z "${AWS_NOTARY_PASSWORD}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_NOTARY_PASSWORD variable" && exit 1
-
-	# approver -> blockadmin AWS secrets
-	upsert_file ${AWS_APPROVER_KEYSTORE} ${VOLUMES_DIR}/volume3/approver/keystore ${AWS_PRIMARY_PROFILE}
-	upsert_file ${AWS_APPROVER_PASSWORD} ${VOLUMES_DIR}/volume3/approver/password ${AWS_PRIMARY_PROFILE}
-
-	approver_private_key=$(get_private_key ${VOLUMES_DIR}/volume3/approver)
-	upsert_secret ${BRAND_AWS_APPROVER_PRIVATE_KEY} $approver_private_key ${AWS_SECONDARY_PROFILE}
-
-	# notary -> brand AWS secrets
-	upsert_file ${AWS_NOTARY_KEYSTORE} ${VOLUMES_DIR}/volume2/notary/keystore ${AWS_SECONDARY_PROFILE}
-	upsert_file ${AWS_NOTARY_PASSWORD} ${VOLUMES_DIR}/volume2/notary/password ${AWS_SECONDARY_PROFILE}
-
-	notary_private_key=$(get_private_key ${VOLUMES_DIR}/volume2/notary)
-	upsert_secret ${BLOCK_FABRIC_AWS_NOTARY_PRIVATE_KEY} $notary_private_key ${AWS_PRIMARY_PROFILE}
-
-	# contract addresses
-	temp_dir=${BASE_DIR}/tmp
-	persist_address_file ${BRAND_AWS_BRIDGE_CONTRACT_ADDRESS} ${temp_dir}/bridge_address ${AWS_SECONDARY_PROFILE}
-	persist_address_file ${BRIDGE_MINTER_CONTRACT_ADDRESS} ${temp_dir}/bridge_minter_address ${AWS_PRIMARY_PROFILE}
-	persist_address_file ${TOKEN_CONTRACT_ADDRESS} ${temp_dir}/token_contract_address ${AWS_PRIMARY_PROFILE}
-
-	# secondary contracts
-	persist_address_file ${BLOCK_FABRIC_AWS_BRIDGE_CONTRACT_ADDRESS} ${temp_dir}/bridge_address ${AWS_PRIMARY_PROFILE}
+	distribution_issuer_pk=$(get_private_key ${VOLUMES_DIR}/volume2/distributionIssuer)
+	upsert_secret "L2_FUNDING_PK" $distribution_issuer_pk ${AWS_PRIMARY_PROFILE}
 }
 
 inspect() {
@@ -212,33 +179,12 @@ get_private_key() {
 	echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
 }
 
-items=(
-	"Persist distribution issuer wallet (chain creation)"
-	"Save Log File to volumes"
-	"Persist operational variables (cli args, variables, addresses, etc)"
-	"Exit"
-)
-
 clear -x
 
-usage
 
-NC='\033[0m'
-RED='\033[0;31m'
-while true; do
-	COLUMNS=1
-	PS3=$'\n'"${CHAIN_NAME} ${NETWORK_TYPE} | Select option: "
-	select item in "${items[@]}" 
-		case $REPLY in
-			1) persist_distribution_issuer | tee -a ${LOG_FILE}; break;;
-			2) save_log_file | tee -a ${LOG_FILE}; break;;
-			3) save_ansible_vars | tee -a ${LOG_FILE}; break;;
-			4) printf "Closing\n\n"; exit 0;;
-			*) 
-				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
-				usage
-				break;
-		esac
-	done
-done
+persist_distribution_issuer
+
+save_log_file
+
+save_ansible_vars
 

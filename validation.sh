@@ -41,7 +41,7 @@ volume_prompt() {
 	volume=""
 
 	PS3=$'\n'"Select volume: "
-	select item in volume1 volume2 volume3 volume4; do
+	select item in volume1 volume2; do
 		case $REPLY in
 			*) volume="volume${REPLY}"; break;;
 		esac
@@ -72,22 +72,25 @@ list_volume_content() {
 }
 
 list_volume_sizes() {
-	volume_prompt_intro
-	volume=$(volume_prompt)
-
 	printf "\n"
-	printf "Executing: ls ${VOLUMES_DIR}/${volume} -alR | less\n\n" | tee -a ${LOG_FILE}
-	ls ${VOLUMES_DIR}/${volume} -alR | tee -a ${LOG_FILE} | less
+	printf "Executing: ls ${VOLUMES_DIR}/volume1 -alR | less\n\n" | tee -a ${LOG_FILE}
+	ls ${VOLUMES_DIR}/volume1 -alR | tee -a ${LOG_FILE}
+
+	printf "Executing: ls ${VOLUMES_DIR}/volume2 -alR | less\n\n" | tee -a ${LOG_FILE}
+	ls ${VOLUMES_DIR}/volume2 -alR | tee -a ${LOG_FILE}
 	printf "\n\n"
 }
 
 list_addreses() {
-	volume_prompt_intro
-	volume=$(volume_prompt)
-
 	printf "\n"
-	printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/${volume} | sed 's/\\/keystore\\:address\\\"\:\\\"/\\\t\\\t/g' | tr -d '\"'\n\n" | tee -a ${LOG_FILE}
-	grep -r -o "address\":\"[a-f0-9]*\"" ${VOLUMES_DIR}/${volume} \
+	printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/volume1 | sed 's/\\/keystore\\:address\\\"\:\\\"/\\\t\\\t/g' | tr -d '\"'\n\n" | tee -a ${LOG_FILE}
+	grep -r -o "address\":\"[a-f0-9]*\"" ${VOLUMES_DIR}/volume1 \
+		| sed 's/\/keystore\:address\"\:\"/\t\t/g' \
+		| tr -d '"' \
+		| tee -a ${LOG_FILE}
+
+	printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/volume2 | sed 's/\\/keystore\\:address\\\"\:\\\"/\\\t\\\t/g' | tr -d '\"'\n\n" | tee -a ${LOG_FILE}
+	grep -r -o "address\":\"[a-f0-9]*\"" ${VOLUMES_DIR}/volume2 \
 		| sed 's/\/keystore\:address\"\:\"/\t\t/g' \
 		| tr -d '"' \
 		| tee -a ${LOG_FILE}
@@ -116,10 +119,8 @@ usage() {
 
 items=(
 	"General health"
-	"List volume contents"
-	"List addresses"
-	"Validate keystore and password"
 	"Print chain accounts"
+	"List addresses"
 	"List volume sizes"
 	"Exit"
 )
@@ -136,12 +137,10 @@ while true; do
 	select item in "${items[@]}"
 		case $REPLY in
 			1) clear -x; run_validation | tee -a ${LOG_FILE}; break;;
-			2) clear -x; list_volume_content; break;;
+			2) clear -x; print_account_range; break;;
 			3) clear -x; list_addreses; break;;
-			4) clear -x; inspect_volumes | tee -a ${LOG_FILE}; break;;
-			5) clear -x; print_account_range; break;;
-			6) clear -x; list_volume_sizes; break;;
-			7) printf "Closing.\n\n"; exit 0;;
+			4) clear -x; list_volume_sizes; break;;
+			5) printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

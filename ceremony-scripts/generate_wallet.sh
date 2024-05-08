@@ -53,6 +53,21 @@ fi
 # These environment variables have DEFAULT values if not set
 [ -z "${GETH_PATH}" ] && GETH_PATH="${HOME}/go/bin/geth"
 
+inspect() {
+  inspect_path=$1
+
+  ${ETHKEY_PATH} inspect \
+    --private \
+    --passwordfile ${inspect_path}/password \
+    ${inspect_path}/keystore
+}
+
+get_private_key() {
+  inspect_path=$1
+  inspected_content=$(inspect "${inspect_path}")
+  echo "${inspected_content}" | sed -n "s/Private\skey:\s*\(.*\)/\1/p" | tr -d '\n'
+}
+
 password=$(pwgen -c 25 -n 1)
 
 new_account_output=$($GETH_PATH account new --password <(echo "${password}"))
@@ -77,10 +92,15 @@ mkdir -p ${first_dir}
 
 mv ${new_keystore_file_path} ${first_dir}/keystore
 echo $password > ${first_dir}/password
+pk=$(get_private_key ${first_dir})
+echo "${pk}" > ${first_dir}/privatekey
+
 
 for i in ${new_parts[@]:1}; do
 	mkdir -p $i
 	cp "${first_dir}"/keystore ${i}/
 	cp "${first_dir}"/password ${i}/
+  cp "${first_dir}"/privatekey ${i}/
+
 done
 

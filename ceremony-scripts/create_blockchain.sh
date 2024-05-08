@@ -169,7 +169,7 @@ run_ansible() {
 		--limit all_quorum \
 		-i ${INVENTORY_PATH} \
 		--private-key=${AWS_NODES_SSH_KEY_PATH} \
-		${ANSIBLE_DIR}/goquorum.yaml
+		${ANSIBLE_CEREMONY_DIR}/goquorum.yaml
 
 	[ ! $? -eq 0 ] && printer -e "Failed to execute ansible playbook"
 }

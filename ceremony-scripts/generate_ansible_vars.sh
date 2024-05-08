@@ -68,10 +68,11 @@ printer -t "Creating ansible vars"
 [ -z "${DAO_RUNTIME_BIN_FILE}" ] && DAO_RUNTIME_BIN_FILE="$DAO_CONTRACT_ARCHIVE_DIR/ValidatorSmartContractAllowList.bin-runtime"
 [ -z "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] && LOCKUP_CONTRACT_ARCHIVE_DIR="$CONTRACTS_DIR/sc_lockup/$LOCKUP_VERSION"
 [ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/Distribution.bin-runtime"
-[ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$VOLUMES_DIR/volume1/distributionOwner"
-[ -z "${DIST_ISSUER_ADDRESS_FILE}" ] && DIST_ISSUER_ADDRESS_FILE="$VOLUMES_DIR/volume1/distributionIssuer"
-[ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="$VOLUMES_DIR/volume1/lockupOwner"
 [ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/Lockup.bin-runtime"
+[ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$VOLUMES_DIR/volume2/distributionOwner"
+[ -z "${DIST_ISSUER_ADDRESS_FILE}" ] && DIST_ISSUER_ADDRESS_FILE="$VOLUMES_DIR/volume2/distributionIssuer"
+[ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="$VOLUMES_DIR/volume2/lockupOwner"
+
 
 check_file() {
 	file_name=$1
@@ -96,10 +97,10 @@ put_all_quorum_var() {
 	VAR_NAME=$1
 	VAR_VAL=$2
 
-	mkdir -p ${ANSIBLE_DIR}/group_vars
-	touch ${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	mkdir -p ${ANSIBLE_CEREMONY_DIR}/group_vars
+	touch ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 
-	FILE_NAME=${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	FILE_NAME=${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 	if grep -q "^${VAR_NAME}" "${FILE_NAME}"
 	then
 		sed -i "s/${VAR_NAME}:.*/${VAR_NAME}: ${VAR_VAL}/g" "${FILE_NAME}"
@@ -164,7 +165,7 @@ all_quorum_vars() {
 	put_all_quorum_var "goquorum_genesis_sc_lockup_code" "\"0x$(cat ${LOCKUP_RUNTIME_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_distribution_code" "\"0x$(cat ${DIST_RUNTIME_BIN_FILE})\""
 
-	admin_addresses=$(${SCRIPTS_DIR}/create_lockup_storage/create_lockup_storage.sh)
+	admin_addresses=$(${SCRIPTS_DIR}/create_lockup_storage/create_lockup_storage.sh -e "${ENV_FILE}")
 	sc_lockup_storage=$(echo "{ \"0x0000000000000000000000000000000000000000000000000000000000000000\": \"{{ lace_genesis_lockup_owner_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000002\": \"{{ lace_genesis_lockup_issuer_address }}\", \"0x0000000000000000000000000000000000000000000000000000000000000004\": \"{{ lace_genesis_lockup_daily_limit }}\", \"0x0000000000000000000000000000000000000000000000000000000000000005\": \"{{ lace_genesis_lockup_last_dist_timestamp }}\", ${admin_addresses} }")
 
 
@@ -178,21 +179,21 @@ all_quorum_vars() {
 	put_all_quorum_var "goquorum_identity" "${CHAIN_NAME}_${NETWORK_TYPE}_{{ inventory_hostname }}"
 	put_all_quorum_var "lace_genesis_lockup_daily_limit" "\"${GENESIS_LOCKUP_DAILY_LIMIT}\""
 
-	sed -i '/goquorum_genesis_sc_lockup_storage/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
-	echo "goquorum_genesis_sc_lockup_storage: ${sc_lockup_storage}" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	sed -i '/goquorum_genesis_sc_lockup_storage/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
+	echo "goquorum_genesis_sc_lockup_storage: ${sc_lockup_storage}" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 
 	enode_list=$(generate_enode_list)
-	sed -i '/goquorum_enode_list/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
-	echo "goquorum_enode_list: [${enode_list}]" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	sed -i '/goquorum_enode_list/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
+	echo "goquorum_enode_list: [${enode_list}]" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 
 	# Kinda janky, but gets the job done - grabs the contents of Storage.txt and puts it in a variable
 	var="$(tail -n+6 $CONTRACTS_DIR/sc_dao/$DAO_VERSION/Storage.txt | head -n -2 | tr -d "[:blank:]\n")"
-	sed -i '/goquorum_genesis_sc_dao_storage/d' ${ANSIBLE_DIR}/group_vars/all_quorum.yml
-	echo "goquorum_genesis_sc_dao_storage: {${var}}" >> ${ANSIBLE_DIR}/group_vars/all_quorum.yml
+	sed -i '/goquorum_genesis_sc_dao_storage/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
+	echo "goquorum_genesis_sc_dao_storage: {${var}}" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 }
 
 BASE_KEYS_DIR=${VOLUMES_DIR}/volume1
-ANSIBLE_KEY_DIR=${ANSIBLE_DIR}/keys
+ANSIBLE_KEY_DIR=${ANSIBLE_CEREMONY_DIR}/keys
 ips=(${(@s: :)VALIDATOR_IPS})
 for IP in ${ips}; do
 	mkdir -p ${ANSIBLE_KEY_DIR}/${IP}

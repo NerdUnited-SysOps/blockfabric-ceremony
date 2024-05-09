@@ -55,7 +55,7 @@ echo   | tee -a "$bootstrap_log"
 ########################## Prep Firefox homepage for block explorer
 echo
 ## Modify Firefox's config file to open the chain's blockexplorer on launch
-sed -i "s/chain/$chain/"     ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
+sed -i "s/brand/$chain/"     ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
 sed -i "s/network/$network/" ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
 sed -i "s/always/never/g" ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
 

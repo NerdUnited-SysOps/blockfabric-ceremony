@@ -3,11 +3,11 @@
 
 # set -x
 
-version=2.2.0
-chain_repo_tag="2.1.0"
-additions_repo_tag="2.7.3"
+version=2.2.3
+chain_repo_tag="2.1.1"
+additions_repo_tag="2.7.4"
 ansible_repo_tag="main"
-ceremonyenv_repo_tag="2.7.3"
+ceremonyenv_repo_tag="2.7.4"
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
 export network=$1
 export chain=$2
@@ -45,10 +45,10 @@ echo "  ceremony OS version:            $ceremony_os_version"  | tee -a "$bootst
 echo "  ceremony repo tag:              $chain_repo_tag"  | tee -a "$bootstrap_log"
 echo "  additions repo tag:             $additions_repo_tag"  | tee -a "$bootstrap_log"
 echo "  ansible repo tag:               $ansible_repo_tag"  | tee -a "$bootstrap_log"
-echo "  ceremony_env repo tag:    $ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
+echo "  ceremony_env repo tag:          $ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
 echo "  go version:                     1.19.8"  | tee -a "$bootstrap_log"
 echo "  geth version:                   1.10.26-stable8" | tee -a "$bootstrap_log"
-echo "  ethkey version:           1.10.26-stable8" | tee -a "$bootstrap_log"
+echo "  ethkey version:                 1.10.26-stable8" | tee -a "$bootstrap_log"
 echo   | tee -a "$bootstrap_log"
 
 
@@ -84,10 +84,9 @@ scp $chain@$bootstrap:~/clean.sh ${HOME}/ > /dev/null 2>&1
 echo;echo;echo;echo "========== Creating local AWS configurtion and list S3 bucket to verify ==========" | tee -a "$bootstrap_log"
 mkdir ${HOME}/.aws > /dev/null 2>&1
 scp $chain@$bootstrap:~/credentials.$network.$chain ${HOME}/.aws/credentials | tee -a "$bootstrap_log"
-ls -l ${HOME}/.aws/ | tee -a "$bootstrap_log"
 aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
-## aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
-## S3 in chain profile not needed for v2.1.18
+aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
+
 echo
 echo "    If successful, press ENTER"
 read
@@ -143,7 +142,7 @@ function get_env_files()   #combine the Type and the Shared .env files into sing
 
   echo;echo;echo;echo "========== Now retrieve the $chain $network $local_type environment variables files =========="  | tee -a "$bootstrap_log"
   curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/$gh_enterprise/$ansible_repo/$ansible_repo_tag/$network/$local_type/.env > $repo_dir/$local_type.env
-  cat $repo_dir/$local_type.env
+  cat $repo_dir/$local_type.env | tee -a "$bootstrap_log"
 
   curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/$gh_enterprise_env/$ceremonyenv_repo/$ceremonyenv_repo_tag/envs/shared/$local_type.env >> $repo_dir/$local_type.env
   tail -n 1 $repo_dir/$local_type.env  | tee -a "$bootstrap_log"
@@ -155,11 +154,12 @@ do
   type=$3
   repo_dir=
   bridge="no"
-  ## $3, $4, $5, etc are the 'types' of ceremonies to run. $1 and $2 are not. Shift at the end  will cycle thru the args
+  ## $3, $4, $5, etc are the 'types' of ceremonies to run. $1 and $2 are not. The shift at the end will cycle thru the args
   if  [ ! -z "$type" ]; then
     clone_repos $type
     get_env_files $type
-
+    ## types array needed at the end to make multiple bootstrap.log files; 1 per type
+    types+=($type)
     echo; echo "    If successful, press ENTER"; read
     echo; echo
   fi
@@ -170,19 +170,17 @@ done
 ###### Add-on utilities
 scp $chain@$genesis:~/cplog.sh $base/ > /dev/null 2>&1
 scp $chain@$genesis:~/mountusb.sh $base/ > /dev/null 2>&1
-scp $chain@$genesis:~/generate_keystore.sh $base/ > /dev/null 2>&1
 scp $chain@$genesis:~/wallets.url $base/ > /dev/null 2>&1
-
+scp $chain@$genesis:~/clean.sh $base/ > /dev/null 2>&1
 #######################
-
 
 
 echo
 echo "=============== END OF BOOTSTRAP PROCESS FOR $network $chain ===============" | tee -a "$bootstrap_log"
 echo
 if [ -f $base/wallets.url ]; then
-  echo "       Check these balance first:"
-  cat $base/wallets.url
+  echo "       Check these balance first:" | tee -a "$bootstrap_log"
+  cat $base/wallets.url | tee -a "$bootstrap_log"
 fi
 echo
 echo "===============     Continue with the Ceremony Script    ===============" | tee -a "$bootstrap_log"
@@ -195,3 +193,11 @@ if [ "$network" != "mainnet" ]; then
   echo "Run ~/testnettools/labtop_config.sh $network $chain <labtop_port> type(s)"
   echo "see ~/testnettools/labtop.instructions for more lab details"
 fi
+
+######################## Create a bootstrap.log file for each "type" of ceremony requested
+for type in $types; do
+  ## these are the 'types' of ceremonies to run. Each one get its own bootstrap.log copy
+    cp $bootstrap_log ~/ceremony-artifacts/"${type}"_bootstrap.log
+done
+
+######### end

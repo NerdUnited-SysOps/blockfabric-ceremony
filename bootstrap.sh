@@ -92,7 +92,7 @@ echo "    If successful, press ENTER"
 read
 
 ########################## Retrieve github token
-pat=$(aws secretsmanager --profile blockfabric get-secret-value --secret-id ceremony_pat --query SecretString --output text)
+pat=$(aws secretsmanager --profile secrets get-secret-value --secret-id ceremony_pat --query SecretString --output text)
 echo -n " pat is: ..." >>  "$bootstrap_log"
 echo $pat | tail -c 5 >> "$bootstrap_log"
 

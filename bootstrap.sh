@@ -121,8 +121,8 @@ function clone_repos()
   echo "Cloning $repo repo with tag:$repo_tag..." | tee -a "$bootstrap_log"
   cd $base
   if [ ! -d $repo_dir ]; then
-    ## git -c advice.detachedHead=false checkout <refspec>
     git config --global advice.statusHints false
+    git config --global advice.detachedHead false
     git clone --quiet -b $repo_tag https://${gh_user}github.com/$gh_enterprise/$repo.git | tee -a "$bootstrap_log"
     ls $repo -d >> "$bootstrap_log"
     echo | tee -a "$bootstrap_log"

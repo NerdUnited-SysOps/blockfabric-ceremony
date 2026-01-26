@@ -112,7 +112,7 @@ function clone_repos()
     repo_tag="$chain_repo_tag"
   else
     gh_enterprise="NerdCoreSdk"
-    gh_user="blockfabric-admin:${pat}@"
+    gh_user="blockfabric-ceremony:${pat}@"
     repo="blockfabric-ceremony-additions"
     repo_tag="$additions_repo_tag"
   fi
@@ -141,10 +141,10 @@ function get_env_files()   #combine the Type and the Shared .env files into sing
   ceremonyenv_repo="blockfabric-ceremony-additions"
 
   echo;echo;echo;echo "========== Now retrieve the $chain $network $local_type environment variables files =========="  | tee -a "$bootstrap_log"
-  curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/$gh_enterprise/$ansible_repo/$ansible_repo_tag/$network/$local_type/.env > $repo_dir/$local_type.env
+  curl -s https://blockfabric-ceremony:$pat@raw.githubusercontent.com/$gh_enterprise/$ansible_repo/$ansible_repo_tag/$network/$local_type/.env > $repo_dir/$local_type.env
   cat $repo_dir/$local_type.env | tee -a "$bootstrap_log"
 
-  curl -s https://blockfabric-admin:$pat@raw.githubusercontent.com/$gh_enterprise_env/$ceremonyenv_repo/$ceremonyenv_repo_tag/envs/shared/$local_type.env >> $repo_dir/$local_type.env
+  curl -s https://blockfabric-ceremony:$pat@raw.githubusercontent.com/$gh_enterprise_env/$ceremonyenv_repo/$ceremonyenv_repo_tag/envs/shared/$local_type.env >> $repo_dir/$local_type.env
   tail -n 1 $repo_dir/$local_type.env  | tee -a "$bootstrap_log"
 } ## end of env function
 

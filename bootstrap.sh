@@ -111,7 +111,7 @@ function clone_repos()
     repo="blockfabric-ceremony"
     repo_tag="$chain_repo_tag"
   else
-    gh_enterprise="NerdCoreSdk"
+    gh_enterprise="NerdUnited-SysOps"
     gh_user="blockfabric-ceremony:${pat}@"
     repo="blockfabric-ceremony-additions"
     repo_tag="$additions_repo_tag"

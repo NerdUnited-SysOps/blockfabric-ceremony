@@ -3,7 +3,7 @@
 
 # set -x
 
-version="2.2.3"
+version="2.3.1"
 chain_repo_tag="2.1.1"
 additions_repo_tag="2.7.4"
 ansible_repo_tag="main"
@@ -136,7 +136,7 @@ function get_env_files()   #combine the Type and the Shared .env files into sing
 {
   local_type=$1
   gh_enterprise="NerdUnited-SysOps"
-  gh_enterprise_env="NerdCoreSDK"
+  gh_enterprise_env="NerdUnited-SysOps"
   ansible_repo="ansible.$chain-$network"
   ceremonyenv_repo="blockfabric-ceremony-additions"
 

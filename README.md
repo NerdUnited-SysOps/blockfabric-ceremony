@@ -1,52 +1,353 @@
-# Blockchain Genesis Ceremony – Technical script 
+[CHAIN] Blockchain Genesis Ceremony
 
-The objective is to demonstrate as fully as possible that no secrets have been retained. The scripts contained in the repo can be verified prior to the ceremony by anyone with access to the repo. There will be no secret information contained in the repo, it could/should be public. 
+Date: [DATE]
+Location: Undisclosed Secure Facility
 
-## Technical Script 
+⚠️ Recording Notice
 
-System Administrator verifies that recording equipment is functioning properly and recording the ceremony. 
+The proceedings of this meeting are recorded.
 
-Ceremony Administrator identifies the purpose of the meeting and resolve any questions concerning the process (script here). 
+Participation in this meeting constitutes agreement to being recorded.
+If you do not agree, you must declare this prior to participation.
 
-Intro by Ceremony Administrator 
+🎯 Meeting Goals
+
+Secure, transparent digital secret generation
+
+Mainnet deployment of:
+
+Validator nodes
+
+Secret stores
+
+Blockchain software
+
+Smart contracts
+
+Initial validation of successful deployment
+
+Secure transfer of digital secrets and assets to custodians
+
+🔐 Participation Requirements
+
+Participants certify:
+
+No undisclosed electronic devices are brought into the meeting.
+
+All procedures will follow this ceremony script.
+
+Participants remain present for the entire ceremony.
+
+👥 Ceremony Roles
+Role	Responsibility	Organization
+Ceremony Administrator	Ensures execution according to script	Node Governance
+Technical Facilitator	Operates support systems and resolves technical failures	Nerd
+Crypto Operator	Creates genesis block and instantiates blockchain	Nerd
+Independent Auditor	Observes and records deviations from script	External
+Meeting Facilitator	Ensures ceremony adherence	Nerd
+Meeting Secretary	Labels and secures hardware containing secrets	Nerd
+Internal Witness	Witnesses ceremony	Brand
+External Witness	Witnesses ceremony and receives custody	Brand
+Optional Roles
+
+Optional Brand Witness
+
+Nerd United Representative
+
+Nerd United Operational Witness
+
+🧭 Meeting Procedure
+
+The ceremony follows this script strictly.
+Any deviations are recorded by the Independent Auditor.
+
+📦 Items Prepared in Advance
+
+3 Secure blockchain genesis laptops
+
+Remote facilitation laptop
+
+AV equipment
+
+Secure removable operating systems
+
+Deployment scripts & blockchain code
+
+Cloud provider accounts
+
+New hardware devices for secret storage
+
+Public and private repositories
+
+Ceremony documentation and custody matrix
+
+💻 Meeting Technology
+Blockchain Genesis Laptops
+
+Three laptops from different vendors
+
+Boot from removable Linux OS
+
+No permanent storage
+
+No key material persists after shutdown
+
+A laptop is selected randomly via dice roll.
+
+Technical facilitators certify:
+
+No hidden software
+
+No undisclosed data exfiltration
+
+All materials destroyed or transferred post-ceremony
+
+Conference Laptop
+
+Used exclusively for:
+
+Teleconference participation
+
+Recording proceedings
+
+🔑 Secure Transfer of Assets
+
+Digital secrets are:
+
+Stored on FIPS 140-2 Level 3 validated devices
+
+Placed into tamper-evident (TE) bags
+
+Serialized and transferred to custodians
+
+Custodians are responsible for long-term storage and acceptance testing.
+
+🧪 Technical Script
+Equipment Explanation
+
+Technical Facilitator explains:
+
+Ceremony laptops
+
+Boot OS
+
+Video systems
+
+Recording setup
+
+Public OS source:
+
+https://github.com/NerdUnited-SysOps/kali-live/releases/tag/1.1.5
 
 
-## Aegis Secure Key
-The Aegis Secure Key is FIPS 140-2 Level 3 certified USB storage device. FIPS 140-2 is a U.S. government computer security standard used to approve cryptographic modules. The device has an internal rechargeable battery with a smart-charging circuit. The manufacturer indicates that the battery should last 3 years in storage. If the battery becomes depleted, the information contained on the device is not compromised, the device requires recharging by USB before attempting to unlock it. The device implements a “Brute Force” defense mechanism. After 3 unsuccessful attempts the device implements a time delay, after 10 attempts the device locks itself, after 20 unsuccessful attempts to unlock all data is cryptographically wiped and rendered unretrievable.  In other words, do not lose your PIN. If you have concerns about this device once you have taken custody of the secrets you may move the information to a device of your choosing. 
+Scripts are executed publicly; outputs are logged for custodial records.
+
+🎲 Laptop Selection
+
+Brand Leadership selects one die from five.
+
+Die is rolled:
+
+Result 1–3 → proceed
+
+Result 4–6 → reroll
+
+Corresponding laptop is used.
+
+1️⃣ Hardware Fitness Verification
+
+Crypto Operator executes:
+
+uname -a                 # Kernel version
+timedatectl status       # Time sync
+sudo fdisk -l
+lsblk                    # Verify no local storage
+ping 1.1.1.1
+nmcli                    # Network check
+dig <brand-selected-site>
 
 
-<summary><b>Instructions</b></summary>
+Room confirms fitness of purpose.
 
-1. Verify the linux kernel version
+2️⃣ Bootstrap Credential Introduction
+cd /home/user
 
-```sh
-uname -a 
-```
-2. Verfiy the time and date
-```sh
-timedatectl (shows local time and ntp status) 
-```
-3. 
-```sh
-fdisk -l (shows connected storage devices) 
-```
-4. 
-```sh
-ping 1.1.1.1 (verify connectivity) 
-```
-5. 
-```sh
-dig Brand website domain name (i.e. google.com) 
-```
+ssh-keygen -qt ed25519
+ssh-copy-id [chain]@genesis.blockfabric.net
+scp [chain]@genesis.blockfabric.net:~/bootstrap.sh .
+./bootstrap.sh mainnet [chain] chain
 
-```sh
-./blockchain-ceremony/ceremony.sh
-```
 
-## Distribute secrets to custodians
+Purpose: establish initial authenticated access to protected resources.
 
-## Validate the chain
+3️⃣ Blockchain Creation
+cd blockfabric-ceremony/
+git reflog
+./ceremony.sh -e chain.env
 
-You can validate that all approprate files were created in the `volumes` directory with `find volumes -type f`
+Menu Workflow
+Create Blockchain
+Option 1
 
-You can further validate that each `keystore` and `password` file are valid with `ceremony-scripts/validation/validate_accounts.sh -p volumes`
+Validation
+Option 2
+  → General health
+  → List volumes
+  → List addresses
+  → Validate keystore/password
+  → Print chain accounts
+  → List volume size
+
+Persist Assets
+Option 3
+  → Persist issuer wallet
+  → Persist operational variables
+
+
+Exit ceremony script.
+
+4️⃣ Block Explorer Validation
+
+If available, display block explorer confirming initial blocks.
+
+*** CONGRATULATIONS! YOU HAVE A NEW BLOCKCHAIN ***
+
+🔐 Aegis Secure Key Introduction
+
+Hardware characteristics:
+
+FIPS 140-2 Level 3 certified
+
+Brute force protection
+
+Auto-wipe after 20 failed attempts
+
+Battery-backed secure storage
+
+Important
+
+Do not lose your PIN.
+
+5️⃣ Aegis Secure Key Preparation (Per Custodian)
+
+Custodian breaks seal.
+
+Creates device PIN:
+
+Unlock
+Unlock + 9
+Enter PIN → Unlock
+Re-enter PIN → Unlock
+
+
+Device unlocked and handed to Crypto Operator.
+
+Secrets copied.
+
+Verification performed:
+
+ls
+tree
+sha256sum
+
+
+Device returned, serialized, and sealed.
+
+🔁 Secret Distribution
+
+Repeated for each entity:
+
+Trust (2 copies)
+
+Node Governance (2 copies)
+
+Brand (2 copies)
+
+Blockade (2 copies)
+
+☠️ Point of No Return
+
+All ceremony secrets deleted from laptop:
+
+srm -vr ~/ceremony-artifacts/volumes/*
+
+
+Filesystem destruction occurs automatically at shutdown.
+
+📜 Finalization Steps
+
+TE bags distributed and signed.
+
+Boot media removed and secured.
+
+Recording stopped and archived.
+
+Consensus that only approved HOT secrets remain.
+
+Remaining printed materials destroyed.
+
+📦 Custodial Materials Collected
+
+Meeting Secretary gathers:
+
+Chain of custody forms
+
+Auditor script
+
+Dice
+
+OS removable media
+
+Ceremony recordings
+
+TE bag receipts
+
+🔒 Chain of Custody
+Secret	Custodian
+Volume 1 (validator + governance keys)	Trust
+Volume 2	Node Governance
+Volume 3	Brand
+Volume 4	Blockade
+
+Custodians certify:
+
+Nerd United retains no secret keys.
+Keys must be securely stored and cannot be reproduced.
+
+🧾 Independent Auditor Attestation
+Name: ___________________________
+
+Signature: ______________________
+
+Date: ___________________________
+
+
+The auditor confirms:
+
+Ceremony followed written script
+
+Deviations documented and preserved
+
+✅ Ceremony Completion
+
+Upon completion:
+
+Blockchain mainnet exists
+
+Secrets distributed
+
+Ceremony artifacts secured
+
+Genesis finalized
+
+📌 Repository Purpose
+
+This document exists to provide:
+
+Transparent reproducibility
+
+Operational clarity
+
+Auditability of genesis procedures
+
+Institutional trust in chain creation

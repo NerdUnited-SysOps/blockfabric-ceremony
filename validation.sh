@@ -3,13 +3,28 @@
 usage() {
 	echo "Options"
 	echo "  -e : Envifonment config file"
+	echo "  -o : Option number for non-interactive selection"
+	echo "  --besu : Use Besu validation scripts"
 	echo "  -h : This help message"
 }
 
-while getopts he: option; do
+# Pre-process --besu flag (getopts doesn't support long options)
+args=()
+for arg in "$@"; do
+	case "$arg" in
+		--besu) BESU_MODE=true ;;
+		*) args+=("$arg") ;;
+	esac
+done
+set -- "${args[@]}"
+
+while getopts e:ho: option; do
 	case "${option}" in
 		e)
 			ENV_FILE=${OPTARG}
+			;;
+		o)
+			DIRECT_OPTION=${OPTARG}
 			;;
 		h)
 			usage
@@ -103,13 +118,29 @@ list_addreses() {
 
 run_validation() {
 	printf "Validating chain...\n\n"
-	${SCRIPTS_DIR}/validation/run_validation.sh -e "${ENV_FILE}"
+	if [[ -n "${BESU_MODE}" ]]; then
+		${SCRIPTS_DIR}/validation/run_validation_besu.sh -e "${ENV_FILE}"
+	else
+		${SCRIPTS_DIR}/validation/run_validation.sh -e "${ENV_FILE}"
+	fi
 	printf "\n\nNote: It takes a minute for all nodes to catch up with their peers.\n\n"
 }
 
 print_account_range() {
-	./exec_chain.sh -e "${ENV_FILE}" "debug.accountRange()" | tee -a ${LOG_FILE}
+	if [[ -n "${BESU_MODE}" ]]; then
+		${SCRIPTS_DIR}/validation/besu_account_range.sh -e "${ENV_FILE}" | tee -a ${LOG_FILE}
+	else
+		./exec_chain.sh -e "${ENV_FILE}" "debug.accountRange()" | tee -a ${LOG_FILE}
+	fi
 	printf "\n\n"
+}
+
+show_startup_config() {
+	${SCRIPTS_DIR}/validation/inspect_node.sh -e "${ENV_FILE}" -m config
+}
+
+show_genesis() {
+	${SCRIPTS_DIR}/validation/inspect_node.sh -e "${ENV_FILE}" -m genesis
 }
 
 usage() {
@@ -119,28 +150,51 @@ usage() {
 
 items=(
 	"General health"
-	"Print chain accounts"
+	"Show genesis"
 	"List addresses"
 	"List volume sizes"
+	"Show startup config"
+	"Print chain accounts"
 	"Exit"
 )
+
+NC='\033[0m'
+RED='\033[0;31m'
+
+if [[ -n "${DIRECT_OPTION}" ]]; then
+	if [[ ! "${DIRECT_OPTION}" =~ '^[0-9]+$' ]]; then
+		printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} is not a valid option number\n\n"
+		exit 1
+	fi
+	case ${DIRECT_OPTION} in
+		1) run_validation | tee -a ${LOG_FILE};;
+		2) show_genesis | tee -a ${LOG_FILE};;
+		3) list_addreses;;
+		4) list_volume_sizes;;
+		5) show_startup_config | tee -a ${LOG_FILE};;
+		6) print_account_range;;
+		7) printf "Closing.\n\n"; exit 0;;
+		*) printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1;;
+	esac
+	exit 0
+fi
 
 clear -x
 
 usage
 
-NC='\033[0m'
-RED='\033[0;31m'
 while true; do
 	COLUMNS=1
 	PS3=$'\n'"${CHAIN_NAME} ${NETWORK_TYPE} | Select option: "
 	select item in "${items[@]}"
 		case $REPLY in
 			1) clear -x; run_validation | tee -a ${LOG_FILE}; break;;
-			2) clear -x; print_account_range; break;;
+			2) clear -x; show_genesis | tee -a ${LOG_FILE}; break;;
 			3) clear -x; list_addreses; break;;
 			4) clear -x; list_volume_sizes; break;;
-			5) printf "Closing.\n\n"; exit 0;;
+			5) clear -x; show_startup_config | tee -a ${LOG_FILE}; break;;
+			6) clear -x; print_account_range; break;;
+			7) printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

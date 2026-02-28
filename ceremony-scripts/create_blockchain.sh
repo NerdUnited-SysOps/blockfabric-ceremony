@@ -8,6 +8,7 @@ usage() {
   echo "This script sets up the validator nodes..."
   echo "Usage: $0 (options) ..."
   echo "  -e : Path to .env file"
+  echo "  -d : Enable verbose Ansible output (dev mode)"
   echo "  -i : Install dependencies"
   echo "  -r : Reset the ceremony"
   echo "  -h : Help"
@@ -15,8 +16,21 @@ usage() {
   echo "Example: "
 }
 
-while getopts 'b:d:e:hi' option; do
+# Pre-process --besu flag (getopts does not support long options)
+args=()
+for arg in "$@"; do
+    case "$arg" in
+        --besu) BESU_MODE=true ;;
+        *) args+=("$arg") ;;
+    esac
+done
+set -- "${args[@]}"
+
+while getopts 'b:de:hi' option; do
 	case "$option" in
+		d)
+			DEBUG_MODE=true
+			;;
 		e)
 			ENV_FILE=${OPTARG}
 			;;
@@ -55,7 +69,7 @@ fi
 get_list_of_validator_ips () {
 	[[ -z "${INVENTORY_PATH}" ]] && echo ".env is missing INVENTORY_PATH variable" && exit 1
 	[[ ! -f "${INVENTORY_PATH}" ]] && echo "inventory path not found. Expected it here: ${INVENTORY_PATH}" && exit 1
-	ansible validator \
+	ansible validators \
 		--list-hosts \
 		-i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
 }
@@ -90,6 +104,27 @@ check_env_file() {
 	if [ ! -f "${file_path}" ]; then
 		printer -e "Cannot find ${file_path}"
 	fi
+}
+
+run_besu_keygen() {
+	[[ -z "${ANSIBLE_ROLE_DIR}" ]] && printer -e ".env is missing ANSIBLE_ROLE_DIR variable"
+	[[ ! -d "${ANSIBLE_ROLE_DIR}" ]] && printer -e "ANSIBLE_ROLE_DIR is not a directory: ${ANSIBLE_ROLE_DIR}"
+	[[ -z "${INVENTORY_PATH}" ]] && printer -e ".env is missing INVENTORY_PATH variable"
+	[[ ! -f "${INVENTORY_PATH}" ]] && printer -e "Inventory not found: ${INVENTORY_PATH}"
+
+	printer -t "Generating Besu node keys and network configuration"
+
+	local keygen_dir="${BASE_DIR}/cmd/besu-keygen"
+	local inventory_abs="$(realpath "${INVENTORY_PATH}")"
+	local role_dir_abs="$(realpath "${ANSIBLE_ROLE_DIR}")"
+	local p2p=${P2P_PORT:-40111}
+
+	(cd "${keygen_dir}" && go run . \
+		--inventory "${inventory_abs}" \
+		--role-dir "${role_dir_abs}" \
+		--p2p-port "${p2p}") 2>&1 | tee -a "${LOG_FILE}"
+
+	printer -s "Besu node keys and network vars generated"
 }
 
 get_ansible_vars() {
@@ -156,6 +191,34 @@ install_ansible_role() {
 	fi
 }
 
+install_besu_role() {
+	[[ -z "${BESU_ROLE_SOURCE}" ]] && echo ".env is missing BESU_ROLE_SOURCE variable" && exit 1
+	[[ -z "${BESU_ROLE_INSTALL_PATH}" ]] && echo ".env is missing BESU_ROLE_INSTALL_PATH variable" && exit 1
+	[[ -z "${BESU_ROLE_VERSION}" ]] && echo ".env is missing BESU_ROLE_VERSION variable" && exit 1
+
+	printer -t "Installing Besu ansible role"
+
+	if [ ! -d "${BESU_ROLE_INSTALL_PATH}" ]; then
+		if git clone \
+			--depth 1 \
+			--branch ${BESU_ROLE_VERSION} \
+			"${BESU_ROLE_SOURCE}" "${BESU_ROLE_INSTALL_PATH}" &>> ${LOG_FILE}
+		then
+			printer -s "Installed Besu role"
+		else
+			printer -e "Failed to install Besu role"
+		fi
+
+		# Install upstream dependency (consensys.hyperledger_besu)
+		if [ -f "${BESU_ROLE_INSTALL_PATH}/requirements.yml" ]; then
+			ansible-galaxy install -r "${BESU_ROLE_INSTALL_PATH}/requirements.yml" &>> ${LOG_FILE}
+			printer -s "Installed Besu role dependencies"
+		fi
+	else
+		printer -n "Besu role present, skipping"
+	fi
+}
+
 run_ansible() {
 	[[ -z "${AWS_NODES_SSH_KEY_PATH}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_NODES_SSH_KEY_PATH variable"
 	[[ -z "${ANSIBLE_CHAIN_DEPLOY_FORKS}" ]] && printer -e "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing ANSIBLE_CHAIN_DEPLOY_FORKS variable"
@@ -185,7 +248,12 @@ ${SCRIPTS_DIR}/install_dependencies.sh -e "${ENV_FILE}" | tee -a "${LOG_FILE}"
 ${SCRIPTS_DIR}/get_secrets.sh -e ${ENV_FILE} | tee -a "${LOG_FILE}"
 
 get_ansible_vars
-install_ansible_role
+
+if [[ -n "${BESU_MODE}" ]]; then
+	install_besu_role
+else
+	install_ansible_role
+fi
 get_inventory
 
 [[ ! -f "${SCRIPTS_DIR}/get_contract_bytecode.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/get_contract_bytecode.sh file doesn't exist" && exit 1
@@ -199,23 +267,41 @@ ${SCRIPTS_DIR}/create_all_wallets.sh \
 	-e "${ENV_FILE}" \
 	-i "${VALIDATOR_IPS}" | tee -a "${LOG_FILE}"
 
+if [[ -n "${BESU_MODE}" ]]; then
+	run_besu_keygen
+fi
+
 [[ ! -f "${SCRIPTS_DIR}/generate_dao_storage.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/generate_dao_storage.sh file doesn't exist" && exit 1
-${SCRIPTS_DIR}/generate_dao_storage.sh \
-	-e "${ENV_FILE}" \
-	-i "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
+if [[ -n "${BESU_MODE}" ]]; then
+	${SCRIPTS_DIR}/generate_dao_storage.sh \
+		-e "${ENV_FILE}" \
+		-i "$VALIDATOR_IPS" \
+		--besu | tee -a "${LOG_FILE}"
+else
+	${SCRIPTS_DIR}/generate_dao_storage.sh \
+		-e "${ENV_FILE}" \
+		-i "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
+fi
 
 [[ ! -f "${SCRIPTS_DIR}/generate_ansible_vars.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/generate_ansible_vars.sh file doesn't exist" && exit 1
-${SCRIPTS_DIR}/generate_ansible_vars.sh \
-	-e "${ENV_FILE}" \
-	-v "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
+if [[ -n "${BESU_MODE}" ]]; then
+	${SCRIPTS_DIR}/generate_ansible_vars.sh \
+		-e "${ENV_FILE}" \
+		-v "$VALIDATOR_IPS" \
+		--besu | tee -a "${LOG_FILE}"
+else
+	${SCRIPTS_DIR}/generate_ansible_vars.sh \
+		-e "${ENV_FILE}" \
+		-v "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
+fi
 
-# Executing ansible returns a non-zero code even when it's successful.
-# Backgrounding the task stops the script from existing.
-run_ansible | tee -a "${LOG_FILE}" &
-wait
+if [[ -n "${BESU_MODE}" ]]; then
+	${SCRIPTS_DIR}/deploy_besu_network.sh -e "${ENV_FILE}" ${DEBUG_MODE:+-d} | tee -a "${LOG_FILE}"
+else
+	run_ansible
+fi
 
 duration=$SECONDS
 printer -s "Execution Completed in $(($duration / 60)) minutes $(($duration % 60)) seconds"
 
 printer -f 40
-

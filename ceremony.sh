@@ -5,13 +5,30 @@ set -e
 usage() {
 	echo "Options"
 	echo "  -e : Envifonment config file"
+	echo "  -o : Option number (e.g., -o 1 or -o 2,1 for submenu)"
+	echo "  --besu : Use Besu validation and deployment"
 	echo "  -h : This help message"
 }
 
-while getopts e:hd option; do
+# Pre-process --besu flag (getopts doesn't support long options)
+args=()
+for arg in "$@"; do
+    case "$arg" in
+        --besu) BESU_MODE=true ;;
+        *) args+=("$arg") ;;
+    esac
+done
+set -- "${args[@]}"
+
+while getopts e:hdo: option; do
 	case "${option}" in
 		d) DEV_ENABLED="true";;
 		e) ENV_FILE=${OPTARG};;
+		o)
+			OPT_PARTS=(${(s:,:)OPTARG})
+			DIRECT_OPTION=${OPT_PARTS[1]}
+			DIRECT_SUBOPTION=${OPT_PARTS[2]:-}
+			;;
 		h)
 			usage
 			exit 0
@@ -51,11 +68,11 @@ usage() {
 
 create_blockchain() {
 	check_file_path "${SCRIPTS_DIR}/create_blockchain.sh"
-	${SCRIPTS_DIR}/create_blockchain.sh -e "${ENV_FILE}"
+	${SCRIPTS_DIR}/create_blockchain.sh -e "${ENV_FILE}" ${BESU_MODE:+--besu} ${DEV_ENABLED:+-d}
 }
 
 run_validation() {
-	./validation.sh -e "${ENV_FILE}"
+	./validation.sh -e "${ENV_FILE}" ${BESU_MODE:+--besu}
 }
 
 persistence() {
@@ -68,7 +85,7 @@ deploy_bridge() {
 
 dev() {
 	check_file_path "${SCRIPTS_DIR}/dev.sh"
-	${SCRIPTS_DIR}/dev.sh -e "${ENV_FILE}"
+	${SCRIPTS_DIR}/dev.sh -e "${ENV_FILE}" ${BESU_MODE:+--besu} ${DEV_ENABLED:+-d}
 }
 
 items=(
@@ -81,15 +98,44 @@ items=(
 
 [ -n "${DEV_ENABLED}" ] && items+=("Devz")
 
+NC='\033[0m'
+RED='\033[0;31m'
+
+if [[ -n "${DIRECT_OPTION}" ]]; then
+	if [[ ! "${DIRECT_OPTION}" =~ '^[0-9]+$' ]]; then
+		printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} is not a valid option number\n\n"
+		exit 1
+	fi
+	SUB_FLAG=()
+	[[ -n "${DIRECT_SUBOPTION}" ]] && SUB_FLAG=(-o "${DIRECT_SUBOPTION}")
+	case ${DIRECT_OPTION} in
+		1) create_blockchain;;
+		2) ./validation.sh -e "${ENV_FILE}" ${BESU_MODE:+--besu} "${SUB_FLAG[@]}";;
+		3) ./persistence.sh -e "${ENV_FILE}" | tee -a "${LOG_FILE}";;
+		4) printf "Closing\n\n"; exit 1;;
+		5)
+			if [[ -n "${DEV_ENABLED}" ]]; then
+				check_file_path "${SCRIPTS_DIR}/dev.sh"
+				${SCRIPTS_DIR}/dev.sh -e "${ENV_FILE}" ${BESU_MODE:+--besu} "${SUB_FLAG[@]}" ${DEV_ENABLED:+-d}
+			else
+				printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"
+				exit 1
+			fi;;
+		*) printf "\n\nOoos, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1;;
+	esac
+	exit 0
+fi
+
 clear -x
 
 usage
 
-NC='\033[0m'
-RED='\033[0;31m'
+mode_label=""
+[[ -n "${BESU_MODE}" ]] && mode_label=" [Besu]"
+
 while true; do
 	COLUMNS=1
-	PS3=$'\n'"${CHAIN_NAME} ${NETWORK_TYPE} | Select option: "
+	PS3=$'\n'"${CHAIN_NAME} ${NETWORK_TYPE}${mode_label} | Select option: "
 	select item in "${items[@]}"
 		case $REPLY in
 			1) clear -x; create_blockchain; break;;
@@ -105,4 +151,3 @@ while true; do
 		esac
 	done
 done
-

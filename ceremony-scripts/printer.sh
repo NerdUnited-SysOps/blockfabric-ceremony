@@ -38,15 +38,7 @@ gradient() {
 }
 
 print_date() {
-	year=$(date +'%y')
-	printed_year=""
-	if (( "${year}" == "22" )); then
-		printed_year="twenty two"
-	else
-		printed_year="twenty four"
-	fi
-
-	printf "two thousand ${printed_year}"
+	date +'%B %d, %Y'
 }
 
 while getopts 'be:f:g:s:t:n:w:' option; do

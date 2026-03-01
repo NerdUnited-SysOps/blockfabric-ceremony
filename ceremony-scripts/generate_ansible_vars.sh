@@ -228,7 +228,8 @@ all_quorum_vars() {
 	echo "goquorum_genesis_sc_distribution_storage: ${sc_distribution_storage}" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 
 	# Lockup balance = total supply - distribution contract - distribution issuer
-	local lockup_balance=$(( TOTAL_COIN_SUPPLY - DISTRIBUTION_CONTRACT_BALANCE - DISTIRBUTION_ISSUER_BALANCE ))
+	# Use python3 for arbitrary-precision arithmetic (values exceed zsh int64)
+	local lockup_balance=$(python3 -c "print(${TOTAL_COIN_SUPPLY} - ${DISTRIBUTION_CONTRACT_BALANCE} - ${DISTIRBUTION_ISSUER_BALANCE})")
 	put_all_quorum_var "goquorum_genesis_sc_lockup_balance" "${lockup_balance}"
 	put_all_quorum_var "goquorum_network_id" "${CHAIN_ID}"
 	put_all_quorum_var "besu_network_id" "${CHAIN_ID}"

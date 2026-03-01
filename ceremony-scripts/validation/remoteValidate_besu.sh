@@ -6,7 +6,7 @@ RPC_URL=$1
 
 if [[ -z "${RPC_URL}" ]]; then
     echo "Usage: remoteValidate_besu.sh <rpc_url>"
-    echo "  e.g. remoteValidate_besu.sh http://192.168.3.232:8669"
+    echo "  e.g. remoteValidate_besu.sh http://<rpc-host>:8669"
     exit 1
 fi
 

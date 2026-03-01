@@ -66,8 +66,8 @@ remote_cmd() {
 # Mode: config — show config.toml + systemd unit
 # ---------------------------------------------------------------
 show_config() {
-	local validator_ip=$(get_first_host validators)
-	local rpc_ip=$(get_first_host rpc_nodes)
+	local validator_ip=$(get_first_host validator)
+	local rpc_ip=$(get_first_host rpc)
 
 	if [[ -n "${validator_ip}" ]]; then
 		title "Validator config.toml  (${validator_ip})"
@@ -90,7 +90,7 @@ show_config() {
 		remote_cmd "${rpc_ip}" "sudo systemctl cat besu" 2>/dev/null || echo "(could not read systemd unit)"
 		printf "\n"
 	else
-		echo "No rpc_nodes found in inventory"
+		echo "No rpc found in inventory"
 	fi
 }
 
@@ -98,8 +98,8 @@ show_config() {
 # Mode: genesis — show genesis.json (identical on all nodes)
 # ---------------------------------------------------------------
 show_genesis() {
-	local node_ip=$(get_first_host rpc_nodes)
-	[[ -z "${node_ip}" ]] && node_ip=$(get_first_host validators)
+	local node_ip=$(get_first_host rpc)
+	[[ -z "${node_ip}" ]] && node_ip=$(get_first_host validator)
 	[[ -z "${node_ip}" ]] && echo "No hosts found in inventory" && exit 1
 
 	title "genesis.json  (${node_ip})"

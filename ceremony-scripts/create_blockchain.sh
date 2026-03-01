@@ -69,7 +69,7 @@ fi
 get_list_of_validator_ips () {
 	[[ -z "${INVENTORY_PATH}" ]] && echo ".env is missing INVENTORY_PATH variable" && exit 1
 	[[ ! -f "${INVENTORY_PATH}" ]] && echo "inventory path not found. Expected it here: ${INVENTORY_PATH}" && exit 1
-	ansible validators \
+	ansible validator \
 		--list-hosts \
 		-i ${INVENTORY_PATH} | sed '/:/d ; s/ //g' | tr "\n" " " ; echo
 }
@@ -104,27 +104,6 @@ check_env_file() {
 	if [ ! -f "${file_path}" ]; then
 		printer -e "Cannot find ${file_path}"
 	fi
-}
-
-run_besu_keygen() {
-	[[ -z "${ANSIBLE_ROLE_DIR}" ]] && printer -e ".env is missing ANSIBLE_ROLE_DIR variable"
-	[[ ! -d "${ANSIBLE_ROLE_DIR}" ]] && printer -e "ANSIBLE_ROLE_DIR is not a directory: ${ANSIBLE_ROLE_DIR}"
-	[[ -z "${INVENTORY_PATH}" ]] && printer -e ".env is missing INVENTORY_PATH variable"
-	[[ ! -f "${INVENTORY_PATH}" ]] && printer -e "Inventory not found: ${INVENTORY_PATH}"
-
-	printer -t "Generating Besu node keys and network configuration"
-
-	local keygen_dir="${BASE_DIR}/cmd/besu-keygen"
-	local inventory_abs="$(realpath "${INVENTORY_PATH}")"
-	local role_dir_abs="$(realpath "${ANSIBLE_ROLE_DIR}")"
-	local p2p=${P2P_PORT:-40111}
-
-	(cd "${keygen_dir}" && go run . \
-		--inventory "${inventory_abs}" \
-		--role-dir "${role_dir_abs}" \
-		--p2p-port "${p2p}") 2>&1 | tee -a "${LOG_FILE}"
-
-	printer -s "Besu node keys and network vars generated"
 }
 
 get_ansible_vars() {
@@ -266,10 +245,6 @@ VALIDATOR_IPS=$(get_list_of_validator_ips)
 ${SCRIPTS_DIR}/create_all_wallets.sh \
 	-e "${ENV_FILE}" \
 	-i "${VALIDATOR_IPS}" | tee -a "${LOG_FILE}"
-
-if [[ -n "${BESU_MODE}" ]]; then
-	run_besu_keygen
-fi
 
 [[ ! -f "${SCRIPTS_DIR}/generate_dao_storage.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/generate_dao_storage.sh file doesn't exist" && exit 1
 if [[ -n "${BESU_MODE}" ]]; then

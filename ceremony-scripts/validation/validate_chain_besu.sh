@@ -41,7 +41,7 @@ title() {
 }
 
 get_ips() {
-    group=${1:-rpc_nodes}
+    group=${1:-rpc}
     ansible \
 			--list-hosts \
 			-i ${INVENTORY_PATH} \
@@ -113,17 +113,17 @@ verify_group() {
 }
 
 verify_blockchain() {
-    local rpc_ip=$(get_ips rpc_nodes | awk '{print $1}')
+    local rpc_ip=$(get_ips rpc | awk '{print $1}')
     if [[ -z "${rpc_ip}" ]]; then
-        rpc_ip=$(get_ips validators | awk '{print $1}')
+        rpc_ip=$(get_ips validator | awk '{print $1}')
     fi
 
     ${VALIDATION_SCRIPT} "http://${rpc_ip}:${RPC_PORT}"
 }
 
-RPC_IP_LIST=$(get_ips rpc_nodes)
+RPC_IP_LIST=$(get_ips rpc)
 
 check_https "${RPC_IP_LIST}"
-verify_group validators
-verify_group rpc_nodes
+verify_group validator
+verify_group rpc
 verify_blockchain

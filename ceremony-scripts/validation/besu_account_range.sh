@@ -33,7 +33,7 @@ fi
 [[ -z "${NODE_USER}" ]] && echo "${0}:${LINENO} .env is missing NODE_USER variable" && exit 1
 
 # Get first RPC node IP from inventory
-RPC_IP=$(ansible --list-hosts -i ${INVENTORY_PATH} rpc_nodes | sed '/:/d ; s/ //g' | head -1)
+RPC_IP=$(ansible --list-hosts -i ${INVENTORY_PATH} rpc | sed '/:/d ; s/ //g' | head -1)
 
 if [[ -z "${RPC_IP}" ]]; then
     # Fallback to first validator

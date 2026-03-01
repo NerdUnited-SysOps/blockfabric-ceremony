@@ -7,6 +7,30 @@
 //   4. Vote to remove the account (majority required)
 //   5. Count votes to finalize the removal
 //   6. Verify validator set unchanged
+//
+// DAO Dual Key Model:
+//   The DAO contract maintains two separate address sets:
+//
+//   - allowedAccounts (account keys) — from volume1/{host}/account/privatekey
+//     These are the addresses that can VOTE (call voteToAdd/Remove, countVotes).
+//     Stored in the contract's allowedAccounts mapping (slot 1).
+//
+//   - validators (node keys) — from volume1/{host}/node/privatekey
+//     These are the addresses that PRODUCE BLOCKS in QBFT consensus.
+//     Stored in the contract's validators array (slot 0).
+//     Returned by getValidators().
+//
+//   The two key pairs are generated independently during the ceremony.
+//   generate_dao_storage.sh maps them together in genesis storage via the
+//   validatorToAccount mapping (slot 2).
+//
+//   This test uses account/privatekey to send vote transactions because
+//   only allowedAccount addresses pass the senderIsAllowed modifier.
+//
+// Gas pricing:
+//   ethers.js EIP-1559 fee estimation produces unreasonable values on
+//   private QBFT chains with low activity. We use explicit legacy gasPrice
+//   and gasLimit to avoid this. min-gas-price on validators is 1.
 
 import { ethers } from "ethers";
 import { readFileSync, existsSync } from "fs";

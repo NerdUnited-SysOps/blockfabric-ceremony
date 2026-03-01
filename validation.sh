@@ -119,7 +119,11 @@ list_addreses() {
 run_validation() {
 	printf "Validating chain...\n\n"
 	if [[ -n "${BESU_MODE}" ]]; then
-		${SCRIPTS_DIR}/validation/run_validation_besu.sh -e "${ENV_FILE}"
+		${SCRIPTS_DIR}/validation/validate_chain_besu.sh \
+			-i $INVENTORY_PATH \
+			-p $RPC_PORT \
+			-r $RPC_PATH \
+			-v ${SCRIPTS_DIR}/validation/remoteValidate_besu.sh
 	else
 		${SCRIPTS_DIR}/validation/run_validation.sh -e "${ENV_FILE}"
 	fi
@@ -143,6 +147,10 @@ show_genesis() {
 	${SCRIPTS_DIR}/validation/inspect_node.sh -e "${ENV_FILE}" -m genesis
 }
 
+validate_genesis() {
+	${SCRIPTS_DIR}/validation/validate_genesis.sh -e "${ENV_FILE}"
+}
+
 usage() {
 	printf "This is an interface for validation of the ceremony.\n"
 	printf "You may select from the options below\n\n"
@@ -155,6 +163,7 @@ items=(
 	"List volume sizes"
 	"Show startup config"
 	"Print chain accounts"
+	"Validate genesis"
 	"Exit"
 )
 
@@ -173,7 +182,8 @@ if [[ -n "${DIRECT_OPTION}" ]]; then
 		4) list_volume_sizes;;
 		5) show_startup_config | tee -a ${LOG_FILE};;
 		6) print_account_range;;
-		7) printf "Closing.\n\n"; exit 0;;
+		7) validate_genesis | tee -a ${LOG_FILE};;
+		8) printf "Closing.\n\n"; exit 0;;
 		*) printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1;;
 	esac
 	exit 0
@@ -194,7 +204,8 @@ while true; do
 			4) clear -x; list_volume_sizes; break;;
 			5) clear -x; show_startup_config | tee -a ${LOG_FILE}; break;;
 			6) clear -x; print_account_range; break;;
-			7) printf "Closing.\n\n"; exit 0;;
+			7) clear -x; validate_genesis | tee -a ${LOG_FILE}; break;;
+			8) printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

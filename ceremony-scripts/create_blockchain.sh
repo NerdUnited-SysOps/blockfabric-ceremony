@@ -271,7 +271,27 @@ else
 fi
 
 if [[ -n "${BESU_MODE}" ]]; then
-	${SCRIPTS_DIR}/deploy_besu_network.sh -e "${ENV_FILE}" ${DEBUG_MODE:+-d} | tee -a "${LOG_FILE}"
+	source "${SCRIPTS_DIR}/ansible_helpers.sh"
+
+	printer -t "Tearing down existing Besu deployment"
+	ANSIBLE_HOST_KEY_CHECKING=False \
+	ANSIBLE_FORCE_COLOR=True \
+	ANSIBLE_ROLES_PATH="${ANSIBLE_ROLE_DIR}/..:${HOME}/.ansible/roles" \
+		run_ansible_logged "${LOG_FILE}" \
+		-e "ansible_ssh_private_key_file=${AWS_NODES_SSH_KEY_PATH}" \
+		-i "${INVENTORY_PATH}" \
+		"${ANSIBLE_ROLE_DIR}/test/teardown.yml"
+	printer -s "Teardown complete"
+
+	printer -t "Deploying Besu QBFT network"
+	ANSIBLE_HOST_KEY_CHECKING=False \
+	ANSIBLE_FORCE_COLOR=True \
+	ANSIBLE_ROLES_PATH="${ANSIBLE_ROLE_DIR}/..:${HOME}/.ansible/roles" \
+		run_ansible_logged "${LOG_FILE}" \
+		-e "ansible_ssh_private_key_file=${AWS_NODES_SSH_KEY_PATH}" \
+		-i "${INVENTORY_PATH}" \
+		"${ANSIBLE_ROLE_DIR}/test/validate.yml"
+	printer -s "Deployment complete"
 else
 	run_ansible
 fi

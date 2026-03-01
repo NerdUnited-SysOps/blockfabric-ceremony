@@ -113,7 +113,7 @@ put_all_quorum_var() {
 	FILE_NAME=${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 	if grep -q "^${VAR_NAME}" "${FILE_NAME}"
 	then
-		sed -i "s/${VAR_NAME}:.*/${VAR_NAME}: ${VAR_VAL}/g" "${FILE_NAME}"
+		sed -i "\\|^${VAR_NAME}:|s|.*|${VAR_NAME}: ${VAR_VAL}|" "${FILE_NAME}"
 	else
 		echo "${VAR_NAME}: ${VAR_VAL}" >> "${FILE_NAME}"
 	fi
@@ -157,6 +157,14 @@ format_storage_num() {
 	printf "%064x" "$1"
 }
 
+# Resolve a hostname to its ansible_host IP from the inventory file.
+# If the hostname is already an IP or not found, returns it unchanged.
+resolve_ip() {
+	local hostname=$1
+	local resolved=$(grep "^${hostname}\b" "${INVENTORY_PATH}" | grep -oP 'ansible_host=\K\S+')
+	echo "${resolved:-$hostname}"
+}
+
 generate_enode_list() {
 	BASE_KEYS_DIR=${VOLUMES_DIR}/volume1
 	LAST_IP=${VALIDATOR_IPS##* }
@@ -166,7 +174,8 @@ generate_enode_list() {
 		# Set the comma to an empty sting for the last line.
 		[ -z "${IP/$LAST_IP}" ] && COMMA=''
 		public_key=$(get_public_key "${BASE_KEYS_DIR}/${IP}/node")
-		echo -n "\"enode://${public_key}@${IP}:40111\"${COMMA}"
+		resolved_ip=$(resolve_ip "${IP}")
+		echo -n "\"enode://${public_key}@${resolved_ip}:40111\"${COMMA}"
 	done
 }
 
@@ -229,12 +238,9 @@ all_quorum_vars() {
 	sed -i '/goquorum_genesis_sc_lockup_storage/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 	echo "goquorum_genesis_sc_lockup_storage: ${sc_lockup_storage}" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 
-	# In Besu mode, besu-keygen generates bootnodes in network.yml
-	if [[ -z "${BESU_MODE}" ]]; then
-		enode_list=$(generate_enode_list)
-		sed -i '/goquorum_enode_list/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
-		echo "goquorum_enode_list: [${enode_list}]" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
-	fi
+	enode_list=$(generate_enode_list)
+	sed -i '/goquorum_enode_list/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
+	echo "goquorum_enode_list: [${enode_list}]" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 
 	# Kinda janky, but gets the job done - grabs the contents of Storage.txt and puts it in a variable
 	var="$(tail -n+6 $CONTRACTS_DIR/sc_dao/$DAO_VERSION/Storage.txt | head -n -2 | tr -d "[:blank:]\n")"
@@ -242,17 +248,20 @@ all_quorum_vars() {
 	echo "goquorum_genesis_sc_dao_storage: {${var}}" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 }
 
-# In Besu mode, besu-keygen handles nodekeys and enode list.
-# In GoQuorum mode, extract from geth keystores.
-if [[ -z "${BESU_MODE}" ]]; then
-	BASE_KEYS_DIR=${VOLUMES_DIR}/volume1
-	ANSIBLE_KEY_DIR=${ANSIBLE_CEREMONY_DIR}/keys
-	ips=(${(@s: :)VALIDATOR_IPS})
-	for IP in ${ips}; do
-		mkdir -p ${ANSIBLE_KEY_DIR}/${IP}
-		nodekey=$(get_private_key "${BASE_KEYS_DIR}/${IP}/node")
-		echo "${nodekey}" > "${ANSIBLE_KEY_DIR}/${IP}/nodekey"
-	done
+BASE_KEYS_DIR=${VOLUMES_DIR}/volume1
+ANSIBLE_KEY_DIR=${ANSIBLE_CEREMONY_DIR}/keys
+ips=(${(@s: :)VALIDATOR_IPS})
+for IP in ${ips}; do
+	mkdir -p ${ANSIBLE_KEY_DIR}/${IP}
+	nodekey=$(get_private_key "${BASE_KEYS_DIR}/${IP}/node")
+	echo "${nodekey}" > "${ANSIBLE_KEY_DIR}/${IP}/nodekey"
+done
+
+if [[ -n "${BESU_MODE}" ]]; then
+	put_all_quorum_var "besu_keys_dir" "$(realpath ${ANSIBLE_CEREMONY_DIR}/keys)"
+	put_all_quorum_var "besu_genesis_validator_contract_address" "\"0x5a443704dd4B594B382c22a083e2BD3090A6feF3\""
+	rm -f "${ANSIBLE_DIR}/group_vars/besu/network.yml"  # clean stale besu-keygen output (brand repo download)
+	rm -f "${BESU_ROLE_INSTALL_PATH}/test/group_vars/besu/network.yml"  # clean stale besu-keygen output (git clone)
 fi
 
 all_quorum_vars

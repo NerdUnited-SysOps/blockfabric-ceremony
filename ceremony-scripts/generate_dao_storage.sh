@@ -11,6 +11,16 @@ usage() {
   echo "Example: "
 }
 
+# Pre-process --besu flag (getopts does not support long options)
+args=()
+for arg in "$@"; do
+    case "$arg" in
+        --besu) BESU_MODE=true ;;
+        *) args+=("$arg") ;;
+    esac
+done
+set -- "${args[@]}"
+
 while getopts 'e:hi:l:' option; do
 	case "$option" in
 		e)

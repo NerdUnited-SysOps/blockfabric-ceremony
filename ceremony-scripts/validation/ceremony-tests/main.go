@@ -25,7 +25,7 @@ var failures int
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: ceremony-test <distribute|vote>\n")
+		fmt.Fprintf(os.Stderr, "Usage: ceremony-test <distribute|vote|create-contract>\n")
 		os.Exit(1)
 	}
 	switch os.Args[1] {
@@ -33,6 +33,8 @@ func main() {
 		runDistribute()
 	case "vote":
 		runVote()
+	case "create-contract":
+		runCreateContract()
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown subcommand: %s\n", os.Args[1])
 		os.Exit(1)

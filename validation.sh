@@ -180,6 +180,15 @@ test_vote() {
 		"$BIN" vote
 }
 
+test_create_contract() {
+	local BIN=$(build_ceremony_test)
+	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+
+	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
+	DEPLOYER_KEY_PATH="${VOLUMES_DIR}/volume2/distributionIssuer/privatekey" \
+		"$BIN" create-contract
+}
+
 usage() {
 	printf "This is an interface for validation of the ceremony.\n"
 	printf "You may select from the options below\n\n"
@@ -195,7 +204,7 @@ items=(
 	"Validate genesis"
 )
 
-[ -n "${DEV_ENABLED}" ] && items+=("Test distribution" "Test vote")
+[ -n "${DEV_ENABLED}" ] && items+=("Test distribution" "Test vote" "Test create contract")
 
 items+=("Exit")
 
@@ -217,7 +226,8 @@ if [[ -n "${DIRECT_OPTION}" ]]; then
 		7) validate_genesis | tee -a ${LOG_FILE};;
 		8) [[ -n "${DEV_ENABLED}" ]] && test_distribution || { printf "Closing.\n\n"; exit 0; };;
 		9) [[ -n "${DEV_ENABLED}" ]] && test_vote || { printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1; };;
-		10) [[ -n "${DEV_ENABLED}" ]] && { printf "Closing.\n\n"; exit 0; } || { printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1; };;
+		10) [[ -n "${DEV_ENABLED}" ]] && test_create_contract || { printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1; };;
+		11) [[ -n "${DEV_ENABLED}" ]] && { printf "Closing.\n\n"; exit 0; } || { printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1; };;
 		*) printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1;;
 	esac
 	exit 0
@@ -252,7 +262,14 @@ while true; do
 					printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n"
 					usage; break
 				fi;;
-			10) printf "Closing.\n\n"; exit 0;;
+			10)
+				if [[ -n "${DEV_ENABLED}" ]]; then
+					clear -x; test_create_contract; break
+				else
+					printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n"
+					usage; break
+				fi;;
+			11) printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

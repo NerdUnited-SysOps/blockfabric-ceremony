@@ -72,7 +72,7 @@ create_blockchain() {
 }
 
 run_validation() {
-	./validation.sh -e "${ENV_FILE}" ${BESU_MODE:+--besu}
+	./validation.sh -e "${ENV_FILE}" ${BESU_MODE:+--besu} ${DEV_ENABLED:+-d}
 }
 
 persistence() {
@@ -110,7 +110,7 @@ if [[ -n "${DIRECT_OPTION}" ]]; then
 	[[ -n "${DIRECT_SUBOPTION}" ]] && SUB_FLAG=(-o "${DIRECT_SUBOPTION}")
 	case ${DIRECT_OPTION} in
 		1) create_blockchain;;
-		2) ./validation.sh -e "${ENV_FILE}" ${BESU_MODE:+--besu} "${SUB_FLAG[@]}";;
+		2) ./validation.sh -e "${ENV_FILE}" ${BESU_MODE:+--besu} ${DEV_ENABLED:+-d} "${SUB_FLAG[@]}";;
 		3) ./persistence.sh -e "${ENV_FILE}" | tee -a "${LOG_FILE}";;
 		4) printf "Closing\n\n"; exit 1;;
 		5)

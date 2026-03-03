@@ -18,8 +18,9 @@ for arg in "$@"; do
 done
 set -- "${args[@]}"
 
-while getopts e:ho: option; do
+while getopts de:ho: option; do
 	case "${option}" in
+		d) DEV_ENABLED="true";;
 		e)
 			ENV_FILE=${OPTARG}
 			;;
@@ -151,6 +152,34 @@ validate_genesis() {
 	${SCRIPTS_DIR}/validation/validate_genesis.sh -e "${ENV_FILE}"
 }
 
+build_ceremony_test() {
+	local BIN="${SCRIPTS_DIR}/validation/ceremony-tests/ceremony-test"
+	if [[ ! -x "$BIN" ]]; then
+		(cd "${SCRIPTS_DIR}/validation/ceremony-tests" && go mod tidy && go build -o ceremony-test .) &>> ${LOG_FILE}
+	fi
+	echo "$BIN"
+}
+
+test_distribution() {
+	local BIN=$(build_ceremony_test)
+	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+
+	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
+	ISSUER_KEY_PATH="${VOLUMES_DIR}/volume2/distributionIssuer/privatekey" \
+	RECIPIENT_KEY_PATH="${VOLUMES_DIR}/volume1/besu-v-1/account/privatekey" \
+		"$BIN" distribute
+}
+
+test_vote() {
+	local BIN=$(build_ceremony_test)
+	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+
+	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
+	DAO_ADDRESS="0x5a443704dd4B594B382c22a083e2BD3090A6feF3" \
+	VOLUMES_DIR="${VOLUMES_DIR}" \
+		"$BIN" vote
+}
+
 usage() {
 	printf "This is an interface for validation of the ceremony.\n"
 	printf "You may select from the options below\n\n"
@@ -164,8 +193,11 @@ items=(
 	"Show startup config"
 	"Print chain accounts"
 	"Validate genesis"
-	"Exit"
 )
+
+[ -n "${DEV_ENABLED}" ] && items+=("Test distribution" "Test vote")
+
+items+=("Exit")
 
 NC='\033[0m'
 RED='\033[0;31m'
@@ -183,7 +215,9 @@ if [[ -n "${DIRECT_OPTION}" ]]; then
 		5) show_startup_config | tee -a ${LOG_FILE};;
 		6) print_account_range;;
 		7) validate_genesis | tee -a ${LOG_FILE};;
-		8) printf "Closing.\n\n"; exit 0;;
+		8) [[ -n "${DEV_ENABLED}" ]] && test_distribution || { printf "Closing.\n\n"; exit 0; };;
+		9) [[ -n "${DEV_ENABLED}" ]] && test_vote || { printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1; };;
+		10) [[ -n "${DEV_ENABLED}" ]] && { printf "Closing.\n\n"; exit 0; } || { printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1; };;
 		*) printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1;;
 	esac
 	exit 0
@@ -205,7 +239,14 @@ while true; do
 			5) clear -x; show_startup_config | tee -a ${LOG_FILE}; break;;
 			6) clear -x; print_account_range; break;;
 			7) clear -x; validate_genesis | tee -a ${LOG_FILE}; break;;
-			8) printf "Closing.\n\n"; exit 0;;
+			8)
+				if [[ -n "${DEV_ENABLED}" ]]; then
+					clear -x; test_distribution; break
+				else
+					printf "Closing.\n\n"; exit 0
+				fi;;
+			9) clear -x; test_vote; break;;
+			10) printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

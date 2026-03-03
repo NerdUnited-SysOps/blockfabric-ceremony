@@ -137,28 +137,11 @@ print_logo() {
 	printf "\n\n"
 }
 
-test_distribution() {
-	local SCRIPT_DIR="${SCRIPTS_DIR}/validation/test_distribution"
-	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
-
-	cd "${SCRIPT_DIR}"
-	npm i &>> ${LOG_FILE}
-
-	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
-	CHAIN_ID="${CHAIN_ID}" \
-	ISSUER_KEY_PATH="${VOLUMES_DIR}/volume2/distributionIssuer/privatekey" \
-	RECIPIENT_KEY_PATH="${VOLUMES_DIR}/volume1/besu-v-1/account/privatekey" \
-		node test_distribution.mjs
-
-	cd - > /dev/null
-}
-
 items=(
 	"Reset network ${CHAIN_NAME} ${NETWORK_TYPE}"
 	"Reset files"
 	"Run ansible-playbook"
 	"Print logo"
-	"Test distribution"
 	"Exit"
 )
 
@@ -187,8 +170,7 @@ if [[ -n "${DIRECT_OPTION}" ]]; then
 				run_ansible_playbook
 			fi;;
 		4) print_logo;;
-		5) test_distribution;;
-		6) printf "Closing\n\n"; exit 0;;
+		5) printf "Closing\n\n"; exit 0;;
 		*) printf "\n\nOoos, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1;;
 	esac
 	exit 0
@@ -224,8 +206,7 @@ while true; do
 				fi
 				break;;
 			4) clear -x; print_logo; break;;
-			5) clear -x; test_distribution; break;;
-			6) printf "Closing\n\n"; exit 0;;
+			5) printf "Closing\n\n"; exit 0;;
 			*)
 				printf "\n\nOoos, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

@@ -245,7 +245,13 @@ while true; do
 				else
 					printf "Closing.\n\n"; exit 0
 				fi;;
-			9) clear -x; test_vote; break;;
+			9)
+				if [[ -n "${DEV_ENABLED}" ]]; then
+					clear -x; test_vote; break
+				else
+					printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n"
+					usage; break
+				fi;;
 			10) printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";

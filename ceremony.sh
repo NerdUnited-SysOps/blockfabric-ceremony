@@ -7,6 +7,7 @@ usage() {
 	echo "  -e : Envifonment config file"
 	echo "  -o : Option number (e.g., -o 1 or -o 2,1 for submenu)"
 	echo "  --besu : Use Besu validation and deployment"
+	echo "  --dry-run : Preview persistence actions without executing"
 	echo "  -h : This help message"
 }
 
@@ -15,6 +16,7 @@ args=()
 for arg in "$@"; do
     case "$arg" in
         --besu) BESU_MODE=true ;;
+        --dry-run) DRY_RUN=true ;;
         *) args+=("$arg") ;;
     esac
 done
@@ -111,7 +113,7 @@ if [[ -n "${DIRECT_OPTION}" ]]; then
 	case ${DIRECT_OPTION} in
 		1) create_blockchain;;
 		2) ./validation.sh -e "${ENV_FILE}" ${BESU_MODE:+--besu} ${DEV_ENABLED:+-d} "${SUB_FLAG[@]}";;
-		3) ./persistence.sh -e "${ENV_FILE}" | tee -a "${LOG_FILE}";;
+		3) ./persistence.sh -e "${ENV_FILE}" ${DRY_RUN:+--dry-run} | tee -a "${LOG_FILE}";;
 		4) printf "Closing\n\n"; exit 1;;
 		5)
 			if [[ -n "${DEV_ENABLED}" ]]; then

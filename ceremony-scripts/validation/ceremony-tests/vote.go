@@ -125,9 +125,11 @@ func runVote() {
 	fmt.Printf("Allowed accounts after add: %d\n", afterAddAllowed)
 	check("Allowed accounts increased by 1", afterAddAllowed == initialAllowed+1)
 
-	// Vote to REMOVE
+	// Vote to REMOVE — recalculate majority (numAllowedAccounts increased)
 	fmt.Println("\n--- Vote to REMOVE ---")
-	for i := 0; i < majority; i++ {
+	removeMajority := int(afterAddAllowed)/2 + 1
+	fmt.Printf("Need %d/%d votes for removal majority\n", removeMajority, afterAddAllowed)
+	for i := 0; i < removeMajority; i++ {
 		v := validators[i]
 		data := encodeAddressArg(selVoteToRemoveAccountFromAllowList, testAddr)
 		fmt.Printf("  %s voting to remove...\n", v.name)

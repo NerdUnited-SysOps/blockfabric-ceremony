@@ -134,6 +134,8 @@ get_inventory() {
 
 	printer -t "Downloading inventory file"
 
+	mkdir -p "$(dirname "${INVENTORY_PATH}")"
+
 	scp -o StrictHostKeyChecking=no \
 		-i ${AWS_CONDUCTOR_SSH_KEY_PATH} \
 		"${SCP_USER}"@"${CONDUCTOR_NODE_URL}":"${REMOTE_INVENTORY_PATH}" \

@@ -72,6 +72,7 @@ echo
 
 
 ########################## SSH config
+scp $chain@$bootstrap:~/ssh.config.template ${HOME}/.ssh/config.template > /dev/null 2>&1
 cp ${HOME}/.ssh/config.template ${HOME}/.ssh/config > /dev/null 2>&1
 sed -i "s/chain/$chain/g"     ${HOME}/.ssh/config > /dev/null 2>&1
 sed -i "s/brand/$chain/g"     ${HOME}/.ssh/config > /dev/null 2>&1

@@ -126,26 +126,16 @@ get_ansible_vars() {
 }
 
 get_inventory() {
-	[[ -z "${AWS_CONDUCTOR_SSH_KEY_PATH}" ]] && echo ".env is missing AWS_CONDUCTOR_SSH_KEY_PATH variable" && exit 1
-	[[ -z "${SCP_USER}" ]] && echo ".env is missing SCP_USER variable" && exit 1
-	[[ -z "${CONDUCTOR_NODE_URL}" ]] && echo ".env is missing CONDUCTOR_NODE_URL variable" && exit 1
-	[[ -z "${REMOTE_INVENTORY_PATH}" ]] && echo ".env is missing REMOTE_INVENTORY_PATH variable" && exit 1
-	[[ -z "${INVENTORY_PATH}" ]] && echo ".env is missing INVENTORY_PATH variable" && exit 1
+        [[ -z "${INVENTORY_PATH}" ]] && echo ".env is missing INVENTORY_PATH variable" && exit 1
 
-	printer -t "Downloading inventory file"
+        printer -t "Checking inventory file"
 
-	mkdir -p "$(dirname "${INVENTORY_PATH}")"
-
-	scp -o StrictHostKeyChecking=no \
-		-i ${AWS_CONDUCTOR_SSH_KEY_PATH} \
-		"${SCP_USER}"@"${CONDUCTOR_NODE_URL}":"${REMOTE_INVENTORY_PATH}" \
-		"${INVENTORY_PATH}"
-
-	if [ -n "${$?}" ] && [ -f "$INVENTORY_PATH" ]; then
-		printer -s "$INVENTORY_PATH exists."
-	else
-		printer -e "Failed to retrieve inventory"
-	fi
+        if [ -f "${INVENTORY_PATH}" ]; then
+                printer -s "$INVENTORY_PATH exists"
+        else
+                printer -e "Inventory not found at ${INVENTORY_PATH}"
+                exit
+        fi
 }
 
 install_ansible_role() {

@@ -159,6 +159,8 @@ function fetch_bridge_x_secrets()
   echo;echo;echo;echo "========== Fetching bridge_x secrets from AWS and persisting ==========" | tee -a "$bootstrap_log"
 
   ## Helper: upsert a variable into the env file
+  ## New variables are PREPENDED (not appended) so that downstream
+  ## lines like BRIDGE_X_REPO="https://${GITHUB_PAT}@..." see them.
   _upsert_env() {
     local var_name=$1
     local var_val=$2
@@ -169,7 +171,10 @@ function fetch_bridge_x_secrets()
       sed "s/^export ${var_name}=.*/export ${var_name}=\"${escaped_val}\"/" "${env_file}" > "${tmpfile}"
       mv "${tmpfile}" "${env_file}"
     else
-      echo "export ${var_name}=\"${var_val}\"" >> "${env_file}"
+      local tmpfile=$(mktemp)
+      echo "export ${var_name}=\"${var_val}\"" > "${tmpfile}"
+      cat "${env_file}" >> "${tmpfile}"
+      mv "${tmpfile}" "${env_file}"
     fi
     echo "  persisted ${var_name}" | tee -a "$bootstrap_log"
   }

@@ -85,7 +85,7 @@ scp $chain@$bootstrap:~/clean.sh ${HOME}/ > /dev/null 2>&1
 echo;echo;echo;echo "========== Creating local AWS configurtion and list S3 bucket to verify ==========" | tee -a "$bootstrap_log"
 mkdir ${HOME}/.aws > /dev/null 2>&1
 scp $chain@$bootstrap:~/credentials.$network.$chain ${HOME}/.aws/credentials | tee -a "$bootstrap_log"
-aws s3 ls --profile secrets  | tee -a "$bootstrap_log"
+aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
 ###aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
 
 echo
@@ -93,7 +93,7 @@ echo "    If successful, press ENTER"
 read
 
 ########################## Retrieve github token
-pat=$(aws secretsmanager --profile secrets get-secret-value --secret-id ceremony_pat --query SecretString --output text)
+pat=$(aws secretsmanager --profile blockfabric get-secret-value --secret-id ceremony_pat --query SecretString --output text)
 echo -n " pat is: ..." >>  "$bootstrap_log"
 echo $pat | tail -c 5 >> "$bootstrap_log"
 

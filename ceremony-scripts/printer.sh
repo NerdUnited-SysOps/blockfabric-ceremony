@@ -38,15 +38,7 @@ gradient() {
 }
 
 print_date() {
-	year=$(date +'%y')
-	printed_year=""
-	if (( "${year}" == "22" )); then
-		printed_year="twenty two"
-	else
-		printed_year="twenty four"
-	fi
-
-	printf "two thousand ${printed_year}"
+	date +'%B %d, %Y'
 }
 
 while getopts 'be:f:g:s:t:n:w:' option; do
@@ -73,11 +65,11 @@ while getopts 'be:f:g:s:t:n:w:' option; do
 		f)
 			GRADIENT_START=${OPTARG}
 			printf "\n\n\n\n"
-			gradient "    _   ____________  ____  _____" "${GRADIENT_START}"
-			gradient "   / | / / ____/ __ \/ __ \/ ___/" "${GRADIENT_START}"
-			gradient "  /  |/ / __/ / /_/ / / / /\__ \ " "${GRADIENT_START}"
-			gradient " / /|  / /___/ _, _/ /_/ /___/ / " "${GRADIENT_START}"
-			gradient "/_/ |_/_____/_/ |_/_____//____/  " "${GRADIENT_START}"
+			gradient "    ______                      __      __  _                 " "${GRADIENT_START}"
+			gradient "   / ____/___  __  ______  ____/ /___ _/ /_(_)___  ____  _____" "${GRADIENT_START}"
+			gradient "  / /_  / __ \/ / / / __ \/ __  / __ \`/ __/ / __ \/ __ \/ ___/" "${GRADIENT_START}"
+			gradient " / __/ / /_/ / /_/ / / / / /_/ / /_/ / /_/ / /_/ / / / (__  ) " "${GRADIENT_START}"
+			gradient "/_/    \____/\__,_/_/ /_/\__,_/\__,_/\__/_/\____/_/ /_/____/  " "${GRADIENT_START}"
 			printf "\n\n\n${NC}"
 
 			exit 0

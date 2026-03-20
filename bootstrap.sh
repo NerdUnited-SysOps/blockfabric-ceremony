@@ -280,7 +280,7 @@ do
 
     ## types array needed at the end to make multiple bootstrap.log files; 1 per type
     types+=($type)
-    echo; echo "    If successful, press ENTER"; read
+    echo; echo "                     press ENTER to continue"; read
     echo; echo
   fi
 

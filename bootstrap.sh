@@ -82,15 +82,51 @@ sed -i "s/network/$network/g" ${HOME}/.ssh/config > /dev/null 2>&1
 scp $chain@$bootstrap:~/clean.sh ${HOME}/ > /dev/null 2>&1
 
 ########################## AWS credentials
-echo;echo;echo;echo "========== Creating local AWS configurtion and list S3 bucket to verify ==========" | tee -a "$bootstrap_log"
-mkdir ${HOME}/.aws > /dev/null 2>&1
-scp $chain@$bootstrap:~/credentials.$network.$chain ${HOME}/.aws/credentials | tee -a "$bootstrap_log"
-aws s3 ls --profile blockfabric  | tee -a "$bootstrap_log"
-###aws s3 ls --profile chain | grep $network | tee -a "$bootstrap_log"
-
 echo
-echo "    If successful, press ENTER"
+echo "========== Creating local AWS configuration and verifying S3 bucket ==========" | tee -a "$bootstrap_log"
+
+mkdir -p "${HOME}/.aws"
+
+if ! scp "${chain}@${bootstrap}:~/credentials.${network}.${chain}" "${HOME}/.aws/credentials" | tee -a "$bootstrap_log"; then
+    echo "ERROR: Failed to copy AWS credentials from ${bootstrap}" | tee -a "$bootstrap_log"
+    exit 1
+fi
+
+expected_bucket="${network}-${chain}"
+
+echo "Listing accessible S3 buckets" | tee -a "$bootstrap_log"
+
+bucket_listing="$(aws s3 ls --profile blockfabric 2>&1)"
+aws_status=$?
+
+echo "$bucket_listing" | tee -a "$bootstrap_log"
+
+if [ "$aws_status" -ne 0 ]; then
+    echo "ERROR: Failed to list S3 buckets using profile 'blockfabric'" | tee -a "$bootstrap_log"
+    exit 1
+fi
+
+if ! printf '%s\n' "$bucket_listing" | awk '{print $3}' | grep -Fxq "$expected_bucket"; then
+    echo "ERROR: Expected S3 bucket '${expected_bucket}' was not found" | tee -a "$bootstrap_log"
+    exit 1
+fi
+
+echo "Verified: found S3 bucket '${expected_bucket}'" | tee -a "$bootstrap_log"
+
+echo "Listing contents of s3://${expected_bucket}/" | tee -a "$bootstrap_log"
+
+bucket_contents="$(aws s3 ls "s3://${expected_bucket}/" --profile blockfabric 2>&1)"
+aws_status=$?
+
+echo "$bucket_contents" | tee -a "$bootstrap_log"
+
+if [ "$aws_status" -ne 0 ]; then
+    echo "ERROR: Failed to list contents of s3://${expected_bucket}/" | tee -a "$bootstrap_log"
+    exit 1
+fi
+echo "                     press ENTER to continue"
 read
+echo
 
 ########################## Retrieve github token
 pat=$(aws secretsmanager --profile blockfabric get-secret-value --secret-id ceremony_pat --query SecretString --output text)

@@ -31,7 +31,9 @@ get_ips() {
     group=${1:-rpc}
     ansible-inventory -i ${INVENTORY_PATH} --list 2>/dev/null \
         | jq -r --arg g "$group" '
-            .[$g].hosts[] as $h | ._meta.hostvars[$h].ansible_host // empty
+            .[$g].hosts[] as $h |
+            select(._meta.hostvars[$h].skip_validation != "true") |
+            ._meta.hostvars[$h].ansible_host // empty
         ' | tr "\n" " " ; echo
 }
 

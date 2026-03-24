@@ -81,17 +81,17 @@ for addr in "${alloc_addresses[@]}"; do
     addr_lower=$(echo "${addr}" | tr '[:upper:]' '[:lower:]')
 
     # Get balance via RPC
-    balance_hex=$(curl -s -X POST \
+    balance_hex=$(curl -sk -X POST \
         -H "Content-Type: application/json" \
         -d "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBalance\",\"params\":[\"${addr_lower}\", \"latest\"],\"id\":1}" \
-        "http://${RPC_IP}:${RPC_PORT}" | jq -r '.result')
+        "https://${RPC_IP}:${RPC_PORT}" | jq -r '.result')
     balance_dec=$(hex_to_dec "${balance_hex}")
 
     # Get code to classify contract vs EOA
-    code=$(curl -s -X POST \
+    code=$(curl -sk -X POST \
         -H "Content-Type: application/json" \
         -d "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getCode\",\"params\":[\"${addr_lower}\", \"latest\"],\"id\":1}" \
-        "http://${RPC_IP}:${RPC_PORT}" | jq -r '.result')
+        "https://${RPC_IP}:${RPC_PORT}" | jq -r '.result')
 
     if [[ "${code}" == "0x" ]] || [[ "${code}" == "0x0" ]] || [[ -z "${code}" ]]; then
         addr_type="EOA"

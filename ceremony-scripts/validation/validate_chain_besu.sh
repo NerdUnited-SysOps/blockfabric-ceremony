@@ -39,20 +39,22 @@ ssh_rpc_call() {
     local ip=$1
     local method=$2
     local params=${3:-[]}
+    local scheme=${4:-http}
 
     LC_ALL= ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 \
         -i ${AWS_NODES_SSH_KEY_PATH} ${NODE_USER}@${ip} \
-        "curl -s --max-time 3 -X POST -H 'Content-Type: application/json' \
+        "curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
         -d '{\"jsonrpc\":\"2.0\",\"method\":\"${method}\",\"params\":${params},\"id\":1}' \
-        http://localhost:${RPC_PORT}"
+        ${scheme}://localhost:${RPC_PORT}"
 }
 
 verify_each() {
     local HOST=$1
+    local SCHEME=${2:-http}
 
-    local gas_hex=$(ssh_rpc_call ${HOST} "eth_gasPrice" | jq -r '.result')
-    local block_hex=$(ssh_rpc_call ${HOST} "eth_blockNumber" | jq -r '.result')
-    local peers_hex=$(ssh_rpc_call ${HOST} "net_peerCount" | jq -r '.result')
+    local gas_hex=$(ssh_rpc_call ${HOST} "eth_gasPrice" "[]" "${SCHEME}" | jq -r '.result')
+    local block_hex=$(ssh_rpc_call ${HOST} "eth_blockNumber" "[]" "${SCHEME}" | jq -r '.result')
+    local peers_hex=$(ssh_rpc_call ${HOST} "net_peerCount" "[]" "${SCHEME}" | jq -r '.result')
 
     local gas=$((${gas_hex}))
     local block=$((${block_hex}))
@@ -107,7 +109,7 @@ done
 
 # RPCs
 for ip in $(echo $RPC_IP_LIST); do
-    ( verify_each $ip > /tmp/_validate_rpc_${ip} ) &
+    ( verify_each $ip https > /tmp/_validate_rpc_${ip} ) &
     rpc_pids+=($!)
     rpc_ips+=($ip)
 done

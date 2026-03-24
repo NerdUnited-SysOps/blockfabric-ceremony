@@ -54,9 +54,24 @@ verify_each() {
     local HOST=$1
     local SCHEME=${2:-http}
 
-    local gas_hex=$(ssh_rpc_call ${HOST} "eth_gasPrice" "[]" "${SCHEME}" | jq -r '.result')
-    local block_hex=$(ssh_rpc_call ${HOST} "eth_blockNumber" "[]" "${SCHEME}" | jq -r '.result')
-    local peers_hex=$(ssh_rpc_call ${HOST} "net_peerCount" "[]" "${SCHEME}" | jq -r '.result')
+    # Batch all 3 RPC calls in a single SSH session to avoid connection storms
+    local results=$(LC_ALL= ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
+        -i ${AWS_NODES_SSH_KEY_PATH} ${NODE_USER}@${HOST} "
+        gas=\$(curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
+            -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_gasPrice\",\"params\":[],\"id\":1}' \
+            ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null | jq -r '.result')
+        block=\$(curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
+            -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":2}' \
+            ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null | jq -r '.result')
+        peers=\$(curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
+            -d '{\"jsonrpc\":\"2.0\",\"method\":\"net_peerCount\",\"params\":[],\"id\":3}' \
+            ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null | jq -r '.result')
+        echo \"\${gas} \${block} \${peers}\"
+    " 2>/dev/null)
+
+    local gas_hex=$(echo $results | awk '{print $1}')
+    local block_hex=$(echo $results | awk '{print $2}')
+    local peers_hex=$(echo $results | awk '{print $3}')
 
     local gas=$((${gas_hex}))
     local block=$((${block_hex}))

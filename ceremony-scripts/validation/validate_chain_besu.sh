@@ -55,23 +55,25 @@ verify_each() {
     local SCHEME=${2:-http}
 
     # Batch all 3 RPC calls in a single SSH session to avoid connection storms
-    local results=$(LC_ALL= ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
+    # JSON is parsed locally (jq may not be installed on target nodes)
+    local raw=$(LC_ALL= ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
         -i ${AWS_NODES_SSH_KEY_PATH} ${NODE_USER}@${HOST} "
-        gas=\$(curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
+        curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
             -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_gasPrice\",\"params\":[],\"id\":1}' \
-            ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null | jq -r '.result')
-        block=\$(curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
+            ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null
+        echo ''
+        curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
             -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":2}' \
-            ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null | jq -r '.result')
-        peers=\$(curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
+            ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null
+        echo ''
+        curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
             -d '{\"jsonrpc\":\"2.0\",\"method\":\"net_peerCount\",\"params\":[],\"id\":3}' \
-            ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null | jq -r '.result')
-        echo \"\${gas} \${block} \${peers}\"
+            ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null
     " 2>/dev/null)
 
-    local gas_hex=$(echo $results | awk '{print $1}')
-    local block_hex=$(echo $results | awk '{print $2}')
-    local peers_hex=$(echo $results | awk '{print $3}')
+    local gas_hex=$(echo $raw | sed -n '1p' | jq -r '.result')
+    local block_hex=$(echo $raw | sed -n '2p' | jq -r '.result')
+    local peers_hex=$(echo $raw | sed -n '3p' | jq -r '.result')
 
     local gas=$((${gas_hex}))
     local block=$((${block_hex}))

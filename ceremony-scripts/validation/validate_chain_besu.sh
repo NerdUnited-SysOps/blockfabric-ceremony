@@ -54,30 +54,25 @@ verify_each() {
     local HOST=$1
     local SCHEME=${2:-http}
 
-    # Batch all 3 RPC calls in a single SSH session to avoid connection storms
-    # JSON is parsed locally (jq may not be installed on target nodes)
+    # Use JSON-RPC batch request (single curl) to fetch all 3 values at once
+    # Parse responses by id field so order doesn't matter
     local raw=$(LC_ALL= ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
         -i ${AWS_NODES_SSH_KEY_PATH} ${NODE_USER}@${HOST} "
-        curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
-            -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_gasPrice\",\"params\":[],\"id\":1}' \
-            ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null
-        echo ''
-        curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
-            -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":2}' \
-            ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null
-        echo ''
-        curl -sk --max-time 3 -X POST -H 'Content-Type: application/json' \
-            -d '{\"jsonrpc\":\"2.0\",\"method\":\"net_peerCount\",\"params\":[],\"id\":3}' \
+        curl -sk --max-time 10 -X POST -H 'Content-Type: application/json' \
+            -d '[{\"jsonrpc\":\"2.0\",\"method\":\"eth_gasPrice\",\"params\":[],\"id\":1},{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":2},{\"jsonrpc\":\"2.0\",\"method\":\"net_peerCount\",\"params\":[],\"id\":3}]' \
             ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null
     " 2>/dev/null)
 
-    local gas_hex=$(echo $raw | sed -n '1p' | jq -r '.result')
-    local block_hex=$(echo $raw | sed -n '2p' | jq -r '.result')
-    local peers_hex=$(echo $raw | sed -n '3p' | jq -r '.result')
+    local gas=0 block=0 peers=0
+    if [[ -n "$raw" ]]; then
+        local gas_hex=$(echo "$raw" | jq -r '.[] | select(.id == 1) | .result // empty')
+        local block_hex=$(echo "$raw" | jq -r '.[] | select(.id == 2) | .result // empty')
+        local peers_hex=$(echo "$raw" | jq -r '.[] | select(.id == 3) | .result // empty')
 
-    local gas=$((${gas_hex}))
-    local block=$((${block_hex}))
-    local peers=$((${peers_hex}))
+        [[ -n "$gas_hex" ]] && gas=$((${gas_hex}))
+        [[ -n "$block_hex" ]] && block=$((${block_hex}))
+        [[ -n "$peers_hex" ]] && peers=$((${peers_hex}))
+    fi
 
     printf " IP: ${HOST}\tGas: ${gas} Block: ${block} Peers: ${peers}\n"
 }

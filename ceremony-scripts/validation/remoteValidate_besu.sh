@@ -160,8 +160,7 @@ done
 # Calculate days since unlock and current unlocked
 now_seconds=$(date +%s)
 days_since_unlock=$(( (now_seconds - lockup_timestamp_dec) / 60 / 60 / 24 ))
-current_unlocked=$(python3 -c "print(${days_since_unlock} * ${lockup_daily_unlock_dec})")
-[[ $current_unlocked -lt 0 ]] && current_unlocked=0
+current_unlocked=$(python3 -c "print(max(0, ${days_since_unlock} * ${lockup_daily_unlock_dec}))")
 
 # Distribution started date
 distribution_started=$(date -d @${lockup_timestamp_dec} 2>/dev/null || date -r ${lockup_timestamp_dec} 2>/dev/null)

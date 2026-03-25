@@ -2,21 +2,10 @@
 
 usage() {
 	echo "Options"
-	echo "  -e : Envifonment config file"
+	echo "  -e : Environment config file"
 	echo "  -o : Option number for non-interactive selection"
-	echo "  --besu : Use Besu validation scripts"
 	echo "  -h : This help message"
 }
-
-# Pre-process --besu flag (getopts doesn't support long options)
-args=()
-for arg in "$@"; do
-	case "$arg" in
-		--besu) BESU_MODE=true ;;
-		*) args+=("$arg") ;;
-	esac
-done
-set -- "${args[@]}"
 
 while getopts de:ho: option; do
 	case "${option}" in
@@ -119,24 +108,16 @@ list_addreses() {
 
 run_validation() {
 	printf "Validating chain...\n\n"
-	if [[ -n "${BESU_MODE}" ]]; then
-		${SCRIPTS_DIR}/validation/validate_chain_besu.sh \
-			-i $INVENTORY_PATH \
-			-p $RPC_PORT \
-			-r $RPC_PATH \
-			-v ${SCRIPTS_DIR}/validation/remoteValidate_besu.sh
-	else
-		${SCRIPTS_DIR}/validation/run_validation.sh -e "${ENV_FILE}"
-	fi
+	${SCRIPTS_DIR}/validation/validate_chain_besu.sh \
+		-i $INVENTORY_PATH \
+		-p $RPC_PORT \
+		-r $RPC_PATH \
+		-v ${SCRIPTS_DIR}/validation/remoteValidate_besu.sh
 	printf "\n\nNote: It takes a minute for all nodes to catch up with their peers.\n\n"
 }
 
 print_account_range() {
-	if [[ -n "${BESU_MODE}" ]]; then
-		${SCRIPTS_DIR}/validation/besu_account_range.sh -e "${ENV_FILE}" | tee -a ${LOG_FILE}
-	else
-		./exec_chain.sh -e "${ENV_FILE}" "debug.accountRange()" | tee -a ${LOG_FILE}
-	fi
+	${SCRIPTS_DIR}/validation/besu_account_range.sh -e "${ENV_FILE}" | tee -a ${LOG_FILE}
 	printf "\n\n"
 }
 

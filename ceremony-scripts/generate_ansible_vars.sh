@@ -17,15 +17,6 @@ help() {
 	exit 1
 }
 
-# Pre-process --besu flag
-args=()
-for arg in "$@"; do
-    case "$arg" in
-        --besu) BESU_MODE=true ;;
-        *) args+=("$arg") ;;
-    esac
-done
-set -- "${args[@]}"
 
 while getopts e:hv:r: option; do
 	case "${option}" in
@@ -259,12 +250,10 @@ for IP in ${ips}; do
 	echo "${nodekey}" > "${ANSIBLE_KEY_DIR}/${IP}/nodekey"
 done
 
-if [[ -n "${BESU_MODE}" ]]; then
-	put_all_quorum_var "besu_keys_dir" "$(realpath ${ANSIBLE_CEREMONY_DIR}/keys)"
-	put_all_quorum_var "besu_genesis_validator_contract_address" "\"0x5a443704dd4B594B382c22a083e2BD3090A6feF3\""
-	rm -f "${ANSIBLE_DIR}/group_vars/besu/network.yml"  # clean stale besu-keygen output (brand repo download)
-	rm -f "${BESU_ROLE_INSTALL_PATH}/test/group_vars/besu/network.yml"  # clean stale besu-keygen output (git clone)
-fi
+put_all_quorum_var "besu_keys_dir" "$(realpath ${ANSIBLE_CEREMONY_DIR}/keys)"
+put_all_quorum_var "besu_genesis_validator_contract_address" "\"0x5a443704dd4B594B382c22a083e2BD3090A6feF3\""
+rm -f "${ANSIBLE_DIR}/group_vars/besu/network.yml"  # clean stale besu-keygen output (brand repo download)
+rm -f "${BESU_ROLE_INSTALL_PATH}/test/group_vars/besu/network.yml"  # clean stale besu-keygen output (git clone)
 
 all_quorum_vars
 

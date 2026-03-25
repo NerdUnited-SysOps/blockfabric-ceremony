@@ -16,16 +16,6 @@ usage() {
   echo "Example: "
 }
 
-# Pre-process --besu flag (getopts does not support long options)
-args=()
-for arg in "$@"; do
-    case "$arg" in
-        --besu) BESU_MODE=true ;;
-        *) args+=("$arg") ;;
-    esac
-done
-set -- "${args[@]}"
-
 while getopts 'b:de:hi' option; do
 	case "$option" in
 		d)
@@ -220,11 +210,7 @@ ${SCRIPTS_DIR}/get_secrets.sh -e ${ENV_FILE} | tee -a "${LOG_FILE}"
 
 get_ansible_vars
 
-if [[ -n "${BESU_MODE}" ]]; then
-	install_besu_role
-else
-	install_ansible_role
-fi
+install_besu_role
 get_inventory
 
 [[ ! -f "${SCRIPTS_DIR}/get_contract_bytecode.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/get_contract_bytecode.sh file doesn't exist" && exit 1
@@ -239,45 +225,26 @@ ${SCRIPTS_DIR}/create_all_wallets.sh \
 	-i "${VALIDATOR_IPS}" | tee -a "${LOG_FILE}"
 
 [[ ! -f "${SCRIPTS_DIR}/generate_dao_storage.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/generate_dao_storage.sh file doesn't exist" && exit 1
-if [[ -n "${BESU_MODE}" ]]; then
-	${SCRIPTS_DIR}/generate_dao_storage.sh \
-		-e "${ENV_FILE}" \
-		-i "$VALIDATOR_IPS" \
-		--besu | tee -a "${LOG_FILE}"
-else
-	${SCRIPTS_DIR}/generate_dao_storage.sh \
-		-e "${ENV_FILE}" \
-		-i "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
-fi
+${SCRIPTS_DIR}/generate_dao_storage.sh \
+	-e "${ENV_FILE}" \
+	-i "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
 
 [[ ! -f "${SCRIPTS_DIR}/generate_ansible_vars.sh" ]] && echo "${0}:${LINENO} ${SCRIPTS_DIR}/generate_ansible_vars.sh file doesn't exist" && exit 1
-if [[ -n "${BESU_MODE}" ]]; then
-	${SCRIPTS_DIR}/generate_ansible_vars.sh \
-		-e "${ENV_FILE}" \
-		-v "$VALIDATOR_IPS" \
-		--besu | tee -a "${LOG_FILE}"
-else
-	${SCRIPTS_DIR}/generate_ansible_vars.sh \
-		-e "${ENV_FILE}" \
-		-v "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
-fi
+${SCRIPTS_DIR}/generate_ansible_vars.sh \
+	-e "${ENV_FILE}" \
+	-v "$VALIDATOR_IPS" | tee -a "${LOG_FILE}"
 
-if [[ -n "${BESU_MODE}" ]]; then
-	source "${SCRIPTS_DIR}/ansible_helpers.sh"
+source "${SCRIPTS_DIR}/ansible_helpers.sh"
 
-
-	printer -t "Deploying Besu QBFT network"
-	ANSIBLE_HOST_KEY_CHECKING=False \
-	ANSIBLE_FORCE_COLOR=True \
-	ANSIBLE_ROLES_PATH="${ANSIBLE_ROLE_DIR}/..:${HOME}/.ansible/roles" \
-		run_ansible_logged "${LOG_FILE}" \
-		-e "ansible_ssh_private_key_file=${AWS_NODES_SSH_KEY_PATH}" \
-		-i "${INVENTORY_PATH}" \
-		"${ANSIBLE_ROLE_DIR}/test/validate.yml"
-	printer -s "Deployment complete"
-else
-	run_ansible
-fi
+printer -t "Deploying Besu QBFT network"
+ANSIBLE_HOST_KEY_CHECKING=False \
+ANSIBLE_FORCE_COLOR=True \
+ANSIBLE_ROLES_PATH="${ANSIBLE_ROLE_DIR}/..:${HOME}/.ansible/roles" \
+	run_ansible_logged "${LOG_FILE}" \
+	-e "ansible_ssh_private_key_file=${AWS_NODES_SSH_KEY_PATH}" \
+	-i "${INVENTORY_PATH}" \
+	"${ANSIBLE_ROLE_DIR}/test/validate.yml"
+printer -s "Deployment complete"
 
 duration=$SECONDS
 printer -s "Execution Completed in $(($duration / 60)) minutes $(($duration % 60)) seconds"

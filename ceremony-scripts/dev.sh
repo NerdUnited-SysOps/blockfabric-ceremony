@@ -4,23 +4,12 @@ set -e
 
 usage() {
 	echo "Options"
-	echo "  -e : Envifonment config file"
+	echo "  -e : Environment config file"
 	echo "  -o : Option number for non-interactive selection"
 	echo "  -d : Dev menu (passed by ceremony.sh)"
 	echo "  -v : Enable verbose Ansible output on console"
-	echo "  --besu : Use Besu reset and ansible playbooks"
 	echo "  -h : This help message"
 }
-
-# Pre-process --besu flag (getopts doesn't support long options)
-args=()
-for arg in "$@"; do
-    case "$arg" in
-        --besu) BESU_MODE=true ;;
-        *) args+=("$arg") ;;
-    esac
-done
-set -- "${args[@]}"
 
 while getopts de:ho:v option; do
 	case "${option}" in
@@ -75,8 +64,8 @@ reset_files() {
 		${AWS_NODES_SSH_KEY_PATH} \
 		${ANSIBLE_ROLE_INSTALL_PATH}
 
-	# Also clean up Besu role if in Besu mode
-	if [[ -n "${BESU_MODE}" ]] && [[ -n "${BESU_ROLE_INSTALL_PATH}" ]]; then
+	# Clean up Besu role
+	if [[ -n "${BESU_ROLE_INSTALL_PATH}" ]]; then
 		printf "Executing: sudo rm -rf ${BESU_ROLE_INSTALL_PATH}\n"
 		sudo rm -rf ${BESU_ROLE_INSTALL_PATH}
 	fi
@@ -156,19 +145,9 @@ if [[ -n "${DIRECT_OPTION}" ]]; then
 		exit 1
 	fi
 	case ${DIRECT_OPTION} in
-		1)
-			if [[ -n "${BESU_MODE}" ]]; then
-				reset_chain_besu
-			else
-				reset_chain | tee -a "${LOG_FILE}"
-			fi;;
+		1) reset_chain_besu;;
 		2) reset_files;;
-		3)
-			if [[ -n "${BESU_MODE}" ]]; then
-				run_ansible_playbook_besu
-			else
-				run_ansible_playbook
-			fi;;
+		3) run_ansible_playbook_besu;;
 		4) print_logo;;
 		5) printf "Closing\n\n"; exit 0;;
 		*) printf "\n\nOoos, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1;;
@@ -180,31 +159,14 @@ clear -x
 
 usage
 
-mode_label=""
-[[ -n "${BESU_MODE}" ]] && mode_label=" [Besu]"
-
 while true; do
 	COLUMNS=1
-	PS3=$'\n'"Select option${mode_label}: "
+	PS3=$'\n'"Select option: "
 	select item in "${items[@]}"
 		case $REPLY in
-			1)
-				clear -x
-				if [[ -n "${BESU_MODE}" ]]; then
-					reset_chain_besu
-				else
-					reset_chain | tee -a "${LOG_FILE}"
-				fi
-				break;;
+			1) clear -x; reset_chain_besu; break;;
 			2) clear -x; reset_files; break;;
-			3)
-				clear -x
-				if [[ -n "${BESU_MODE}" ]]; then
-					run_ansible_playbook_besu
-				else
-					run_ansible_playbook
-				fi
-				break;;
+			3) clear -x; run_ansible_playbook_besu; break;;
 			4) clear -x; print_logo; break;;
 			5) printf "Closing\n\n"; exit 0;;
 			*)

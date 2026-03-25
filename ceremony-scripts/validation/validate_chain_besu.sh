@@ -147,23 +147,23 @@ chain_pid=$!
 
 title "HTTPS Status"
 for i in {1..${#tls_pids}}; do
-    wait ${tls_pids[$i]} 2>/dev/null
+    wait ${tls_pids[$i]} 2>/dev/null || true
     printf "$(cat /tmp/_validate_tls_${tls_ips[$i]} 2>/dev/null)\n"
 done
 
 title "Status of validator"
 for i in {1..${#val_pids}}; do
-    wait ${val_pids[$i]} 2>/dev/null
+    wait ${val_pids[$i]} 2>/dev/null || true
     cat /tmp/_validate_val_${val_ips[$i]} 2>/dev/null
 done
 
 title "Status of rpc"
 for i in {1..${#rpc_pids}}; do
-    wait ${rpc_pids[$i]} 2>/dev/null
+    wait ${rpc_pids[$i]} 2>/dev/null || true
     cat /tmp/_validate_rpc_${rpc_ips[$i]} 2>/dev/null
 done
 
-wait $chain_pid 2>/dev/null
+wait $chain_pid 2>/dev/null || true
 echo ""
 cat /tmp/_validate_chain 2>/dev/null
 

@@ -50,18 +50,29 @@ ssh_rpc_call() {
         ${scheme}://localhost:${RPC_PORT}"
 }
 
-verify_each() {
+rpc_batch() {
     local HOST=$1
     local SCHEME=${2:-http}
 
-    # Use JSON-RPC batch request (single curl) to fetch all 3 values at once
-    # Parse responses by id field so order doesn't matter
-    local raw=$(LC_ALL= ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
+    LC_ALL= ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
         -i ${AWS_NODES_SSH_KEY_PATH} ${NODE_USER}@${HOST} "
         curl -sk --max-time 10 -X POST -H 'Content-Type: application/json' \
             -d '[{\"jsonrpc\":\"2.0\",\"method\":\"eth_gasPrice\",\"params\":[],\"id\":1},{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":2},{\"jsonrpc\":\"2.0\",\"method\":\"net_peerCount\",\"params\":[],\"id\":3}]' \
             ${SCHEME}://localhost:${RPC_PORT} 2>/dev/null
-    " 2>/dev/null)
+    " 2>/dev/null
+}
+
+verify_each() {
+    local HOST=$1
+    local SCHEME=${2:-http}
+
+    # Try up to 3 times — parallel SSH from the ceremony VM can cause transient failures
+    local raw=""
+    for attempt in 1 2 3; do
+        raw=$(rpc_batch "$HOST" "$SCHEME")
+        [[ -n "$raw" ]] && break
+        sleep 1
+    done
 
     local gas=0 block=0 peers=0
     if [[ -n "$raw" ]]; then

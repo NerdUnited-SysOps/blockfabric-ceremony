@@ -180,12 +180,10 @@ items=(
 	"Show genesis"
 	"List addresses"
 	"List volume sizes"
-	"Show startup config"
 	"Print chain accounts"
-	"Validate genesis"
 )
 
-[ -n "${DEV_ENABLED}" ] && items+=("Test distribution" "Test vote" "Test create contract")
+[ -n "${DEV_ENABLED}" ] && items+=("Show startup config" "Validate genesis" "Test distribution" "Test vote" "Test create contract")
 
 items+=("Exit")
 
@@ -202,13 +200,12 @@ if [[ -n "${DIRECT_OPTION}" ]]; then
 		2) show_genesis | tee -a ${LOG_FILE};;
 		3) list_addreses;;
 		4) list_volume_sizes;;
-		5) show_startup_config | tee -a ${LOG_FILE};;
-		6) print_account_range;;
-		7) validate_genesis | tee -a ${LOG_FILE};;
-		8) [[ -n "${DEV_ENABLED}" ]] && test_distribution || { printf "Closing.\n\n"; exit 0; };;
-		9) [[ -n "${DEV_ENABLED}" ]] && test_vote || { printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1; };;
-		10) [[ -n "${DEV_ENABLED}" ]] && test_create_contract || { printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1; };;
-		11) [[ -n "${DEV_ENABLED}" ]] && { printf "Closing.\n\n"; exit 0; } || { printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1; };;
+		5) print_account_range;;
+		6) [[ -n "${DEV_ENABLED}" ]] && show_startup_config | tee -a ${LOG_FILE} || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		7) [[ -n "${DEV_ENABLED}" ]] && validate_genesis | tee -a ${LOG_FILE} || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		8) [[ -n "${DEV_ENABLED}" ]] && test_distribution || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		9) [[ -n "${DEV_ENABLED}" ]] && test_vote || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		10) [[ -n "${DEV_ENABLED}" ]] && test_create_contract || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
 		*) printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1;;
 	esac
 	exit 0
@@ -222,35 +219,18 @@ while true; do
 	COLUMNS=1
 	PS3=$'\n'"${CHAIN_NAME} ${NETWORK_TYPE} | Select option: "
 	select item in "${items[@]}"
-		case $REPLY in
-			1) clear -x; run_validation | tee -a ${LOG_FILE}; break;;
-			2) clear -x; show_genesis | tee -a ${LOG_FILE}; break;;
-			3) clear -x; list_addreses; break;;
-			4) clear -x; list_volume_sizes; break;;
-			5) clear -x; show_startup_config | tee -a ${LOG_FILE}; break;;
-			6) clear -x; print_account_range; break;;
-			7) clear -x; validate_genesis | tee -a ${LOG_FILE}; break;;
-			8)
-				if [[ -n "${DEV_ENABLED}" ]]; then
-					clear -x; test_distribution; break
-				else
-					printf "Closing.\n\n"; exit 0
-				fi;;
-			9)
-				if [[ -n "${DEV_ENABLED}" ]]; then
-					clear -x; test_vote; break
-				else
-					printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n"
-					usage; break
-				fi;;
-			10)
-				if [[ -n "${DEV_ENABLED}" ]]; then
-					clear -x; test_create_contract; break
-				else
-					printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n"
-					usage; break
-				fi;;
-			11) printf "Closing.\n\n"; exit 0;;
+		case $item in
+			"General health") clear -x; run_validation | tee -a ${LOG_FILE}; break;;
+			"Show genesis") clear -x; show_genesis | tee -a ${LOG_FILE}; break;;
+			"List addresses") clear -x; list_addreses; break;;
+			"List volume sizes") clear -x; list_volume_sizes; break;;
+			"Print chain accounts") clear -x; print_account_range; break;;
+			"Show startup config") clear -x; show_startup_config | tee -a ${LOG_FILE}; break;;
+			"Validate genesis") clear -x; validate_genesis | tee -a ${LOG_FILE}; break;;
+			"Test distribution") clear -x; test_distribution; break;;
+			"Test vote") clear -x; test_vote; break;;
+			"Test create contract") clear -x; test_create_contract; break;;
+			"Exit") printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

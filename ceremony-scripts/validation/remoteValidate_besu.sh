@@ -65,6 +65,20 @@ tab() {
     printf "%s%${space}s%s" "$first" "" "$second"
 }
 
+# Convert wei to token units (divide by 10^18) and format with commas
+format_tokens() {
+    python3 -c "
+v = int('${1}')
+t = v // 10**18
+r = v % 10**18
+if r == 0:
+    print(f'{t:,}')
+else:
+    frac = f'{r:018d}'.rstrip('0')
+    print(f'{t:,}.{frac}')
+"
+}
+
 # Contract addresses
 LOCKUP_ADDRESS="0x47e9fbef8c83a1714f1951f142132e6e90f5fa5d"
 DISTRIBUTION_ADDRESS="0x8be503bcded90ed42eff31f56199399b2b0154ca"
@@ -184,13 +198,13 @@ echo "$(repeat_char '-' ${ROW_LENGTH})"
 echo " Balances"
 echo "$(repeat_char '-' ${ROW_LENGTH})"
 
-echo "$(tab " Lockup Daily Unlock" "${lockup_daily_unlock_dec}" ${ROW_LENGTH})"
-echo "$(tab " Lockup Balance" "${lockup_balance_dec}" ${ROW_LENGTH})"
-echo "$(tab " Current Unlocked" "${current_unlocked}" ${ROW_LENGTH})"
-echo "$(tab " Distribution Contract" "${distribution_balance_dec}" ${ROW_LENGTH})"
-echo "$(tab " Distribution Issuer" "${issuer_balance_dec}" ${ROW_LENGTH})"
+echo "$(tab " Lockup Daily Unlock" "$(format_tokens ${lockup_daily_unlock_dec})" ${ROW_LENGTH})"
+echo "$(tab " Lockup Balance" "$(format_tokens ${lockup_balance_dec})" ${ROW_LENGTH})"
+echo "$(tab " Current Unlocked" "$(format_tokens ${current_unlocked})" ${ROW_LENGTH})"
+echo "$(tab " Distribution Contract" "$(format_tokens ${distribution_balance_dec})" ${ROW_LENGTH})"
+echo "$(tab " Distribution Issuer" "$(format_tokens ${issuer_balance_dec})" ${ROW_LENGTH})"
 echo ""
-echo "$(tab " Total Chain Balance" "${total_balance}" ${ROW_LENGTH})"
+echo "$(tab " Total Chain Balance" "$(format_tokens ${total_balance})" ${ROW_LENGTH})"
 
 echo ""
 echo "$(repeat_char '-' ${ROW_LENGTH})"

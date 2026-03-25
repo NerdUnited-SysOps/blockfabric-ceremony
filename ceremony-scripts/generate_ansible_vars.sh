@@ -153,8 +153,9 @@ format_storage_addr() {
 }
 
 # Format a decimal number for genesis storage: convert to hex, left-pad to 64 chars
+# Uses python3 because values like token supplies in wei exceed zsh's 64-bit integer limit
 format_storage_num() {
-	printf "%064x" "$1"
+	python3 -c "print(format(int('$1'), '064x'))"
 }
 
 # Resolve a hostname to its ansible_host IP from the inventory file.

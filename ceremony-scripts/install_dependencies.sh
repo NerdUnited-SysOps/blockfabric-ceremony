@@ -37,8 +37,6 @@ printer() {
 [[ -z "${GETH_PATH}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing GETH_PATH" && exit 1
 [[ -z "${ETHKEY_PATH}" ]] && echo "${ZSH_ARGZERO}:${LINENO} .env is missing ETHKEY_PATH" && exit 1
 
-APT_NODEJS_VERSION=18.10.0+dfsg-6
-APT_NPM_VERSION=9.1.2~ds1-2
 APT_GO_VERSION=2:1.19~1
 APT_JQ_VERSION=1.6-2.1
 APT_PWGEN_VERSION=2.08-2
@@ -74,8 +72,6 @@ printer -n "This may take a minute..." | tee -a ${LOG_FILE}
 sudo apt-get update &>> ${LOG_FILE}
 printer -n "Updated system"
 
-print_status "node" "nodejs" ${APT_NODEJS_VERSION}
-print_status "npm" "npm" ${APT_NPM_VERSION}
 print_status "aws" "awscli" ${APT_AWSCLI_VERSION}
 print_status "pwgen" "pwgen" ${APT_PWGEN_VERSION}
 print_status "jq" "jq" ${APT_JQ_VERSION}

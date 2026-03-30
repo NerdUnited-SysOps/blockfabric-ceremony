@@ -5,8 +5,19 @@ set -e
 usage() {
 	echo "Options"
 	echo "  -e : Envifonment config file"
+	echo "  --dry-run : Preview persistence actions without executing"
 	echo "  -h : This help message"
 }
+
+# Pre-process --dry-run flag (getopts doesn't support long options)
+args=()
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run) DRY_RUN=true ;;
+        *) args+=("$arg") ;;
+    esac
+done
+set -- "${args[@]}"
 
 while getopts he: option; do
 	case "${option}" in
@@ -39,7 +50,8 @@ fi
 
 usage() {
 	printf "This is an interface for moving assets generated in the ceremony.\n"
-	printf "You may select from the options below\n\n"
+	printf "You may select from the options below\n"
+	printf "  --dry-run : Preview actions without executing\n\n"
 }
 
 printer() {
@@ -50,6 +62,13 @@ upsert_secret() {
 	upsert_key=$1
 	upsert_value=$2
 	profile=$3
+
+	if [[ -n "${DRY_RUN}" ]]; then
+		printer -n "Would persist value to ${upsert_key}"
+		printer -s "(dry-run)"
+		return
+	fi
+
 	printer -n "Persisting value to ${upsert_key}"
 
 	secret=$(aws secretsmanager \
@@ -79,6 +98,13 @@ upsert_file() {
 	upsert_key=$1
 	upsert_file=$2
 	profile=$3
+
+	if [[ -n "${DRY_RUN}" ]]; then
+		printer -n "Would persist ${upsert_file} to ${upsert_key}"
+		printer -s "(dry-run)"
+		return
+	fi
+
 	printer -n "Persisting ${upsert_file} to ${upsert_key}"
 	upsert_value=$(cat ${upsert_file})
 
@@ -109,9 +135,20 @@ save_ansible_vars() {
 	[[ -z "${BRAND_ANSIBLE_URL}" ]] && echo ".env is missing BRAND_ANSIBLE_URL variable" && exit 1
 	[[ -z "${ANSIBLE_CEREMONY_DIR}" ]] && echo ".env is missing ANSIBLE_CEREMONY_DIR variable" && exit 1
 	[[ ! -d "${ANSIBLE_CEREMONY_DIR}" ]] && echo "ANSIBLE_CEREMONY_DIR environment variable is not a directory. Expecting it here ${ANSIBLE_CEREMONY_DIR}" && exit 1
+
+	if [[ -n "${DRY_RUN}" ]]; then
+		printer -t "Would persist artifacts"
+		echo "  Would clone ${BRAND_ANSIBLE_URL} (if needed)"
+		echo "  Would copy ceremony log → ${ANSIBLE_DIR}/${NETWORK_TYPE}/${CEREMONY_TYPE}/"
+		echo "  Would copy bootstrap log → ${ANSIBLE_DIR}/${NETWORK_TYPE}/${CEREMONY_TYPE}/"
+		echo "  Would commit and force-push to origin/${CEREMONY_TYPE}-$(date +%m_%d_%y)"
+		printer -s "(dry-run)"
+		return
+	fi
+
 	printer -t "Persisting Values"
 
-	[ -d ${ANSIBLE_DIR} ] || git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR} 
+	[ -d ${ANSIBLE_DIR} ] || git clone ${BRAND_ANSIBLE_URL} ${ANSIBLE_DIR}
 	now=$(date +"%m_%d_%y")
 	##	
 	cp "${LOG_FILE}" "${ANSIBLE_DIR}/${NETWORK_TYPE}/${CEREMONY_TYPE}/${now}_${CEREMONY_TYPE}_ceremony.log" | tee -a ${LOG_FILE}
@@ -129,6 +166,13 @@ save_ansible_vars() {
 copy_log() {
 	now=$(date +"%m_%d_%y")
      volume=$1
+
+     if [[ -n "${DRY_RUN}" ]]; then
+             echo "  Would copy $LOG_FILE → ${VOLUMES_DIR}/$volume/${now}_${CEREMONY_TYPE}_ceremony.log"
+             echo "  Would copy ${SHARED_DIR}/${CEREMONY_TYPE}_bootstrap.log → ${VOLUMES_DIR}/$volume/${now}_${CEREMONY_TYPE}_bootstrap.log"
+             return
+     fi
+
      if [ -d ${VOLUMES_DIR}/$volume/ ]; then
              cp -v $LOG_FILE "${VOLUMES_DIR}/$volume/${now}_${CEREMONY_TYPE}_ceremony.log" | tee -a ${LOG_FILE}
              cp -v "${SHARED_DIR}/${CEREMONY_TYPE}_bootstrap.log" "${VOLUMES_DIR}/$volume/${now}_${CEREMONY_TYPE}_bootstrap.log" | tee -a ${LOG_FILE}

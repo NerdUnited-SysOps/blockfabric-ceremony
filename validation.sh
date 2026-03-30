@@ -2,14 +2,19 @@
 
 usage() {
 	echo "Options"
-	echo "  -e : Envifonment config file"
+	echo "  -e : Environment config file"
+	echo "  -o : Option number for non-interactive selection"
 	echo "  -h : This help message"
 }
 
-while getopts he: option; do
+while getopts de:ho: option; do
 	case "${option}" in
+		d) DEV_ENABLED="true";;
 		e)
 			ENV_FILE=${OPTARG}
+			;;
+		o)
+			DIRECT_OPTION=${OPTARG}
 			;;
 		h)
 			usage
@@ -103,13 +108,66 @@ list_addreses() {
 
 run_validation() {
 	printf "Validating chain...\n\n"
-	${SCRIPTS_DIR}/validation/run_validation.sh -e "${ENV_FILE}"
+	${SCRIPTS_DIR}/validation/validate_chain_besu.sh \
+		-i $INVENTORY_PATH \
+		-p $RPC_PORT \
+		-r $RPC_PATH \
+		-v ${SCRIPTS_DIR}/validation/remoteValidate_besu.sh
 	printf "\n\nNote: It takes a minute for all nodes to catch up with their peers.\n\n"
 }
 
 print_account_range() {
-	./exec_chain.sh -e "${ENV_FILE}" "debug.accountRange()" | tee -a ${LOG_FILE}
+	${SCRIPTS_DIR}/validation/besu_account_range.sh -e "${ENV_FILE}" | tee -a ${LOG_FILE}
 	printf "\n\n"
+}
+
+show_startup_config() {
+	${SCRIPTS_DIR}/validation/inspect_node.sh -e "${ENV_FILE}" -m config
+}
+
+show_genesis() {
+	${SCRIPTS_DIR}/validation/inspect_node.sh -e "${ENV_FILE}" -m genesis
+}
+
+validate_genesis() {
+	${SCRIPTS_DIR}/validation/validate_genesis.sh -e "${ENV_FILE}"
+}
+
+build_ceremony_test() {
+	local BIN="${SCRIPTS_DIR}/validation/ceremony-tests/ceremony-test"
+	if [[ ! -x "$BIN" ]]; then
+		(cd "${SCRIPTS_DIR}/validation/ceremony-tests" && go mod tidy && go build -o ceremony-test .) &>> ${LOG_FILE}
+	fi
+	echo "$BIN"
+}
+
+test_distribution() {
+	local BIN=$(build_ceremony_test)
+	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+
+	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
+	ISSUER_KEY_PATH="${VOLUMES_DIR}/volume2/distributionIssuer/privatekey" \
+	RECIPIENT_KEY_PATH="${VOLUMES_DIR}/volume1/besu-v-1/account/privatekey" \
+		"$BIN" distribute
+}
+
+test_vote() {
+	local BIN=$(build_ceremony_test)
+	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+
+	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
+	DAO_ADDRESS="0x5a443704dd4B594B382c22a083e2BD3090A6feF3" \
+	VOLUMES_DIR="${VOLUMES_DIR}" \
+		"$BIN" vote
+}
+
+test_create_contract() {
+	local BIN=$(build_ceremony_test)
+	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+
+	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
+	DEPLOYER_KEY_PATH="${VOLUMES_DIR}/volume2/distributionIssuer/privatekey" \
+		"$BIN" create-contract
 }
 
 usage() {
@@ -119,28 +177,60 @@ usage() {
 
 items=(
 	"General health"
-	"Print chain accounts"
+	"Show genesis"
 	"List addresses"
 	"List volume sizes"
-	"Exit"
+	"Print chain accounts"
 )
+
+[ -n "${DEV_ENABLED}" ] && items+=("Show startup config" "Validate genesis" "Test distribution" "Test vote" "Test create contract")
+
+items+=("Exit")
+
+NC='\033[0m'
+RED='\033[0;31m'
+
+if [[ -n "${DIRECT_OPTION}" ]]; then
+	if [[ ! "${DIRECT_OPTION}" =~ '^[0-9]+$' ]]; then
+		printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} is not a valid option number\n\n"
+		exit 1
+	fi
+	case ${DIRECT_OPTION} in
+		1) run_validation | tee -a ${LOG_FILE};;
+		2) show_genesis | tee -a ${LOG_FILE};;
+		3) list_addreses;;
+		4) list_volume_sizes;;
+		5) print_account_range;;
+		6) [[ -n "${DEV_ENABLED}" ]] && show_startup_config | tee -a ${LOG_FILE} || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		7) [[ -n "${DEV_ENABLED}" ]] && validate_genesis | tee -a ${LOG_FILE} || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		8) [[ -n "${DEV_ENABLED}" ]] && test_distribution || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		9) [[ -n "${DEV_ENABLED}" ]] && test_vote || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		10) [[ -n "${DEV_ENABLED}" ]] && test_create_contract || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		*) printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1;;
+	esac
+	exit 0
+fi
 
 clear -x
 
 usage
 
-NC='\033[0m'
-RED='\033[0;31m'
 while true; do
 	COLUMNS=1
 	PS3=$'\n'"${CHAIN_NAME} ${NETWORK_TYPE} | Select option: "
 	select item in "${items[@]}"
-		case $REPLY in
-			1) clear -x; run_validation | tee -a ${LOG_FILE}; break;;
-			2) clear -x; print_account_range; break;;
-			3) clear -x; list_addreses; break;;
-			4) clear -x; list_volume_sizes; break;;
-			5) printf "Closing.\n\n"; exit 0;;
+		case $item in
+			"General health") clear -x; run_validation | tee -a ${LOG_FILE}; break;;
+			"Show genesis") clear -x; show_genesis | tee -a ${LOG_FILE}; break;;
+			"List addresses") clear -x; list_addreses; break;;
+			"List volume sizes") clear -x; list_volume_sizes; break;;
+			"Print chain accounts") clear -x; print_account_range; break;;
+			"Show startup config") clear -x; show_startup_config | tee -a ${LOG_FILE}; break;;
+			"Validate genesis") clear -x; validate_genesis | tee -a ${LOG_FILE}; break;;
+			"Test distribution") clear -x; test_distribution; break;;
+			"Test vote") clear -x; test_vote; break;;
+			"Test create contract") clear -x; test_create_contract; break;;
+			"Exit") printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

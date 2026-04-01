@@ -191,6 +191,7 @@ safe_test() {
 
 	RPC_URL="http://${rpc_host}:${RPC_PORT}" \
 	SAFE_PROXY_ADDRESS="${SAFE_PROXY_ADDRESS}" \
+	SAFE_PROXY_ADDRESS="${SAFE_PROXY_ADDRESS}" \
 	SAFE_OWNER_1_KEY_PATH="${VOLUMES_DIR}/volume1/safeOwner1/privatekey" \
 	SAFE_OWNER_2_KEY_PATH="${VOLUMES_DIR}/volume2/safeOwner2/privatekey" \
 	SAFE_OWNER_3_KEY_PATH="${VOLUMES_DIR}/volume3/safeOwner3/privatekey" \

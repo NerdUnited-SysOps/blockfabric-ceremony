@@ -8,21 +8,13 @@ set -e
 
 usage() {
 	echo "Options"
-	echo "  -a : How many admin lockup admin keys will be created"
-	echo "  -b : Batch size for async key creations"
 	echo "  -e : Envifonment config file"
 	echo "  -h : This help message"
 	echo "  -i : List of IP addresses"
 }
 
-while getopts a:b:hi:v:e: option; do
+while getopts hi:v:e: option; do
 	case "${option}" in
-		a)
-			ADMIN_KEYS=${OPTARG}
-			;;
-		b)
-			ADMIN_KEY_BATCH_SIZE=${OPTARG}
-			;;
 		e)
 			ENV_FILE=${OPTARG}
 			;;
@@ -69,45 +61,17 @@ generate_wallet() {
 	${SCRIPTS_DIR}/generate_wallet.sh -e "${ENV_FILE}" "$@" &>> ${LOG_FILE}
 }
 
-lockup_admin_wallets() {
-	[[ -z "${ADMIN_KEYS}" ]] && echo ".env is missing ADMIN_KEYS variable" && exit 1
-
-	vol2=${VOLUMES_DIR}/volume2/lockupAdmins
-
-	for i in {1..$ADMIN_KEYS}; do
-		generate_wallet -o "${vol1} ${vol2}" -a &
-		if (( $i % $ADMIN_KEY_BATCH_SIZE == 0 )); then
-			wait
-			printer -n "Created ${i} lockup admin wallets"
-		fi
+safe_owner_wallets() {
+	for i in {1..${SAFE_OWNER_COUNT:-3}}; do
+		generate_wallet -o "${VOLUMES_DIR}/volume${i}/safeOwner${i}" &
 	done
-	printer -n "Created ${ADMIN_KEYS} lockup admin wallets in total"
 	wait
 
-	printer -n "Created lockup admin wallets"
-}
-
-lockup_owner_wallets() {
-	vol3=${VOLUMES_DIR}/volume2/lockupOwner
-
-	generate_wallet -o "${vol1} ${vol3}"
-
-	printer -n "Created lockup owner wallets"
-}
-
-distribution_owner_wallets() {
-	printer
-	vol3=${VOLUMES_DIR}/volume2/distributionOwner
-
-	generate_wallet -o "${vol1} ${vol3} ${vol4}"
-
-	printer -n "Created distribution owner wallets"
+	printer -n "Created ${SAFE_OWNER_COUNT:-3} Safe owner wallets"
 }
 
 distribution_issuer_wallets() {
-	vol2=${VOLUMES_DIR}/volume2/distributionIssuer
-
-	generate_wallet -o "${vol1} ${vol2}"
+	generate_wallet -o "${VOLUMES_DIR}/volume2/distributionIssuer"
 
 	printer -n "Created distribution issuer wallets"
 }
@@ -141,10 +105,7 @@ validator_account_wallets() {
 
 printer -t "Creating ceremony keys"
 
-lockup_admin_wallets
-
-lockup_owner_wallets &
-distribution_owner_wallets &
+safe_owner_wallets &
 distribution_issuer_wallets &
 wait
 

@@ -46,7 +46,7 @@ volume_prompt() {
 	volume=""
 
 	PS3=$'\n'"Select volume: "
-	select item in volume1 volume2; do
+	select item in volume1 volume2 volume3; do
 		case $REPLY in
 			*) volume="volume${REPLY}"; break;;
 		esac
@@ -78,27 +78,26 @@ list_volume_content() {
 
 list_volume_sizes() {
 	printf "\n"
-	printf "Executing: ls ${VOLUMES_DIR}/volume1 -alR | less\n\n" | tee -a ${LOG_FILE}
-	ls ${VOLUMES_DIR}/volume1 -alR | tee -a ${LOG_FILE}
-
-	printf "Executing: ls ${VOLUMES_DIR}/volume2 -alR | less\n\n" | tee -a ${LOG_FILE}
-	ls ${VOLUMES_DIR}/volume2 -alR | tee -a ${LOG_FILE}
+	for vol in volume1 volume2 volume3; do
+		if [ -d "${VOLUMES_DIR}/${vol}" ]; then
+			printf "Executing: ls ${VOLUMES_DIR}/${vol} -alR | less\n\n" | tee -a ${LOG_FILE}
+			ls ${VOLUMES_DIR}/${vol} -alR | tee -a ${LOG_FILE}
+		fi
+	done
 	printf "\n\n"
 }
 
 list_addreses() {
 	printf "\n"
-	printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/volume1 | sed 's/\\/keystore\\:address\\\"\:\\\"/\\\t\\\t/g' | tr -d '\"'\n\n" | tee -a ${LOG_FILE}
-	grep -r -o "address\":\"[a-f0-9]*\"" ${VOLUMES_DIR}/volume1 \
-		| sed 's/\/keystore\:address\"\:\"/\t\t/g' \
-		| tr -d '"' \
-		| tee -a ${LOG_FILE}
-
-	printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/volume2 | sed 's/\\/keystore\\:address\\\"\:\\\"/\\\t\\\t/g' | tr -d '\"'\n\n" | tee -a ${LOG_FILE}
-	grep -r -o "address\":\"[a-f0-9]*\"" ${VOLUMES_DIR}/volume2 \
-		| sed 's/\/keystore\:address\"\:\"/\t\t/g' \
-		| tr -d '"' \
-		| tee -a ${LOG_FILE}
+	for vol in volume1 volume2 volume3; do
+		if [ -d "${VOLUMES_DIR}/${vol}" ]; then
+			printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/${vol}\n\n" | tee -a ${LOG_FILE}
+			grep -r -o "address\":\"[a-f0-9]*\"" ${VOLUMES_DIR}/${vol} \
+				| sed 's/\/keystore\:address\"\:\"/\t\t/g' \
+				| tr -d '"' \
+				| tee -a ${LOG_FILE}
+		fi
+	done
 	printf "\n\n"
 }
 

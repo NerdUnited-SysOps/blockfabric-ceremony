@@ -44,7 +44,7 @@ var (
 )
 
 // loadSafeEnv loads common Safe test environment
-func loadSafeEnv() (rpcURL string, safeAddr common.Address, keys []*ecdsa.PrivateKey, addrs []common.Address) {
+func loadSafeEnv() (rpcURL string, safeAddr common.Address, keys []*ecdsa.PrivateKey, addrs []common.Address, funderKey *ecdsa.PrivateKey) {
 	rpcURL = requireEnv("RPC_URL")
 	safeAddr = common.HexToAddress(requireEnv("SAFE_PROXY_ADDRESS"))
 
@@ -59,7 +59,21 @@ func loadSafeEnv() (rpcURL string, safeAddr common.Address, keys []*ecdsa.Privat
 		keys = append(keys, k)
 		addrs = append(addrs, a)
 	}
+
+	funderKey, _ = loadKey(requireEnv("FUNDER_KEY_PATH"))
 	return
+}
+
+// fundIfNeeded sends gas money from funder to addr if balance is zero
+func fundIfNeeded(client *ethclient.Client, chainID *big.Int, funderKey *ecdsa.PrivateKey, addr common.Address) {
+	bal := balance(client, addr)
+	if bal.Sign() > 0 {
+		return
+	}
+	gasAmount := new(big.Int).Mul(big.NewInt(1e15), big.NewInt(10)) // 0.01 tokens
+	fmt.Printf("  Funding %s with %s wei for gas...\n", addr.Hex(), gasAmount.String())
+	receipt := sendTx(client, chainID, funderKey, addr, gasAmount, nil)
+	check("Funding tx succeeded", receipt.Status == 1)
 }
 
 // getSafeNonce reads the current nonce from the Safe contract
@@ -177,8 +191,11 @@ func encodeExecTransaction(to common.Address, value *big.Int, data []byte, signa
 }
 
 // execSafeTx constructs and sends a Safe multisig transaction
-func execSafeTx(rpcURL string, safeAddr common.Address, keys []*ecdsa.PrivateKey, threshold int, to common.Address, innerData []byte) {
+func execSafeTx(rpcURL string, safeAddr common.Address, keys []*ecdsa.PrivateKey, threshold int, to common.Address, innerData []byte, funderKey *ecdsa.PrivateKey) {
 	client, chainID := dial(rpcURL)
+
+	// Fund the sender (keys[0]) if they have no gas
+	fundIfNeeded(client, chainID, funderKey, crypto.PubkeyToAddress(keys[0].PublicKey))
 
 	// Get Safe nonce
 	nonceResult := ethCall(client, safeAddr, selNonce)
@@ -210,7 +227,7 @@ func execSafeTx(rpcURL string, safeAddr common.Address, keys []*ecdsa.PrivateKey
 
 func runTestLockupSetPaused() {
 	fmt.Println("=== Test: Lockup setPaused via Safe multisig ===\n")
-	rpcURL, safeAddr, keys, _ := loadSafeEnv()
+	rpcURL, safeAddr, keys, _, funderKey := loadSafeEnv()
 	client, _ := dial(rpcURL)
 
 	// Read current paused state
@@ -228,7 +245,7 @@ func runTestLockupSetPaused() {
 	packed, _ := args.Pack(newState)
 	innerData := append(selSetPaused, packed...)
 
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData, funderKey)
 
 	// Verify state changed
 	fmt.Println("\n--- Verification ---")
@@ -241,7 +258,7 @@ func runTestLockupSetPaused() {
 	fmt.Printf("\nRestoring paused to: %v\n", wasPaused)
 	packed, _ = args.Pack(wasPaused)
 	innerData = append(selSetPaused, packed...)
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData, funderKey)
 
 	result = ethCall(client, lockupAddr, selPaused)
 	isPaused = result[31] != 0
@@ -256,7 +273,7 @@ func runTestLockupSetPaused() {
 
 func runTestLockupSetDailyLimit() {
 	fmt.Println("=== Test: Lockup setDailyLimit via Safe multisig ===\n")
-	rpcURL, safeAddr, keys, _ := loadSafeEnv()
+	rpcURL, safeAddr, keys, _, funderKey := loadSafeEnv()
 	client, _ := dial(rpcURL)
 
 	// Read current effective daily limit
@@ -274,7 +291,7 @@ func runTestLockupSetDailyLimit() {
 	packed, _ := args.Pack(testLimit)
 	innerData := append(selSetDailyLimit, packed...)
 
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData, funderKey)
 
 	// Verify
 	fmt.Println("\n--- Verification ---")
@@ -287,7 +304,7 @@ func runTestLockupSetDailyLimit() {
 	fmt.Printf("\nRestoring daily limit to: %s\n", originalLimit.String())
 	packed, _ = args.Pack(originalLimit)
 	innerData = append(selSetDailyLimit, packed...)
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData, funderKey)
 
 	result = ethCall(client, lockupAddr, selDailyLimit)
 	restoredLimit := new(big.Int).SetBytes(result)
@@ -302,7 +319,7 @@ func runTestLockupSetDailyLimit() {
 
 func runTestLockupSetIssuer() {
 	fmt.Println("=== Test: Lockup setIssuer via Safe multisig ===\n")
-	rpcURL, safeAddr, keys, addrs := loadSafeEnv()
+	rpcURL, safeAddr, keys, addrs, funderKey := loadSafeEnv()
 	client, _ := dial(rpcURL)
 
 	// Read current issuer
@@ -320,7 +337,7 @@ func runTestLockupSetIssuer() {
 	packed, _ := args.Pack(testIssuer)
 	innerData := append(selSetIssuer, packed...)
 
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData, funderKey)
 
 	// Verify
 	fmt.Println("\n--- Verification ---")
@@ -333,7 +350,7 @@ func runTestLockupSetIssuer() {
 	fmt.Printf("\nRestoring issuer to: %s\n", originalIssuer.Hex())
 	packed, _ = args.Pack(originalIssuer)
 	innerData = append(selSetIssuer, packed...)
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData, funderKey)
 
 	result = ethCall(client, lockupAddr, selLockupIssuer)
 	restoredIssuer := common.BytesToAddress(result)
@@ -348,7 +365,7 @@ func runTestLockupSetIssuer() {
 
 func runTestDistributionSetIssuer() {
 	fmt.Println("=== Test: Distribution setIssuer via Safe multisig ===\n")
-	rpcURL, safeAddr, keys, addrs := loadSafeEnv()
+	rpcURL, safeAddr, keys, addrs, funderKey := loadSafeEnv()
 	client, _ := dial(rpcURL)
 
 	// Read current issuer
@@ -366,7 +383,7 @@ func runTestDistributionSetIssuer() {
 	packed, _ := args.Pack(testIssuer)
 	innerData := append(selSetIssuer, packed...)
 
-	execSafeTx(rpcURL, safeAddr, keys, 2, distAddr, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, distAddr, innerData, funderKey)
 
 	// Verify
 	fmt.Println("\n--- Verification ---")
@@ -379,7 +396,7 @@ func runTestDistributionSetIssuer() {
 	fmt.Printf("\nRestoring issuer to: %s\n", originalIssuer.Hex())
 	packed, _ = args.Pack(originalIssuer)
 	innerData = append(selSetIssuer, packed...)
-	execSafeTx(rpcURL, safeAddr, keys, 2, distAddr, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, distAddr, innerData, funderKey)
 
 	result = ethCall(client, distAddr, selDistIssuer)
 	restoredIssuer := common.BytesToAddress(result)

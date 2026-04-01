@@ -182,14 +182,14 @@ extract_private_key() {
 safe_test() {
 	local subcommand=$1
 	local BIN=$(build_ceremony_test)
-	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+	local rpc_host=$(ansible --list-hosts -i "${INVENTORY_PATH}" rpc | sed '/:/d ; s/ //g' | head -1)
 
 	# Extract private keys from keystores if not already done
 	extract_private_key "${VOLUMES_DIR}/volume1/safeOwner1"
 	extract_private_key "${VOLUMES_DIR}/volume2/safeOwner2"
 	extract_private_key "${VOLUMES_DIR}/volume3/safeOwner3"
 
-	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
+	RPC_URL="http://${rpc_host}:${RPC_PORT}" \
 	SAFE_PROXY_ADDRESS="${SAFE_PROXY_ADDRESS}" \
 	SAFE_OWNER_1_KEY_PATH="${VOLUMES_DIR}/volume1/safeOwner1/privatekey" \
 	SAFE_OWNER_2_KEY_PATH="${VOLUMES_DIR}/volume2/safeOwner2/privatekey" \

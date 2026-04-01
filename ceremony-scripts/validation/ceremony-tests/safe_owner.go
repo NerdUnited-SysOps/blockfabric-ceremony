@@ -15,8 +15,8 @@ import (
 
 // Contract addresses
 var (
-	lockupContract       = common.HexToAddress("0x47e9Fbef8C83A1714F1951F142132E6e90F5fa5D")
-	distributionContract = common.HexToAddress("0x8Be503bcdEd90ED42Eff31f56199399B2b0154CA")
+	lockupAddr = common.HexToAddress("0x47e9Fbef8C83A1714F1951F142132E6e90F5fa5D")
+	distAddr   = common.HexToAddress("0x8Be503bcdEd90ED42Eff31f56199399B2b0154CA")
 )
 
 // Lockup function selectors
@@ -214,7 +214,7 @@ func runTestLockupSetPaused() {
 	client, _ := dial(rpcURL)
 
 	// Read current paused state
-	result := ethCall(client, lockupContract, selPaused)
+	result := ethCall(client, lockupAddr, selPaused)
 	wasPaused := result[31] != 0
 	fmt.Printf("Current paused state: %v\n", wasPaused)
 
@@ -228,11 +228,11 @@ func runTestLockupSetPaused() {
 	packed, _ := args.Pack(newState)
 	innerData := append(selSetPaused, packed...)
 
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupContract, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
 
 	// Verify state changed
 	fmt.Println("\n--- Verification ---")
-	result = ethCall(client, lockupContract, selPaused)
+	result = ethCall(client, lockupAddr, selPaused)
 	isPaused := result[31] != 0
 	fmt.Printf("Paused state after: %v\n", isPaused)
 	check("Paused state toggled", isPaused == newState)
@@ -241,9 +241,9 @@ func runTestLockupSetPaused() {
 	fmt.Printf("\nRestoring paused to: %v\n", wasPaused)
 	packed, _ = args.Pack(wasPaused)
 	innerData = append(selSetPaused, packed...)
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupContract, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
 
-	result = ethCall(client, lockupContract, selPaused)
+	result = ethCall(client, lockupAddr, selPaused)
 	isPaused = result[31] != 0
 	check("Paused state restored", isPaused == wasPaused)
 
@@ -260,7 +260,7 @@ func runTestLockupSetDailyLimit() {
 	client, _ := dial(rpcURL)
 
 	// Read current effective daily limit
-	result := ethCall(client, lockupContract, selDailyLimit)
+	result := ethCall(client, lockupAddr, selDailyLimit)
 	originalLimit := new(big.Int).SetBytes(result)
 	fmt.Printf("Current effective daily limit: %s\n", originalLimit.String())
 
@@ -274,11 +274,11 @@ func runTestLockupSetDailyLimit() {
 	packed, _ := args.Pack(testLimit)
 	innerData := append(selSetDailyLimit, packed...)
 
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupContract, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
 
 	// Verify
 	fmt.Println("\n--- Verification ---")
-	result = ethCall(client, lockupContract, selDailyLimit)
+	result = ethCall(client, lockupAddr, selDailyLimit)
 	newLimit := new(big.Int).SetBytes(result)
 	fmt.Printf("Effective daily limit after: %s\n", newLimit.String())
 	check("Daily limit updated", newLimit.Cmp(testLimit) == 0)
@@ -287,9 +287,9 @@ func runTestLockupSetDailyLimit() {
 	fmt.Printf("\nRestoring daily limit to: %s\n", originalLimit.String())
 	packed, _ = args.Pack(originalLimit)
 	innerData = append(selSetDailyLimit, packed...)
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupContract, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
 
-	result = ethCall(client, lockupContract, selDailyLimit)
+	result = ethCall(client, lockupAddr, selDailyLimit)
 	restoredLimit := new(big.Int).SetBytes(result)
 	check("Daily limit restored", restoredLimit.Cmp(originalLimit) == 0)
 
@@ -306,7 +306,7 @@ func runTestLockupSetIssuer() {
 	client, _ := dial(rpcURL)
 
 	// Read current issuer
-	result := ethCall(client, lockupContract, selLockupIssuer)
+	result := ethCall(client, lockupAddr, selLockupIssuer)
 	originalIssuer := common.BytesToAddress(result)
 	fmt.Printf("Current lockup issuer: %s\n", originalIssuer.Hex())
 
@@ -320,11 +320,11 @@ func runTestLockupSetIssuer() {
 	packed, _ := args.Pack(testIssuer)
 	innerData := append(selSetIssuer, packed...)
 
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupContract, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
 
 	// Verify
 	fmt.Println("\n--- Verification ---")
-	result = ethCall(client, lockupContract, selLockupIssuer)
+	result = ethCall(client, lockupAddr, selLockupIssuer)
 	newIssuer := common.BytesToAddress(result)
 	fmt.Printf("Lockup issuer after: %s\n", newIssuer.Hex())
 	check("Issuer updated", newIssuer == testIssuer)
@@ -333,9 +333,9 @@ func runTestLockupSetIssuer() {
 	fmt.Printf("\nRestoring issuer to: %s\n", originalIssuer.Hex())
 	packed, _ = args.Pack(originalIssuer)
 	innerData = append(selSetIssuer, packed...)
-	execSafeTx(rpcURL, safeAddr, keys, 2, lockupContract, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, lockupAddr, innerData)
 
-	result = ethCall(client, lockupContract, selLockupIssuer)
+	result = ethCall(client, lockupAddr, selLockupIssuer)
 	restoredIssuer := common.BytesToAddress(result)
 	check("Issuer restored", restoredIssuer == originalIssuer)
 
@@ -352,7 +352,7 @@ func runTestDistributionSetIssuer() {
 	client, _ := dial(rpcURL)
 
 	// Read current issuer
-	result := ethCall(client, distributionContract, selDistIssuer)
+	result := ethCall(client, distAddr, selDistIssuer)
 	originalIssuer := common.BytesToAddress(result)
 	fmt.Printf("Current distribution issuer: %s\n", originalIssuer.Hex())
 
@@ -366,11 +366,11 @@ func runTestDistributionSetIssuer() {
 	packed, _ := args.Pack(testIssuer)
 	innerData := append(selSetIssuer, packed...)
 
-	execSafeTx(rpcURL, safeAddr, keys, 2, distributionContract, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, distAddr, innerData)
 
 	// Verify
 	fmt.Println("\n--- Verification ---")
-	result = ethCall(client, distributionContract, selDistIssuer)
+	result = ethCall(client, distAddr, selDistIssuer)
 	newIssuer := common.BytesToAddress(result)
 	fmt.Printf("Distribution issuer after: %s\n", newIssuer.Hex())
 	check("Issuer updated", newIssuer == testIssuer)
@@ -379,9 +379,9 @@ func runTestDistributionSetIssuer() {
 	fmt.Printf("\nRestoring issuer to: %s\n", originalIssuer.Hex())
 	packed, _ = args.Pack(originalIssuer)
 	innerData = append(selSetIssuer, packed...)
-	execSafeTx(rpcURL, safeAddr, keys, 2, distributionContract, innerData)
+	execSafeTx(rpcURL, safeAddr, keys, 2, distAddr, innerData)
 
-	result = ethCall(client, distributionContract, selDistIssuer)
+	result = ethCall(client, distAddr, selDistIssuer)
 	restoredIssuer := common.BytesToAddress(result)
 	check("Issuer restored", restoredIssuer == originalIssuer)
 

@@ -173,7 +173,7 @@ safe_owners_hex=${safe_owners_raw#0x}
 safe_owner_count_hex=${safe_owners_hex:64:64}
 safe_owner_count=$(hex_to_dec "0x${safe_owner_count_hex}")
 safe_owners=()
-for i in $(seq 1 ${safe_owner_count}); do
+for i in $(seq 0 $((safe_owner_count - 1))); do
     offset=$(( (2 + i) * 64 ))
     addr_hex=${safe_owners_hex:${offset}:64}
     safe_owners+=("0x${addr_hex: -40}")
@@ -284,7 +284,7 @@ echo "$(tab " Safe Proxy" "${SAFE_PROXY_ADDRESS}" ${ROW_LENGTH})"
 echo "$(tab " Singleton" "${safe_singleton_addr}" ${ROW_LENGTH})"
 echo "$(tab " Threshold" "${safe_threshold_dec} of ${safe_owner_count}" ${ROW_LENGTH})"
 for i in $(seq 1 ${safe_owner_count}); do
-    echo "$(tab " Owner ${i}" "${safe_owners[$i]}" ${ROW_LENGTH})"
+    echo "$(tab " Owner ${i}" "${safe_owners[${i}]}" ${ROW_LENGTH})"
 done
 echo ""
 echo "$(tab " Lockup Owner == Safe Proxy" "${lockup_owner_is_safe}" ${ROW_LENGTH})"

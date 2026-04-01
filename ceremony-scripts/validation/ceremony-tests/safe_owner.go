@@ -132,13 +132,19 @@ func signSafeTx(txHash common.Hash, keys []*ecdsa.PrivateKey, count int) []byte 
 		})
 	}
 
-	// Sort by address (Safe requires ascending order)
+	// Sort by address bytes (Safe requires ascending numeric order)
 	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].addr.Hex() < entries[j].addr.Hex()
+		for k := 0; k < 20; k++ {
+			if entries[i].addr[k] != entries[j].addr[k] {
+				return entries[i].addr[k] < entries[j].addr[k]
+			}
+		}
+		return false
 	})
 
 	var packed []byte
-	for _, e := range entries {
+	for i, e := range entries {
+		fmt.Printf("    Signer %d: %s (v=%d)\n", i, e.addr.Hex(), e.sig[64])
 		packed = append(packed, e.sig...)
 	}
 	return packed

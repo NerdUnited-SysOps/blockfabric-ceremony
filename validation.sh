@@ -185,16 +185,16 @@ safe_test() {
 	local rpc_host=$(ansible --list-hosts -i "${INVENTORY_PATH}" rpc | sed '/:/d ; s/ //g' | head -1)
 
 	# Extract private keys from keystores if not already done
-	extract_private_key "${VOLUMES_DIR}/volume1/safeOwner1"
-	extract_private_key "${VOLUMES_DIR}/volume2/safeOwner2"
-	extract_private_key "${VOLUMES_DIR}/volume3/safeOwner3"
+	extract_private_key "${VOLUMES_DIR}/volume1/lockupOwner1"
+	extract_private_key "${VOLUMES_DIR}/volume2/lockupOwner2"
+	extract_private_key "${VOLUMES_DIR}/volume3/lockupOwner3"
 	extract_private_key "${VOLUMES_DIR}/volume2/distributionIssuer"
 
 	RPC_URL="https://${rpc_host}" \
 	SAFE_PROXY_ADDRESS="${SAFE_PROXY_ADDRESS}" \
-	SAFE_OWNER_1_KEY_PATH="${VOLUMES_DIR}/volume1/safeOwner1/privatekey" \
-	SAFE_OWNER_2_KEY_PATH="${VOLUMES_DIR}/volume2/safeOwner2/privatekey" \
-	SAFE_OWNER_3_KEY_PATH="${VOLUMES_DIR}/volume3/safeOwner3/privatekey" \
+	SAFE_OWNER_1_KEY_PATH="${VOLUMES_DIR}/volume1/lockupOwner1/privatekey" \
+	SAFE_OWNER_2_KEY_PATH="${VOLUMES_DIR}/volume2/lockupOwner2/privatekey" \
+	SAFE_OWNER_3_KEY_PATH="${VOLUMES_DIR}/volume3/lockupOwner3/privatekey" \
 	FUNDER_KEY_PATH="${VOLUMES_DIR}/volume2/distributionIssuer/privatekey" \
 		"$BIN" "$subcommand"
 }

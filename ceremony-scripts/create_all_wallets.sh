@@ -63,7 +63,7 @@ generate_wallet() {
 
 safe_owner_wallets() {
 	for i in {1..${SAFE_OWNER_COUNT:-3}}; do
-		generate_wallet -o "${VOLUMES_DIR}/volume${i}/safeOwner${i}" &
+		generate_wallet -o "${VOLUMES_DIR}/volume${i}/lockupOwner${i}" &
 	done
 	wait
 

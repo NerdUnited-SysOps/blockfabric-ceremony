@@ -209,23 +209,6 @@ persist_distribution_issuer() {
 	upsert_secret "L2_FUNDING_PK" $distribution_issuer_pk ${AWS_PRIMARY_PROFILE}
 }
 
-persist_safe_owners() {
-	[[ -z "${AWS_PRIMARY_PROFILE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_PRIMARY_PROFILE variable" && exit 1
-	printer -t "Saving Safe Owner Keys"
-
-	for i in 1 2 3; do
-		eval keystore_var=\${AWS_SAFE_OWNER_${i}_KEYSTORE}
-		eval password_var=\${AWS_SAFE_OWNER_${i}_PASSWORD}
-
-		[[ -z "${keystore_var}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_SAFE_OWNER_${i}_KEYSTORE variable" && exit 1
-		[[ -z "${password_var}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_SAFE_OWNER_${i}_PASSWORD variable" && exit 1
-
-		upsert_file ${keystore_var} ${VOLUMES_DIR}/volume${i}/safeOwner${i}/keystore ${AWS_PRIMARY_PROFILE}
-		upsert_file ${password_var} ${VOLUMES_DIR}/volume${i}/safeOwner${i}/password ${AWS_PRIMARY_PROFILE}
-	done
-
-	printer -s "Safe owner keys persisted"
-}
 
 inspect() {
 	inspect_path=$1
@@ -246,8 +229,6 @@ clear -x
 
 
 persist_distribution_issuer
-
-persist_safe_owners
 
 save_log_file
 

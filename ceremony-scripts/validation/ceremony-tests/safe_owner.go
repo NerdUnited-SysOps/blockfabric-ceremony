@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"fmt"
 	"math/big"
@@ -11,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 // Contract addresses
@@ -74,12 +74,6 @@ func fundIfNeeded(client *ethclient.Client, chainID *big.Int, funderKey *ecdsa.P
 	fmt.Printf("  Funding %s with %s wei for gas...\n", addr.Hex(), gasAmount.String())
 	receipt := sendTx(client, chainID, funderKey, addr, gasAmount, nil)
 	check("Funding tx succeeded", receipt.Status == 1)
-}
-
-// getSafeNonce reads the current nonce from the Safe contract
-func getSafeNonce(client interface{ CallContract(ctx context.Context, msg interface{}, blockNumber *big.Int) ([]byte, error) }, safeAddr common.Address) *big.Int {
-	// Use the ethCall helper via a simple approach
-	return nil // placeholder
 }
 
 // computeSafeTxHash computes the EIP-712 hash for a Safe transaction

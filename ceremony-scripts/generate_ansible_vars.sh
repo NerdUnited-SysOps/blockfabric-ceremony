@@ -192,8 +192,48 @@ all_quorum_vars() {
 	put_all_quorum_var "lace_genesis_lockup_issuer_address" "\"8Be503bcdEd90ED42Eff31f56199399B2b0154CA\""
 
 	put_all_quorum_var "goquorum_genesis_sc_dao_code" "\"0x$(cat ${DAO_RUNTIME_BIN_FILE})\""
-	put_all_quorum_var "goquorum_genesis_sc_lockup_code" "\"0x$(cat ${LOCKUP_RUNTIME_BIN_FILE})\""
-	put_all_quorum_var "goquorum_genesis_sc_distribution_code" "\"0x$(cat ${DIST_RUNTIME_BIN_FILE})\""
+
+	# Patch lockup bytecode: embed immutable values (owner, initialDistribution)
+	# Immutable offsets from solc --standard-json immutableReferences:
+	#   owner (address):            bytes 479, 622, 1253
+	#   initialDistribution (uint): bytes 1375, 1428, 1660, 1708, 1810, 1941
+	lockup_bytecode=$(cat ${LOCKUP_RUNTIME_BIN_FILE})
+	padded_owner=$(format_storage_addr "${SAFE_PROXY_ADDRESS}")
+	padded_timestamp=$(format_storage_num "${LOCKUP_TIMESTAMP}")
+	lockup_bytecode=$(python3 -c "
+bc = '${lockup_bytecode}'
+owner = '${padded_owner}'
+ts = '${padded_timestamp}'
+# Each byte offset = 2 hex chars
+for off in [479, 622, 1253]:
+    h = off * 2
+    bc = bc[:h] + owner + bc[h+64:]
+for off in [1375, 1428, 1660, 1708, 1810, 1941]:
+    h = off * 2
+    bc = bc[:h] + ts + bc[h+64:]
+print(bc)
+")
+	put_all_quorum_var "goquorum_genesis_sc_lockup_code" "\"0x${lockup_bytecode}\""
+	# Patch distribution bytecode: embed immutable values (owner, lockup)
+	# Immutable offsets from solc --standard-json immutableReferences:
+	#   owner (address):  bytes 215, 1025
+	#   lockup (address): byte 331
+	dist_bytecode=$(cat ${DIST_RUNTIME_BIN_FILE})
+	padded_dist_owner=$(format_storage_addr "${SAFE_PROXY_ADDRESS}")
+	padded_lockup_addr=$(format_storage_addr "47e9Fbef8C83A1714F1951F142132E6e90F5fa5D")
+	dist_bytecode=$(python3 -c "
+bc = '${dist_bytecode}'
+owner = '${padded_dist_owner}'
+lockup = '${padded_lockup_addr}'
+for off in [215, 1025]:
+    h = off * 2
+    bc = bc[:h] + owner + bc[h+64:]
+for off in [331]:
+    h = off * 2
+    bc = bc[:h] + lockup + bc[h+64:]
+print(bc)
+")
+	put_all_quorum_var "goquorum_genesis_sc_distribution_code" "\"0x${dist_bytecode}\""
 	put_all_quorum_var "goquorum_genesis_sc_safe_singleton_code" "\"0x$(cat ${SAFE_SINGLETON_BIN_FILE})\""
 	put_all_quorum_var "goquorum_genesis_sc_safe_proxy_code" "\"0x$(cat ${SAFE_PROXY_BIN_FILE})\""
 

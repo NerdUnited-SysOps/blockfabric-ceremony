@@ -87,8 +87,7 @@ DISTRIBUTION_ADDRESS="0x8be503bcded90ed42eff31f56199399b2b0154ca"
 SLOT_0="0x0000000000000000000000000000000000000000000000000000000000000000"
 SLOT_1="0x0000000000000000000000000000000000000000000000000000000000000001"
 SLOT_2="0x0000000000000000000000000000000000000000000000000000000000000002"
-SLOT_4="0x0000000000000000000000000000000000000000000000000000000000000004"
-SLOT_5="0x0000000000000000000000000000000000000000000000000000000000000005"
+SLOT_3="0x0000000000000000000000000000000000000000000000000000000000000003"
 
 ROW_LENGTH=66
 
@@ -118,9 +117,9 @@ batch_calls=(
     "eth_getBalance|[\"${LOCKUP_ADDRESS}\", \"latest\"]"
     "eth_getBalance|[\"${DISTRIBUTION_ADDRESS}\", \"latest\"]"
     "eth_getBalance|[\"${distribution_issuer_address}\", \"latest\"]"
+    "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_0}\", \"latest\"]"
     "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_2}\", \"latest\"]"
-    "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_4}\", \"latest\"]"
-    "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_5}\", \"latest\"]"
+    "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_3}\", \"latest\"]"
     "eth_getStorageAt|[\"${DISTRIBUTION_ADDRESS}\", \"${SLOT_0}\", \"latest\"]"
     "eth_getStorageAt|[\"${DISTRIBUTION_ADDRESS}\", \"${SLOT_1}\", \"latest\"]"
     "eth_getStorageAt|[\"${DISTRIBUTION_ADDRESS}\", \"${SLOT_2}\", \"latest\"]"

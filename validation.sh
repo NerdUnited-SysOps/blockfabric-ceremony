@@ -170,6 +170,38 @@ test_create_contract() {
 		"$BIN" create-contract
 }
 
+extract_private_key() {
+	local wallet_path=$1
+	local pk_file="${wallet_path}/privatekey"
+	if [[ ! -f "${pk_file}" ]]; then
+		local inspected=$(${ETHKEY_PATH} inspect --private --passwordfile "${wallet_path}/password" "${wallet_path}/keystore")
+		echo "${inspected}" | grep "Private" | awk '{print $3}' | tr -d '\n' > "${pk_file}"
+	fi
+}
+
+safe_test() {
+	local subcommand=$1
+	local BIN=$(build_ceremony_test)
+	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+
+	# Extract private keys from keystores if not already done
+	extract_private_key "${VOLUMES_DIR}/volume1/safeOwner1"
+	extract_private_key "${VOLUMES_DIR}/volume2/safeOwner2"
+	extract_private_key "${VOLUMES_DIR}/volume3/safeOwner3"
+
+	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
+	SAFE_PROXY_ADDRESS="${SAFE_PROXY_ADDRESS}" \
+	SAFE_OWNER_1_KEY_PATH="${VOLUMES_DIR}/volume1/safeOwner1/privatekey" \
+	SAFE_OWNER_2_KEY_PATH="${VOLUMES_DIR}/volume2/safeOwner2/privatekey" \
+	SAFE_OWNER_3_KEY_PATH="${VOLUMES_DIR}/volume3/safeOwner3/privatekey" \
+		"$BIN" "$subcommand"
+}
+
+test_lockup_set_paused() { safe_test "test-lockup-set-paused"; }
+test_lockup_set_daily_limit() { safe_test "test-lockup-set-daily-limit"; }
+test_lockup_set_issuer() { safe_test "test-lockup-set-issuer"; }
+test_distribution_set_issuer() { safe_test "test-distribution-set-issuer"; }
+
 usage() {
 	printf "This is an interface for validation of the ceremony.\n"
 	printf "You may select from the options below\n\n"
@@ -183,7 +215,7 @@ items=(
 	"Print chain accounts"
 )
 
-[ -n "${DEV_ENABLED}" ] && items+=("Show startup config" "Validate genesis" "Test distribution" "Test vote" "Test create contract")
+[ -n "${DEV_ENABLED}" ] && items+=("Show startup config" "Validate genesis" "Test distribution" "Test vote" "Test create contract" "Test lockup setPaused" "Test lockup setDailyLimit" "Test lockup setIssuer" "Test distribution setIssuer")
 
 items+=("Exit")
 
@@ -206,6 +238,10 @@ if [[ -n "${DIRECT_OPTION}" ]]; then
 		8) [[ -n "${DEV_ENABLED}" ]] && test_distribution || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
 		9) [[ -n "${DEV_ENABLED}" ]] && test_vote || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
 		10) [[ -n "${DEV_ENABLED}" ]] && test_create_contract || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		11) [[ -n "${DEV_ENABLED}" ]] && test_lockup_set_paused || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		12) [[ -n "${DEV_ENABLED}" ]] && test_lockup_set_daily_limit || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		13) [[ -n "${DEV_ENABLED}" ]] && test_lockup_set_issuer || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		14) [[ -n "${DEV_ENABLED}" ]] && test_distribution_set_issuer || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
 		*) printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1;;
 	esac
 	exit 0
@@ -230,6 +266,10 @@ while true; do
 			"Test distribution") clear -x; test_distribution; break;;
 			"Test vote") clear -x; test_vote; break;;
 			"Test create contract") clear -x; test_create_contract; break;;
+			"Test lockup setPaused") clear -x; test_lockup_set_paused; break;;
+			"Test lockup setDailyLimit") clear -x; test_lockup_set_daily_limit; break;;
+			"Test lockup setIssuer") clear -x; test_lockup_set_issuer; break;;
+			"Test distribution setIssuer") clear -x; test_distribution_set_issuer; break;;
 			"Exit") printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";

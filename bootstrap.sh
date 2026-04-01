@@ -5,9 +5,9 @@
 
 version="2.3.3"
 chain_repo_tag="2.2.0"
-additions_repo_tag="2.8.3"
+additions_repo_tag="2.8.4"
 ansible_repo_tag="main"
-ceremonyenv_repo_tag="2.8.3"
+ceremonyenv_repo_tag="2.8.4"
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
 export network=$1
 export chain=$2

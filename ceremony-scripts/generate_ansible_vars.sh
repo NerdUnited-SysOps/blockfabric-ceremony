@@ -202,8 +202,7 @@ all_quorum_vars() {
 	safe_owner_2=$(get_address $SAFE_OWNER_2_ADDRESS_FILE)
 	safe_owner_3=$(get_address $SAFE_OWNER_3_ADDRESS_FILE)
 
-	SCRIPT_DIR=$(realpath $(dirname $0))
-	GO_CMD_DIR=${SCRIPT_DIR}/cmd
+	GO_CMD_DIR=${SCRIPTS_DIR}/cmd
 	sc_safe_storage=$(cd ${GO_CMD_DIR} && go run ./safe_storage ${SAFE_SINGLETON_ADDRESS} ${SAFE_THRESHOLD:-2} $safe_owner_1 $safe_owner_2 $safe_owner_3)
 
 	# Lockup storage: owner = Safe proxy, no admins mapping

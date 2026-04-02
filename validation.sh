@@ -158,6 +158,12 @@ test_vote() {
 	local BIN=$(build_ceremony_test)
 	local rpc_host=$(ansible --list-hosts -i "${INVENTORY_PATH}" rpc | sed '/:/d ; s/ //g' | head -1)
 
+	# Extract private keys for all validator accounts and distribution issuer
+	extract_private_key "${VOLUMES_DIR}/volume2/distributionIssuer"
+	for dir in ${VOLUMES_DIR}/volume1/*/account; do
+		extract_private_key "${dir}"
+	done
+
 	RPC_URL="https://${rpc_host}" \
 	DAO_ADDRESS="0x5a443704dd4B594B382c22a083e2BD3090A6feF3" \
 	VOLUMES_DIR="${VOLUMES_DIR}" \

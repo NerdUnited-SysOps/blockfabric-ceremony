@@ -82,13 +82,18 @@ else:
 # Contract addresses
 LOCKUP_ADDRESS="0x47e9fbef8c83a1714f1951f142132e6e90f5fa5d"
 DISTRIBUTION_ADDRESS="0x8be503bcded90ed42eff31f56199399b2b0154ca"
+SAFE_SINGLETON_ADDRESS="0x3e5c63644e683549055b9be8653de26e0b4cd36e"
+SAFE_PROXY_ADDRESS="0x1ae42a80dae5d3a1ab06673fccefe7a887d024b4"
+
+# Function selectors
+SEL_GET_THRESHOLD="0xe75235b8"
+SEL_GET_OWNERS="0xa0e67e2b"
 
 # Storage slot keys
 SLOT_0="0x0000000000000000000000000000000000000000000000000000000000000000"
 SLOT_1="0x0000000000000000000000000000000000000000000000000000000000000001"
 SLOT_2="0x0000000000000000000000000000000000000000000000000000000000000002"
-SLOT_4="0x0000000000000000000000000000000000000000000000000000000000000004"
-SLOT_5="0x0000000000000000000000000000000000000000000000000000000000000005"
+SLOT_3="0x0000000000000000000000000000000000000000000000000000000000000003"
 
 ROW_LENGTH=66
 
@@ -118,14 +123,17 @@ batch_calls=(
     "eth_getBalance|[\"${LOCKUP_ADDRESS}\", \"latest\"]"
     "eth_getBalance|[\"${DISTRIBUTION_ADDRESS}\", \"latest\"]"
     "eth_getBalance|[\"${distribution_issuer_address}\", \"latest\"]"
+    "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_0}\", \"latest\"]"
     "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_2}\", \"latest\"]"
-    "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_4}\", \"latest\"]"
-    "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_5}\", \"latest\"]"
+    "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_3}\", \"latest\"]"
     "eth_getStorageAt|[\"${DISTRIBUTION_ADDRESS}\", \"${SLOT_0}\", \"latest\"]"
     "eth_getStorageAt|[\"${DISTRIBUTION_ADDRESS}\", \"${SLOT_1}\", \"latest\"]"
     "eth_getStorageAt|[\"${DISTRIBUTION_ADDRESS}\", \"${SLOT_2}\", \"latest\"]"
     "eth_chainId|[]"
     "net_version|[]"
+    "eth_call|[{\"to\":\"${SAFE_PROXY_ADDRESS}\",\"data\":\"${SEL_GET_THRESHOLD}\"},\"latest\"]"
+    "eth_call|[{\"to\":\"${SAFE_PROXY_ADDRESS}\",\"data\":\"${SEL_GET_OWNERS}\"},\"latest\"]"
+    "eth_getStorageAt|[\"${SAFE_PROXY_ADDRESS}\",\"${SLOT_0}\",\"latest\"]"
 )
 
 batch_results=("${(@f)$(rpc_batch "${batch_calls[@]}")}")
@@ -154,6 +162,45 @@ distribution_lockup_raw=$(echo "${batch_results[9]}" | jq -r '.result')
 chain_id_hex=$(echo "${batch_results[10]}" | jq -r '.result')
 chain_id_dec=$(hex_to_dec "${chain_id_hex}")
 net_version=$(echo "${batch_results[11]}" | jq -r '.result')
+
+# Safe multisig info
+safe_threshold_raw=$(echo "${batch_results[12]}" | jq -r '.result')
+safe_threshold_dec=$(hex_to_dec "${safe_threshold_raw}")
+
+safe_owners_raw=$(echo "${batch_results[13]}" | jq -r '.result')
+# Decode ABI-encoded address array: skip offset (32 bytes) + length (32 bytes), then read addresses
+safe_owners_hex=${safe_owners_raw#0x}
+safe_owner_count_hex=${safe_owners_hex:64:64}
+safe_owner_count=$(hex_to_dec "0x${safe_owner_count_hex}")
+safe_owners=()
+for i in $(seq 0 $((safe_owner_count - 1))); do
+    offset=$(( (2 + i) * 64 ))
+    addr_hex=${safe_owners_hex:${offset}:64}
+    safe_owners+=("0x${addr_hex: -40}")
+done
+
+safe_singleton_raw=$(echo "${batch_results[14]}" | jq -r '.result')
+safe_singleton_addr="0x$(echo ${safe_singleton_raw#0x} | sed 's/^0*//')"
+
+# Distribution owner is public immutable — read via eth_call
+# owner() selector = 0x8da5cb5b
+distribution_owner_call=$(rpc_call "eth_call" "[{\"to\":\"${DISTRIBUTION_ADDRESS}\",\"data\":\"0x8da5cb5b\"},\"latest\"]" | jq -r '.result')
+distribution_owner_addr="0x${distribution_owner_call: -40}"
+
+# Lockup owner is private immutable — embedded in bytecode at byte offset 479
+lockup_code=$(rpc_call "eth_getCode" "[\"${LOCKUP_ADDRESS}\",\"latest\"]" | jq -r '.result')
+# Byte 479 = char 960 in hex string (479*2 + 2 for 0x prefix), last 40 of 64 chars = address
+lockup_owner_addr="0x${lockup_code:984:40}"
+
+# Distribution lockup (ILockup) is private immutable at byte offset 331
+dist_code=$(rpc_call "eth_getCode" "[\"${DISTRIBUTION_ADDRESS}\",\"latest\"]" | jq -r '.result')
+# Byte 331 = char 664 (331*2 + 2), last 40 of 64 chars = address
+dist_lockup_immutable="0x${dist_code:688:40}"
+
+# Comparisons
+lockup_owner_is_safe=$([[ "${lockup_owner_addr}" == "${SAFE_PROXY_ADDRESS}" ]] && echo "true" || echo "false")
+distribution_owner_is_safe=$([[ "${distribution_owner_addr}" == "${SAFE_PROXY_ADDRESS}" ]] && echo "true" || echo "false")
+safe_singleton_matches=$([[ "${safe_singleton_addr}" == "${SAFE_SINGLETON_ADDRESS}" ]] && echo "true" || echo "false")
 
 # Phase 3: Per-address balances in ONE SSH session
 addr_calls=()
@@ -233,6 +280,24 @@ echo "$(repeat_char '-' ${ROW_LENGTH})"
 echo "$(tab " Lockup Issuer Address == Distribution Contract" "${lockup_issuer_matches_distribution}" ${ROW_LENGTH})"
 echo "$(tab " Distribution Lockup Address == Lockup Contract" "${distribution_lockup_matches_lockup}" ${ROW_LENGTH})"
 echo "$(tab " DistributionIssuer == DistributionIssuerAddress" "${distribution_issuer_matches}" ${ROW_LENGTH})"
+
+echo ""
+echo "$(repeat_char '-' ${ROW_LENGTH})"
+echo " Multisig (Gnosis Safe)"
+echo "$(repeat_char '-' ${ROW_LENGTH})"
+
+echo "$(tab " Safe Proxy" "${SAFE_PROXY_ADDRESS}" ${ROW_LENGTH})"
+echo "$(tab " Singleton" "${safe_singleton_addr}" ${ROW_LENGTH})"
+echo "$(tab " Threshold" "${safe_threshold_dec} of ${safe_owner_count}" ${ROW_LENGTH})"
+for i in $(seq 1 ${safe_owner_count}); do
+    echo "$(tab " Owner ${i}" "${safe_owners[${i}]}" ${ROW_LENGTH})"
+done
+echo ""
+echo "$(tab " Lockup Owner" "${lockup_owner_addr}" ${ROW_LENGTH})"
+echo "$(tab " Lockup Owner == Safe Proxy" "${lockup_owner_is_safe}" ${ROW_LENGTH})"
+echo "$(tab " Distribution Owner" "${distribution_owner_addr}" ${ROW_LENGTH})"
+echo "$(tab " Distribution Owner == Safe Proxy" "${distribution_owner_is_safe}" ${ROW_LENGTH})"
+echo "$(tab " Singleton == ${SAFE_SINGLETON_ADDRESS}" "${safe_singleton_matches}" ${ROW_LENGTH})"
 echo ""
 
 echo "Validation Complete"

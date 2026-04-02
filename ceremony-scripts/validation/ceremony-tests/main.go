@@ -18,14 +18,14 @@ import (
 
 var (
 	gasPrice = big.NewInt(100)
-	gasLimit = uint64(200000)
+	gasLimit = uint64(500000)
 )
 
 var failures int
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: ceremony-test <distribute|vote|create-contract>\n")
+		fmt.Fprintf(os.Stderr, "Usage: ceremony-test <distribute|vote|create-contract|test-lockup-set-paused|test-lockup-set-daily-limit|test-lockup-set-issuer|test-distribution-set-issuer>\n")
 		os.Exit(1)
 	}
 	switch os.Args[1] {
@@ -35,6 +35,14 @@ func main() {
 		runVote()
 	case "create-contract":
 		runCreateContract()
+	case "test-lockup-set-paused":
+		runTestLockupSetPaused()
+	case "test-lockup-set-daily-limit":
+		runTestLockupSetDailyLimit()
+	case "test-lockup-set-issuer":
+		runTestLockupSetIssuer()
+	case "test-distribution-set-issuer":
+		runTestDistributionSetIssuer()
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown subcommand: %s\n", os.Args[1])
 		os.Exit(1)

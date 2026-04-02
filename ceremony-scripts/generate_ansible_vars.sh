@@ -70,9 +70,13 @@ printer -t "Creating ansible vars"
 [ -z "${LOCKUP_CONTRACT_ARCHIVE_DIR}" ] && LOCKUP_CONTRACT_ARCHIVE_DIR="$CONTRACTS_DIR/sc_lockup/$LOCKUP_VERSION"
 [ -z "${DIST_RUNTIME_BIN_FILE}" ] && DIST_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/Distribution.bin-runtime"
 [ -z "${LOCKUP_RUNTIME_BIN_FILE}" ] && LOCKUP_RUNTIME_BIN_FILE="$LOCKUP_CONTRACT_ARCHIVE_DIR/Lockup.bin-runtime"
-[ -z "${DIST_OWNER_ADDRESS_FILE}" ] && DIST_OWNER_ADDRESS_FILE="$VOLUMES_DIR/volume2/distributionOwner"
 [ -z "${DIST_ISSUER_ADDRESS_FILE}" ] && DIST_ISSUER_ADDRESS_FILE="$VOLUMES_DIR/volume2/distributionIssuer"
-[ -z "${LOCKUP_OWNER_ADDRESS_FILE}" ] && LOCKUP_OWNER_ADDRESS_FILE="$VOLUMES_DIR/volume2/lockupOwner"
+[ -z "${SAFE_OWNER_1_ADDRESS_FILE}" ] && SAFE_OWNER_1_ADDRESS_FILE="$VOLUMES_DIR/volume1/lockupOwner1"
+[ -z "${SAFE_OWNER_2_ADDRESS_FILE}" ] && SAFE_OWNER_2_ADDRESS_FILE="$VOLUMES_DIR/volume2/lockupOwner2"
+[ -z "${SAFE_OWNER_3_ADDRESS_FILE}" ] && SAFE_OWNER_3_ADDRESS_FILE="$VOLUMES_DIR/volume3/lockupOwner3"
+[ -z "${SAFE_CONTRACT_ARCHIVE_DIR}" ] && SAFE_CONTRACT_ARCHIVE_DIR="$CONTRACTS_DIR/${GITHUB_SAFE_REPO}/$SAFE_VERSION"
+[ -z "${SAFE_SINGLETON_BIN_FILE}" ] && SAFE_SINGLETON_BIN_FILE="$SAFE_CONTRACT_ARCHIVE_DIR/GnosisSafe.bin-runtime"
+[ -z "${SAFE_PROXY_BIN_FILE}" ] && SAFE_PROXY_BIN_FILE="$SAFE_CONTRACT_ARCHIVE_DIR/GnosisSafeProxy.bin-runtime"
 
 
 check_file() {
@@ -90,9 +94,12 @@ check_file() {
 check_file "DAO bytecode" "${DAO_RUNTIME_BIN_FILE}"
 check_file "Lockup bytecode" "${LOCKUP_RUNTIME_BIN_FILE}"
 check_file "Distirbution bytecode" "${DIST_RUNTIME_BIN_FILE}"
-check_file "Distribution owner address" "${DIST_OWNER_ADDRESS_FILE}/keystore"
+check_file "Safe singleton bytecode" "${SAFE_SINGLETON_BIN_FILE}"
+check_file "Safe proxy bytecode" "${SAFE_PROXY_BIN_FILE}"
 check_file "distribution issuer address" "${DIST_ISSUER_ADDRESS_FILE}/keystore"
-check_file "Lockup owner address" "${LOCKUP_OWNER_ADDRESS_FILE}/keystore"
+check_file "Safe owner 1 address" "${SAFE_OWNER_1_ADDRESS_FILE}/keystore"
+check_file "Safe owner 2 address" "${SAFE_OWNER_2_ADDRESS_FILE}/keystore"
+check_file "Safe owner 3 address" "${SAFE_OWNER_3_ADDRESS_FILE}/keystore"
 
 put_all_quorum_var() {
 	VAR_NAME=$1
@@ -177,30 +184,80 @@ all_quorum_vars() {
 	fi
 	# Set the timestamp of the genesis block to now
 	put_all_quorum_var "goquorum_genesis_timestamp" "\"$(date +%s)\""
-	put_all_quorum_var "lace_genesis_lockup_owner_address" "\"$(get_address $LOCKUP_OWNER_ADDRESS_FILE)\""
-
-	put_all_quorum_var "lace_genesis_lockup_owner_address" "\"$(get_address $LOCKUP_OWNER_ADDRESS_FILE)\""
-  put_all_quorum_var "lace_genesis_distribution_owner_address" "\"$(get_address $DIST_OWNER_ADDRESS_FILE)\""
-  put_all_quorum_var "lace_genesis_distribution_issuer_address" "\"$(get_address $DIST_ISSUER_ADDRESS_FILE | cut -c3-)\""
-  # Lockup issuer = distribution contract address (0x8Be5...)
-  put_all_quorum_var "lace_genesis_lockup_issuer_address" "\"8Be503bcdEd90ED42Eff31f56199399B2b0154CA\""
+	# Safe proxy address is the owner of both lockup and distribution
+	put_all_quorum_var "lace_genesis_lockup_owner_address" "\"${SAFE_PROXY_ADDRESS}\""
+	put_all_quorum_var "lace_genesis_distribution_owner_address" "\"${SAFE_PROXY_ADDRESS}\""
+	put_all_quorum_var "lace_genesis_distribution_issuer_address" "\"$(get_address $DIST_ISSUER_ADDRESS_FILE | cut -c3-)\""
+	# Lockup issuer = distribution contract address (0x8Be5...)
+	put_all_quorum_var "lace_genesis_lockup_issuer_address" "\"8Be503bcdEd90ED42Eff31f56199399B2b0154CA\""
 
 	put_all_quorum_var "goquorum_genesis_sc_dao_code" "\"0x$(cat ${DAO_RUNTIME_BIN_FILE})\""
-	put_all_quorum_var "goquorum_genesis_sc_lockup_code" "\"0x$(cat ${LOCKUP_RUNTIME_BIN_FILE})\""
-	put_all_quorum_var "goquorum_genesis_sc_distribution_code" "\"0x$(cat ${DIST_RUNTIME_BIN_FILE})\""
 
-	admin_addresses=$(${SCRIPTS_DIR}/create_lockup_storage/create_lockup_storage.sh -e "${ENV_FILE}")
+	# Patch lockup bytecode: embed immutable values (owner, initialDistribution)
+	# Immutable offsets from solc --standard-json immutableReferences:
+	#   owner (address):            bytes 479, 622, 1253
+	#   initialDistribution (uint): bytes 1375, 1428, 1660, 1708, 1810, 1941
+	lockup_bytecode=$(cat ${LOCKUP_RUNTIME_BIN_FILE})
+	padded_owner=$(format_storage_addr "${SAFE_PROXY_ADDRESS}")
+	padded_timestamp=$(format_storage_num "${LOCKUP_TIMESTAMP}")
+	lockup_bytecode=$(python3 -c "
+bc = '${lockup_bytecode}'
+owner = '${padded_owner}'
+ts = '${padded_timestamp}'
+# Each byte offset = 2 hex chars
+for off in [479, 622, 1253]:
+    h = off * 2
+    bc = bc[:h] + owner + bc[h+64:]
+for off in [1375, 1428, 1660, 1708, 1810, 1941]:
+    h = off * 2
+    bc = bc[:h] + ts + bc[h+64:]
+print(bc)
+")
+	put_all_quorum_var "goquorum_genesis_sc_lockup_code" "\"0x${lockup_bytecode}\""
+	# Patch distribution bytecode: embed immutable values (owner, lockup)
+	# Immutable offsets from solc --standard-json immutableReferences:
+	#   owner (address):  bytes 215, 1025
+	#   lockup (address): byte 331
+	dist_bytecode=$(cat ${DIST_RUNTIME_BIN_FILE})
+	padded_dist_owner=$(format_storage_addr "${SAFE_PROXY_ADDRESS}")
+	padded_lockup_addr=$(format_storage_addr "47e9Fbef8C83A1714F1951F142132E6e90F5fa5D")
+	dist_bytecode=$(python3 -c "
+bc = '${dist_bytecode}'
+owner = '${padded_dist_owner}'
+lockup = '${padded_lockup_addr}'
+for off in [215, 1025]:
+    h = off * 2
+    bc = bc[:h] + owner + bc[h+64:]
+for off in [331]:
+    h = off * 2
+    bc = bc[:h] + lockup + bc[h+64:]
+print(bc)
+")
+	put_all_quorum_var "goquorum_genesis_sc_distribution_code" "\"0x${dist_bytecode}\""
+	put_all_quorum_var "goquorum_genesis_sc_safe_singleton_code" "\"0x$(cat ${SAFE_SINGLETON_BIN_FILE})\""
+	put_all_quorum_var "goquorum_genesis_sc_safe_proxy_code" "\"0x$(cat ${SAFE_PROXY_BIN_FILE})\""
 
-	# Transform createStorage.js output: strip 0x prefix from keys, pad values to 64 chars
-	admin_entries=$(echo "$admin_addresses" | sed 's/"0x\([^"]*\)": "01"/"\1": "0000000000000000000000000000000000000000000000000000000000000001"/g')
+	# Compute Safe storage (owners linked list, threshold, singleton pointer)
+	safe_owner_1=$(get_address $SAFE_OWNER_1_ADDRESS_FILE)
+	safe_owner_2=$(get_address $SAFE_OWNER_2_ADDRESS_FILE)
+	safe_owner_3=$(get_address $SAFE_OWNER_3_ADDRESS_FILE)
 
-	# Resolve addresses for lockup core storage
-	lockup_owner=$(get_address $LOCKUP_OWNER_ADDRESS_FILE)
+	GO_CMD_DIR=${SCRIPTS_DIR}/cmd
+	sc_safe_storage=$(cd ${GO_CMD_DIR} && go run ./safe_storage ${SAFE_SINGLETON_ADDRESS} ${SAFE_THRESHOLD:-2} $safe_owner_1 $safe_owner_2 $safe_owner_3)
+
+	# Lockup storage: owner = Safe proxy, no admins mapping
+	lockup_owner="${SAFE_PROXY_ADDRESS}"
 	lockup_issuer="8Be503bcdEd90ED42Eff31f56199399B2b0154CA"  # distribution contract
 	lockup_daily_limit=${GENESIS_LOCKUP_DAILY_LIMIT}
 	lockup_timestamp=${LOCKUP_TIMESTAMP}
 
-	sc_lockup_storage="{ \"$(printf '%064x' 0)\": \"$(format_storage_addr $lockup_owner)\", \"$(printf '%064x' 2)\": \"$(format_storage_addr $lockup_issuer)\", \"$(printf '%064x' 4)\": \"$(format_storage_num $lockup_daily_limit)\", \"$(printf '%064x' 5)\": \"$(format_storage_num $lockup_timestamp)\", ${admin_entries} }"
+	# Storage layout (no admins mapping):
+	#   slot 0: issuer (address, 20 bytes) + paused (bool, 1 byte) - packed
+	#   slot 1: amount (uint256) - defaults to 0, omitted
+	#   slot 2: dailyLimit (uint256)
+	#   slot 3: lastDistribution (uint256)
+	#   immutables (owner, initialDistribution) are in bytecode, not storage
+	sc_lockup_storage="{ \"$(printf '%064x' 0)\": \"$(format_storage_addr $lockup_issuer)\", \"$(printf '%064x' 2)\": \"$(format_storage_num $lockup_daily_limit)\", \"$(printf '%064x' 3)\": \"$(format_storage_num $lockup_timestamp)\" }"
 
 	# Creates a set of wallets - only use for testnets
 	put_all_quorum_var "create_genesis_test_wallets" "${TEST_WALLETS}"
@@ -210,7 +267,7 @@ all_quorum_vars() {
 	put_all_quorum_var "goquorum_genesis_sc_distribution_balance" "${DISTRIBUTION_CONTRACT_BALANCE}"
 
 	# Distribution storage: owner (slot 0), issuer (slot 1), lockup address (slot 2)
-	dist_owner=$(get_address $DIST_OWNER_ADDRESS_FILE)
+	dist_owner="${SAFE_PROXY_ADDRESS}"
 	dist_issuer=$(get_address $DIST_ISSUER_ADDRESS_FILE)
 	dist_lockup="47e9Fbef8C83A1714F1951F142132E6e90F5fa5D"  # lockup contract
 
@@ -230,6 +287,12 @@ all_quorum_vars() {
 
 	sed -i '/goquorum_genesis_sc_lockup_storage/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 	echo "goquorum_genesis_sc_lockup_storage: ${sc_lockup_storage}" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
+
+	sed -i '/goquorum_genesis_sc_safe_storage/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
+	echo "goquorum_genesis_sc_safe_storage: ${sc_safe_storage}" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
+
+	put_all_quorum_var "goquorum_genesis_sc_safe_singleton_address" "\"${SAFE_SINGLETON_ADDRESS}\""
+	put_all_quorum_var "goquorum_genesis_sc_safe_proxy_address" "\"${SAFE_PROXY_ADDRESS}\""
 
 	enode_list=$(generate_enode_list)
 	sed -i '/goquorum_enode_list/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml

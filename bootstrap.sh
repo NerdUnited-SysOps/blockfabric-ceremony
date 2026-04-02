@@ -4,7 +4,7 @@
 # set -x
 
 version="2.3.7"
-chain_repo_tag="2.3.1"
+chain_repo_tag="2.3.2"
 additions_repo_tag="2.9.3"
 ansible_repo_tag="main"
 ceremonyenv_repo_tag="2.9.3"

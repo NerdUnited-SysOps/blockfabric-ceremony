@@ -142,19 +142,23 @@ build_ceremony_test() {
 
 test_distribution() {
 	local BIN=$(build_ceremony_test)
-	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+	local rpc_host=$(ansible --list-hosts -i "${INVENTORY_PATH}" rpc | sed '/:/d ; s/ //g' | head -1)
+	local first_validator=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
 
-	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
+	extract_private_key "${VOLUMES_DIR}/volume2/distributionIssuer"
+	extract_private_key "${VOLUMES_DIR}/volume1/${first_validator}/account"
+
+	RPC_URL="https://${rpc_host}" \
 	ISSUER_KEY_PATH="${VOLUMES_DIR}/volume2/distributionIssuer/privatekey" \
-	RECIPIENT_KEY_PATH="${VOLUMES_DIR}/volume1/besu-v-1/account/privatekey" \
+	RECIPIENT_KEY_PATH="${VOLUMES_DIR}/volume1/${first_validator}/account/privatekey" \
 		"$BIN" distribute
 }
 
 test_vote() {
 	local BIN=$(build_ceremony_test)
-	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+	local rpc_host=$(ansible --list-hosts -i "${INVENTORY_PATH}" rpc | sed '/:/d ; s/ //g' | head -1)
 
-	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
+	RPC_URL="https://${rpc_host}" \
 	DAO_ADDRESS="0x5a443704dd4B594B382c22a083e2BD3090A6feF3" \
 	VOLUMES_DIR="${VOLUMES_DIR}" \
 		"$BIN" vote
@@ -162,9 +166,11 @@ test_vote() {
 
 test_create_contract() {
 	local BIN=$(build_ceremony_test)
-	local validator_ip=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+	local rpc_host=$(ansible --list-hosts -i "${INVENTORY_PATH}" rpc | sed '/:/d ; s/ //g' | head -1)
 
-	RPC_URL="http://${validator_ip}:${RPC_PORT}" \
+	extract_private_key "${VOLUMES_DIR}/volume2/distributionIssuer"
+
+	RPC_URL="https://${rpc_host}" \
 	DEPLOYER_KEY_PATH="${VOLUMES_DIR}/volume2/distributionIssuer/privatekey" \
 		"$BIN" create-contract
 }

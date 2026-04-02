@@ -199,7 +199,7 @@ persist_distribution_issuer() {
 	[[ -z "${AWS_DISTIRBUTION_ISSUER_KEYSTORE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_DISTIRBUTION_ISSUER_KEYSTORE variable" && exit 1
 	[[ -z "${AWS_PRIMARY_PROFILE}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_PRIMARY_PROFILE variable" && exit 1
 	[[ -z "${AWS_DISTIRBUTION_ISSUER_PASSWORD}" ]] && echo "${ZSH_ARGZERO}:${0}:${LINENO} .env is missing AWS_DISTIRBUTION_ISSUER_PASSWORD variable" && exit 1
-	printer -t "Saving Values"
+	printer -t "Saving Distribution Issuer"
 
 	# Get the private key (or the keystore & password)
 	upsert_file ${AWS_DISTIRBUTION_ISSUER_KEYSTORE} ${VOLUMES_DIR}/volume2/distributionIssuer/keystore ${AWS_PRIMARY_PROFILE}
@@ -208,6 +208,7 @@ persist_distribution_issuer() {
 	distribution_issuer_pk=$(get_private_key ${VOLUMES_DIR}/volume2/distributionIssuer)
 	upsert_secret "L2_FUNDING_PK" $distribution_issuer_pk ${AWS_PRIMARY_PROFILE}
 }
+
 
 inspect() {
 	inspect_path=$1

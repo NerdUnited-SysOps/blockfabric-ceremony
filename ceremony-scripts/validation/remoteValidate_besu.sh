@@ -187,9 +187,11 @@ safe_singleton_addr="0x$(echo ${safe_singleton_raw#0x} | sed 's/^0*//')"
 distribution_owner_call=$(rpc_call "eth_call" "[{\"to\":\"${DISTRIBUTION_ADDRESS}\",\"data\":\"0x8da5cb5b\"},\"latest\"]" | jq -r '.result')
 distribution_owner_addr="0x${distribution_owner_call: -40}"
 
-# Lockup owner is private immutable — verify indirectly via the Safe proxy address
-# (the Safe is the owner, confirmed by setPaused/setIssuer/setDailyLimit tests)
-lockup_owner_addr="${SAFE_PROXY_ADDRESS}"
+# Lockup owner is private immutable — embedded in bytecode at byte offset 479
+# Read deployed bytecode and extract the address from the known immutable position
+lockup_code=$(rpc_call "eth_getCode" "[\"${LOCKUP_ADDRESS}\",\"latest\"]" | jq -r '.result')
+# Byte 479 = char 960 in hex string (479*2 + 2 for 0x prefix), last 40 of 64 chars = address
+lockup_owner_addr="0x${lockup_code:984:40}"
 
 # Comparisons
 lockup_owner_is_safe=$([[ "${lockup_owner_addr}" == "${SAFE_PROXY_ADDRESS}" ]] && echo "true" || echo "false")

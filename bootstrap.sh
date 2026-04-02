@@ -3,11 +3,11 @@
 
 # set -x
 
-version="2.3.3"
+version="2.3.7"
 chain_repo_tag="2.3.1"
-additions_repo_tag="2.9.0"
+additions_repo_tag="2.9.3"
 ansible_repo_tag="main"
-ceremonyenv_repo_tag="2.9.0"
+ceremonyenv_repo_tag="2.9.3"
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
 export network=$1
 export chain=$2
@@ -55,8 +55,7 @@ echo   | tee -a "$bootstrap_log"
 ########################## Prep Firefox homepage for block explorer
 echo
 ## Modify Firefox's config file to open the chain's blockexplorer on launch
-sed -i "s/brand/$chain/"     ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
-sed -i "s/network/$network/" ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
+sed -i "s/chain/$chain/"     ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
 sed -i "s/always/never/g" ${HOME}/.mozilla/firefox/p8awc088.default-esr/prefs.js > /dev/null 2>&1
 
 ########################## Hardware Fitness of Purpose steps for the log only

@@ -188,10 +188,14 @@ distribution_owner_call=$(rpc_call "eth_call" "[{\"to\":\"${DISTRIBUTION_ADDRESS
 distribution_owner_addr="0x${distribution_owner_call: -40}"
 
 # Lockup owner is private immutable — embedded in bytecode at byte offset 479
-# Read deployed bytecode and extract the address from the known immutable position
 lockup_code=$(rpc_call "eth_getCode" "[\"${LOCKUP_ADDRESS}\",\"latest\"]" | jq -r '.result')
 # Byte 479 = char 960 in hex string (479*2 + 2 for 0x prefix), last 40 of 64 chars = address
 lockup_owner_addr="0x${lockup_code:984:40}"
+
+# Distribution lockup (ILockup) is private immutable at byte offset 331
+dist_code=$(rpc_call "eth_getCode" "[\"${DISTRIBUTION_ADDRESS}\",\"latest\"]" | jq -r '.result')
+# Byte 331 = char 664 (331*2 + 2), last 40 of 64 chars = address
+dist_lockup_immutable="0x${dist_code:688:40}"
 
 # Comparisons
 lockup_owner_is_safe=$([[ "${lockup_owner_addr}" == "${SAFE_PROXY_ADDRESS}" ]] && echo "true" || echo "false")
@@ -289,9 +293,11 @@ for i in $(seq 1 ${safe_owner_count}); do
     echo "$(tab " Owner ${i}" "${safe_owners[${i}]}" ${ROW_LENGTH})"
 done
 echo ""
+echo "$(tab " Lockup Owner" "${lockup_owner_addr}" ${ROW_LENGTH})"
 echo "$(tab " Lockup Owner == Safe Proxy" "${lockup_owner_is_safe}" ${ROW_LENGTH})"
+echo "$(tab " Distribution Owner" "${distribution_owner_addr}" ${ROW_LENGTH})"
 echo "$(tab " Distribution Owner == Safe Proxy" "${distribution_owner_is_safe}" ${ROW_LENGTH})"
-echo "$(tab " Singleton == Expected" "${safe_singleton_matches}" ${ROW_LENGTH})"
+echo "$(tab " Singleton == ${SAFE_SINGLETON_ADDRESS}" "${safe_singleton_matches}" ${ROW_LENGTH})"
 echo ""
 
 echo "Validation Complete"

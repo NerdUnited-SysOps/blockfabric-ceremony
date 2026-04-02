@@ -34,8 +34,8 @@ func runVote() {
 	issuerKey, issuerAddr := loadKey(issuerKeyPath)
 	fmt.Println("Issuer (funder):", issuerAddr.Hex())
 
-	// Load validator account keys
-	pattern := filepath.Join(volumesDir, "volume1", "besu-v-*", "account", "privatekey")
+	// Load validator account keys (match any validator directory name)
+	pattern := filepath.Join(volumesDir, "volume1", "*", "account", "privatekey")
 	keyFiles, err := filepath.Glob(pattern)
 	if err != nil || len(keyFiles) == 0 {
 		fmt.Fprintf(os.Stderr, "No validator account keys found at %s\n", pattern)

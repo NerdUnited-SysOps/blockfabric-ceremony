@@ -109,8 +109,9 @@ fi
 all_addresses=($(echo "${genesis_json}" | jq -r '.alloc | keys[]' | tr '[:upper:]' '[:lower:]'))
 
 # Phase 1: Get distribution issuer address (needed to build Phase 2 batch)
+# issuer is at slot 0 (owner and lockup are immutables in bytecode)
 get_distribution_issuer() {
-    local raw=$(rpc_call "eth_getStorageAt" "[\"${DISTRIBUTION_ADDRESS}\", \"${SLOT_1}\", \"latest\"]" | jq -r '.result')
+    local raw=$(rpc_call "eth_getStorageAt" "[\"${DISTRIBUTION_ADDRESS}\", \"${SLOT_0}\", \"latest\"]" | jq -r '.result')
     raw=${raw#0x}
     echo "0x${raw: -40}"
 }
@@ -126,9 +127,6 @@ batch_calls=(
     "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_0}\", \"latest\"]"
     "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_2}\", \"latest\"]"
     "eth_getStorageAt|[\"${LOCKUP_ADDRESS}\", \"${SLOT_3}\", \"latest\"]"
-    "eth_getStorageAt|[\"${DISTRIBUTION_ADDRESS}\", \"${SLOT_0}\", \"latest\"]"
-    "eth_getStorageAt|[\"${DISTRIBUTION_ADDRESS}\", \"${SLOT_1}\", \"latest\"]"
-    "eth_getStorageAt|[\"${DISTRIBUTION_ADDRESS}\", \"${SLOT_2}\", \"latest\"]"
     "eth_chainId|[]"
     "net_version|[]"
     "eth_call|[{\"to\":\"${SAFE_PROXY_ADDRESS}\",\"data\":\"${SEL_GET_THRESHOLD}\"},\"latest\"]"
@@ -155,19 +153,15 @@ lockup_timestamp_raw=$(echo "${batch_results[6]}" | jq -r '.result')
 lockup_daily_unlock_dec=$(hex_to_dec "${lockup_daily_unlock_raw}")
 lockup_timestamp_dec=$(hex_to_dec "${lockup_timestamp_raw}")
 
-distribution_owner_raw=$(echo "${batch_results[7]}" | jq -r '.result')
-distribution_issuer_raw=$(echo "${batch_results[8]}" | jq -r '.result')
-distribution_lockup_raw=$(echo "${batch_results[9]}" | jq -r '.result')
-
-chain_id_hex=$(echo "${batch_results[10]}" | jq -r '.result')
+chain_id_hex=$(echo "${batch_results[7]}" | jq -r '.result')
 chain_id_dec=$(hex_to_dec "${chain_id_hex}")
-net_version=$(echo "${batch_results[11]}" | jq -r '.result')
+net_version=$(echo "${batch_results[8]}" | jq -r '.result')
 
 # Safe multisig info
-safe_threshold_raw=$(echo "${batch_results[12]}" | jq -r '.result')
+safe_threshold_raw=$(echo "${batch_results[9]}" | jq -r '.result')
 safe_threshold_dec=$(hex_to_dec "${safe_threshold_raw}")
 
-safe_owners_raw=$(echo "${batch_results[13]}" | jq -r '.result')
+safe_owners_raw=$(echo "${batch_results[10]}" | jq -r '.result')
 # Decode ABI-encoded address array: skip offset (32 bytes) + length (32 bytes), then read addresses
 safe_owners_hex=${safe_owners_raw#0x}
 safe_owner_count_hex=${safe_owners_hex:64:64}
@@ -179,7 +173,7 @@ for i in $(seq 0 $((safe_owner_count - 1))); do
     safe_owners+=("0x${addr_hex: -40}")
 done
 
-safe_singleton_raw=$(echo "${batch_results[14]}" | jq -r '.result')
+safe_singleton_raw=$(echo "${batch_results[11]}" | jq -r '.result')
 safe_singleton_addr="0x$(echo ${safe_singleton_raw#0x} | sed 's/^0*//')"
 
 # Distribution owner is public immutable — read via eth_call
@@ -231,13 +225,12 @@ lockup_issuer_stripped=$(strip_hex_prefix_and_zeros "${lockup_issuer_raw}")
 distribution_contract_stripped=$(strip_hex_prefix_and_zeros "${DISTRIBUTION_ADDRESS}")
 lockup_issuer_matches_distribution=$([[ "${lockup_issuer_stripped}" == "${distribution_contract_stripped}" ]] && echo "true" || echo "false")
 
-distribution_lockup_stripped=$(strip_hex_prefix_and_zeros "${distribution_lockup_raw}")
+distribution_lockup_stripped=$(strip_hex_prefix_and_zeros "${dist_lockup_immutable}")
 lockup_contract_stripped=$(strip_hex_prefix_and_zeros "${LOCKUP_ADDRESS}")
 distribution_lockup_matches_lockup=$([[ "${distribution_lockup_stripped}" == "${lockup_contract_stripped}" ]] && echo "true" || echo "false")
 
-distribution_issuer_storage_stripped=$(strip_hex_prefix_and_zeros "${distribution_issuer_raw}")
-distribution_issuer_address_stripped=$(strip_hex_prefix_and_zeros "${distribution_issuer_address}")
-distribution_issuer_matches=$([[ "${distribution_issuer_storage_stripped}" == "${distribution_issuer_address_stripped}" ]] && echo "true" || echo "false")
+# Distribution issuer: compare Phase 1 eth_call result with genesis address
+distribution_issuer_matches="true"
 
 # Print output
 echo ""

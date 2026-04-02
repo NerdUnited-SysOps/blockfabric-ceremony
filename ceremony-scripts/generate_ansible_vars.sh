@@ -266,12 +266,10 @@ print(bc)
 	put_all_quorum_var "lace_genesis_distribution_issuer_balance" "${DISTIRBUTION_ISSUER_BALANCE}"
 	put_all_quorum_var "goquorum_genesis_sc_distribution_balance" "${DISTRIBUTION_CONTRACT_BALANCE}"
 
-	# Distribution storage: owner (slot 0), issuer (slot 1), lockup address (slot 2)
-	dist_owner="${SAFE_PROXY_ADDRESS}"
+	# Distribution storage: only issuer at slot 0 (owner and lockup are immutables in bytecode)
 	dist_issuer=$(get_address $DIST_ISSUER_ADDRESS_FILE)
-	dist_lockup="47e9Fbef8C83A1714F1951F142132E6e90F5fa5D"  # lockup contract
 
-	sc_distribution_storage="{ \"$(printf '%064x' 0)\": \"$(format_storage_addr $dist_owner)\", \"$(printf '%064x' 1)\": \"$(format_storage_addr $dist_issuer)\", \"$(printf '%064x' 2)\": \"$(format_storage_addr $dist_lockup)\" }"
+	sc_distribution_storage="{ \"$(printf '%064x' 0)\": \"$(format_storage_addr $dist_issuer)\" }"
 
 	sed -i '/goquorum_genesis_sc_distribution_storage/d' ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml
 	echo "goquorum_genesis_sc_distribution_storage: ${sc_distribution_storage}" >> ${ANSIBLE_CEREMONY_DIR}/group_vars/all_quorum.yml

@@ -4,7 +4,7 @@
 # set -x
 
 version="2.3.7"
-chain_repo_tag="2.3.1"
+chain_repo_tag="2.3.2"
 additions_repo_tag="2.9.3"
 ansible_repo_tag="main"
 ceremonyenv_repo_tag="2.9.3"
@@ -46,7 +46,7 @@ echo "  ceremony repo tag:              $chain_repo_tag"  | tee -a "$bootstrap_l
 echo "  additions repo tag:             $additions_repo_tag"  | tee -a "$bootstrap_log"
 echo "  ansible repo tag:               $ansible_repo_tag"  | tee -a "$bootstrap_log"
 echo "  ceremony_env repo tag:          $ceremonyenv_repo_tag"  | tee -a "$bootstrap_log"
-echo "  go version:                     1.19.8"  | tee -a "$bootstrap_log"
+echo "  go version:                     1.26.1"  | tee -a "$bootstrap_log"
 echo "  geth version:                   1.10.26-stable8" | tee -a "$bootstrap_log"
 echo "  ethkey version:                 1.10.26-stable8" | tee -a "$bootstrap_log"
 echo   | tee -a "$bootstrap_log"

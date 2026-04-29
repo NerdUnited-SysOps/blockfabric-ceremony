@@ -29,8 +29,7 @@ if (( $# < 3 )); then
     echo "Required: (1)  network     [ mainnet | testnet ] "
     echo "          (2)  chain name  "
     echo "          (3)  additional ceremony types. 1 required, multiple allowed separated by a space "
-    echo "               [ admin_fix | binance_bridge | bridge_optionb | bridge_x | chain | halvening | lockup_swap | multisig | reset_decimal | timelock | voting ]"
-    echo
+    echo "               [ admin_fix | auto_halving_migration | binance_bridge | bridge_optionb | bridge_x | chain | halvening | lockup_swap | multisig | reset_decimal | timelock | voting ]"    echo
     exit 1
 fi
 
@@ -263,6 +262,48 @@ function fetch_bridge_x_secrets()
   echo "========== bridge_x secrets fetch complete ==========" | tee -a "$bootstrap_log"
 } ## end of fetch_bridge_x_secrets function
 
+######################## auto_halving_migration secrets: fetch all AWS secrets and persist into env file
+## This replaces the need to run "Get Secrets" from the auto_halving_migration.sh menu
+function fetch_auto_halving_migration_secrets()
+{
+  local env_file="$repo_dir/auto_halving_migration.env"
+  local aws_profile="blockfabric"
+
+  echo;echo;echo;echo "========== Fetching auto_halving_migration secrets from AWS and persisting ==========" | tee -a "$bootstrap_log"
+
+  ## Helper: upsert a variable into the env file
+  ## New variables are PREPENDED (not appended) so that downstream
+  ## lines like AUTO_HALVING_MIGRATION_REPO="https://${GITHUB_PAT}@..." see them.
+  _upsert_env() {
+    local var_name=$1
+    local var_val=$2
+    local escaped_val=$(echo "${var_val}" | sed 's/[\/&]/\\&/g')
+
+    if grep -q "^export ${var_name}=" "${env_file}"; then
+      local tmpfile=$(mktemp)
+      sed "s/^export ${var_name}=.*/export ${var_name}=\"${escaped_val}\"/" "${env_file}" > "${tmpfile}"
+      mv "${tmpfile}" "${env_file}"
+    else
+      local tmpfile=$(mktemp)
+      echo "export ${var_name}=\"${var_val}\"" > "${tmpfile}"
+      cat "${env_file}" >> "${tmpfile}"
+      mv "${tmpfile}" "${env_file}"
+    fi
+    echo "  persisted ${var_name}" | tee -a "$bootstrap_log"
+  }
+
+  ## 1) Persist the PAT (already fetched above as $pat)
+  _upsert_env "GITHUB_PAT" "${pat}"
+
+  ## 2) Distribution issuer PK — used to fund admin wallets and run validation distributions
+  echo "  fetching DISTRIBUTION_ISSUER_PK..." | tee -a "$bootstrap_log"
+  DISTRIBUTION_ISSUER_PK=$(aws secretsmanager --profile ${aws_profile} get-secret-value --secret-id "DISTRIBUTION_ISSUER_PK" --query SecretString --output text)
+  _upsert_env "DISTRIBUTION_ISSUER_PK" "${DISTRIBUTION_ISSUER_PK}"
+
+  echo | tee -a "$bootstrap_log"
+  echo "========== auto_halving_migration secrets fetch complete ==========" | tee -a "$bootstrap_log"
+} ## end of fetch_auto_halving_migration_secrets function
+
 ######################## Process the various types of ceremonies (arguments)
 while test $# -gt 0
 do
@@ -277,6 +318,11 @@ do
     ## For bridge_x, also fetch and persist all secrets so the menu can skip "Get Secrets"
     if [ "$type" = "bridge_x" ]; then
       fetch_bridge_x_secrets
+    fi
+
+    ## For auto_halving_migration, also fetch and persist all secrets so the menu can skip "Get Secrets"
+    if [ "$type" = "auto_halving_migration" ]; then
+      fetch_auto_halving_migration_secrets
     fi
 
     ## types array needed at the end to make multiple bootstrap.log files; 1 per type

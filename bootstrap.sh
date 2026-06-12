@@ -5,13 +5,9 @@
 
 version="2.3.3"
 chain_repo_tag="2.1.1"
-## NOTE: issuer_rotation requires an additions repo tag that contains
-## menus/issuer_rotation.sh and envs/shared/issuer_rotation.env.
-## After merging those files into blockfabric-ceremony-additions, cut a new
-## tag (e.g. 2.9.0) and bump BOTH additions_repo_tag and ceremonyenv_repo_tag.
-additions_repo_tag="2.9.0"
+additions_repo_tag="2.11.2"
 ansible_repo_tag="main"
-ceremonyenv_repo_tag="2.9.0"
+ceremonyenv_repo_tag="2.11.2"
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
 export network=$1
 export chain=$2

@@ -17,3 +17,4 @@ node_modules/
 bridge_deployer/cmd/main
 bridge_deployer/token_address
 bridge_deployer/token_contract_address
+ceremony-scripts/validation/ceremony-tests/ceremony-test

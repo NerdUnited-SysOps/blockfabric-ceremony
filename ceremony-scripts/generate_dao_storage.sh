@@ -11,6 +11,7 @@ usage() {
   echo "Example: "
 }
 
+
 while getopts 'e:hi:l:' option; do
 	case "$option" in
 		e)
@@ -73,11 +74,8 @@ fi
 
 mv ${DAO_DIR}/Nerd* ${DAO_DIR}/repo
 
-WORKING_DIR=${DAO_DIR}/repo/genesisContent
-
 # Create the allowList
-ALLOWED_ACCOUNTS_FILE=${WORKING_DIR}/allowedAccountsAndValidators.txt
-
+ALLOWED_ACCOUNTS_FILE=${DAO_DIR}/allowedAccountsAndValidators.txt
 
 echo -n > $ALLOWED_ACCOUNTS_FILE
 
@@ -96,11 +94,9 @@ do
 	echo "0x$ACCOUNT_ADDRESS, 0x$NODEKEY_ADDRESS" >> $ALLOWED_ACCOUNTS_FILE
 done
 
-cd $WORKING_DIR
-npm i &>> ${LOG_FILE}
-node ./createContent.js
-cd -
-mv ${WORKING_DIR}/Storage.txt ${DAO_DIR}
+# Generate DAO storage using Go (replaces npm/node createContent.js)
+GO_CMD_DIR=${SCRIPTS_DIR}/cmd
+(cd ${GO_CMD_DIR} && go run ./dao_storage ${ALLOWED_ACCOUNTS_FILE}) > ${DAO_DIR}/Storage.txt
 
 printer -s "Completed storage generation"
 

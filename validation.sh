@@ -2,14 +2,19 @@
 
 usage() {
 	echo "Options"
-	echo "  -e : Envifonment config file"
+	echo "  -e : Environment config file"
+	echo "  -o : Option number for non-interactive selection"
 	echo "  -h : This help message"
 }
 
-while getopts he: option; do
+while getopts de:ho: option; do
 	case "${option}" in
+		d) DEV_ENABLED="true";;
 		e)
 			ENV_FILE=${OPTARG}
+			;;
+		o)
+			DIRECT_OPTION=${OPTARG}
 			;;
 		h)
 			usage
@@ -41,7 +46,7 @@ volume_prompt() {
 	volume=""
 
 	PS3=$'\n'"Select volume: "
-	select item in volume1 volume2; do
+	select item in volume1 volume2 volume3; do
 		case $REPLY in
 			*) volume="volume${REPLY}"; break;;
 		esac
@@ -73,27 +78,26 @@ list_volume_content() {
 
 list_volume_sizes() {
 	printf "\n"
-	printf "Executing: ls ${VOLUMES_DIR}/volume1 -alR | less\n\n" | tee -a ${LOG_FILE}
-	ls ${VOLUMES_DIR}/volume1 -alR | tee -a ${LOG_FILE}
-
-	printf "Executing: ls ${VOLUMES_DIR}/volume2 -alR | less\n\n" | tee -a ${LOG_FILE}
-	ls ${VOLUMES_DIR}/volume2 -alR | tee -a ${LOG_FILE}
+	for vol in volume1 volume2 volume3; do
+		if [ -d "${VOLUMES_DIR}/${vol}" ]; then
+			printf "Executing: ls ${VOLUMES_DIR}/${vol} -alR | less\n\n" | tee -a ${LOG_FILE}
+			ls ${VOLUMES_DIR}/${vol} -alR | tee -a ${LOG_FILE}
+		fi
+	done
 	printf "\n\n"
 }
 
 list_addreses() {
 	printf "\n"
-	printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/volume1 | sed 's/\\/keystore\\:address\\\"\:\\\"/\\\t\\\t/g' | tr -d '\"'\n\n" | tee -a ${LOG_FILE}
-	grep -r -o "address\":\"[a-f0-9]*\"" ${VOLUMES_DIR}/volume1 \
-		| sed 's/\/keystore\:address\"\:\"/\t\t/g' \
-		| tr -d '"' \
-		| tee -a ${LOG_FILE}
-
-	printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/volume2 | sed 's/\\/keystore\\:address\\\"\:\\\"/\\\t\\\t/g' | tr -d '\"'\n\n" | tee -a ${LOG_FILE}
-	grep -r -o "address\":\"[a-f0-9]*\"" ${VOLUMES_DIR}/volume2 \
-		| sed 's/\/keystore\:address\"\:\"/\t\t/g' \
-		| tr -d '"' \
-		| tee -a ${LOG_FILE}
+	for vol in volume1 volume2 volume3; do
+		if [ -d "${VOLUMES_DIR}/${vol}" ]; then
+			printf "Executing: grep -r -o \"address\\\":\\\"[a-f0-9]*\\\"\" ${VOLUMES_DIR}/${vol}\n\n" | tee -a ${LOG_FILE}
+			grep -r -o "address\":\"[a-f0-9]*\"" ${VOLUMES_DIR}/${vol} \
+				| sed 's/\/keystore\:address\"\:\"/\t\t/g' \
+				| tr -d '"' \
+				| tee -a ${LOG_FILE}
+		fi
+	done
 	printf "\n\n"
 }
 
@@ -103,14 +107,113 @@ list_addreses() {
 
 run_validation() {
 	printf "Validating chain...\n\n"
-	${SCRIPTS_DIR}/validation/run_validation.sh -e "${ENV_FILE}"
+	${SCRIPTS_DIR}/validation/validate_chain_besu.sh \
+		-i $INVENTORY_PATH \
+		-p $RPC_PORT \
+		-r $RPC_PATH \
+		-v ${SCRIPTS_DIR}/validation/remoteValidate_besu.sh
 	printf "\n\nNote: It takes a minute for all nodes to catch up with their peers.\n\n"
 }
 
 print_account_range() {
-	./exec_chain.sh -e "${ENV_FILE}" "debug.accountRange()" | tee -a ${LOG_FILE}
+	${SCRIPTS_DIR}/validation/besu_account_range.sh -e "${ENV_FILE}" | tee -a ${LOG_FILE}
 	printf "\n\n"
 }
+
+show_startup_config() {
+	${SCRIPTS_DIR}/validation/inspect_node.sh -e "${ENV_FILE}" -m config
+}
+
+show_genesis() {
+	${SCRIPTS_DIR}/validation/inspect_node.sh -e "${ENV_FILE}" -m genesis
+}
+
+validate_genesis() {
+	${SCRIPTS_DIR}/validation/validate_genesis.sh -e "${ENV_FILE}"
+}
+
+build_ceremony_test() {
+	local BIN="${SCRIPTS_DIR}/validation/ceremony-tests/ceremony-test"
+	if [[ ! -x "$BIN" ]]; then
+		(cd "${SCRIPTS_DIR}/validation/ceremony-tests" && go mod tidy && go build -o ceremony-test .) &>> ${LOG_FILE}
+	fi
+	echo "$BIN"
+}
+
+test_distribution() {
+	local BIN=$(build_ceremony_test)
+	local rpc_host=$(ansible --list-hosts -i "${INVENTORY_PATH}" rpc | sed '/:/d ; s/ //g' | head -1)
+	local first_validator=$(ansible --list-hosts -i "${INVENTORY_PATH}" validator | sed '/:/d ; s/ //g' | head -1)
+
+	extract_private_key "${VOLUMES_DIR}/volume2/distributionIssuer"
+	extract_private_key "${VOLUMES_DIR}/volume1/${first_validator}/account"
+
+	RPC_URL="https://${rpc_host}" \
+	ISSUER_KEY_PATH="${VOLUMES_DIR}/volume2/distributionIssuer/privatekey" \
+	RECIPIENT_KEY_PATH="${VOLUMES_DIR}/volume1/${first_validator}/account/privatekey" \
+		"$BIN" distribute
+}
+
+test_vote() {
+	local BIN=$(build_ceremony_test)
+	local rpc_host=$(ansible --list-hosts -i "${INVENTORY_PATH}" rpc | sed '/:/d ; s/ //g' | head -1)
+
+	# Extract private keys for all validator accounts and distribution issuer
+	extract_private_key "${VOLUMES_DIR}/volume2/distributionIssuer"
+	for dir in ${VOLUMES_DIR}/volume1/*/account; do
+		extract_private_key "${dir}"
+	done
+
+	RPC_URL="https://${rpc_host}" \
+	DAO_ADDRESS="0x5a443704dd4B594B382c22a083e2BD3090A6feF3" \
+	VOLUMES_DIR="${VOLUMES_DIR}" \
+		"$BIN" vote
+}
+
+test_create_contract() {
+	local BIN=$(build_ceremony_test)
+	local rpc_host=$(ansible --list-hosts -i "${INVENTORY_PATH}" rpc | sed '/:/d ; s/ //g' | head -1)
+
+	extract_private_key "${VOLUMES_DIR}/volume2/distributionIssuer"
+
+	RPC_URL="https://${rpc_host}" \
+	DEPLOYER_KEY_PATH="${VOLUMES_DIR}/volume2/distributionIssuer/privatekey" \
+		"$BIN" create-contract
+}
+
+extract_private_key() {
+	local wallet_path=$1
+	local pk_file="${wallet_path}/privatekey"
+	if [[ ! -f "${pk_file}" ]]; then
+		local inspected=$(${ETHKEY_PATH} inspect --private --passwordfile "${wallet_path}/password" "${wallet_path}/keystore")
+		echo "${inspected}" | grep "Private" | awk '{print $3}' | tr -d '\n' > "${pk_file}"
+	fi
+}
+
+safe_test() {
+	local subcommand=$1
+	local BIN=$(build_ceremony_test)
+	local rpc_host=$(ansible --list-hosts -i "${INVENTORY_PATH}" rpc | sed '/:/d ; s/ //g' | head -1)
+
+	# Extract private keys from keystores if not already done
+	extract_private_key "${VOLUMES_DIR}/volume1/lockupOwner1"
+	extract_private_key "${VOLUMES_DIR}/volume2/lockupOwner2"
+	extract_private_key "${VOLUMES_DIR}/volume3/lockupOwner3"
+	extract_private_key "${VOLUMES_DIR}/volume2/distributionIssuer"
+
+	RPC_URL="https://${rpc_host}" \
+	SAFE_PROXY_ADDRESS="${SAFE_PROXY_ADDRESS}" \
+	SAFE_OWNER_1_KEY_PATH="${VOLUMES_DIR}/volume1/lockupOwner1/privatekey" \
+	SAFE_OWNER_2_KEY_PATH="${VOLUMES_DIR}/volume2/lockupOwner2/privatekey" \
+	SAFE_OWNER_3_KEY_PATH="${VOLUMES_DIR}/volume3/lockupOwner3/privatekey" \
+	FUNDER_KEY_PATH="${VOLUMES_DIR}/volume2/distributionIssuer/privatekey" \
+		"$BIN" "$subcommand"
+}
+
+test_lockup_set_paused() { safe_test "test-lockup-set-paused"; }
+test_lockup_set_daily_limit() { safe_test "test-lockup-set-daily-limit"; }
+test_lockup_set_issuer() { safe_test "test-lockup-set-issuer"; }
+test_distribution_set_issuer() { safe_test "test-distribution-set-issuer"; }
 
 usage() {
 	printf "This is an interface for validation of the ceremony.\n"
@@ -119,28 +222,68 @@ usage() {
 
 items=(
 	"General health"
-	"Print chain accounts"
+	"Show genesis"
 	"List addresses"
 	"List volume sizes"
-	"Exit"
+	"Print chain accounts"
 )
+
+[ -n "${DEV_ENABLED}" ] && items+=("Show startup config" "Validate genesis" "Test distribution" "Test vote" "Test create contract" "Test lockup setPaused" "Test lockup setDailyLimit" "Test lockup setIssuer" "Test distribution setIssuer")
+
+items+=("Exit")
+
+NC='\033[0m'
+RED='\033[0;31m'
+
+if [[ -n "${DIRECT_OPTION}" ]]; then
+	if [[ ! "${DIRECT_OPTION}" =~ '^[0-9]+$' ]]; then
+		printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} is not a valid option number\n\n"
+		exit 1
+	fi
+	case ${DIRECT_OPTION} in
+		1) run_validation | tee -a ${LOG_FILE};;
+		2) show_genesis | tee -a ${LOG_FILE};;
+		3) list_addreses;;
+		4) list_volume_sizes;;
+		5) print_account_range;;
+		6) [[ -n "${DEV_ENABLED}" ]] && show_startup_config | tee -a ${LOG_FILE} || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		7) [[ -n "${DEV_ENABLED}" ]] && validate_genesis | tee -a ${LOG_FILE} || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		8) [[ -n "${DEV_ENABLED}" ]] && test_distribution || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		9) [[ -n "${DEV_ENABLED}" ]] && test_vote || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		10) [[ -n "${DEV_ENABLED}" ]] && test_create_contract || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		11) [[ -n "${DEV_ENABLED}" ]] && test_lockup_set_paused || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		12) [[ -n "${DEV_ENABLED}" ]] && test_lockup_set_daily_limit || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		13) [[ -n "${DEV_ENABLED}" ]] && test_lockup_set_issuer || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		14) [[ -n "${DEV_ENABLED}" ]] && test_distribution_set_issuer || { printf "\n\nError: ${RED}${DIRECT_OPTION}${NC} requires -d flag\n\n"; exit 1; };;
+		*) printf "\n\nOoops, ${RED}${DIRECT_OPTION}${NC} is an unknown option\n\n"; exit 1;;
+	esac
+	exit 0
+fi
 
 clear -x
 
 usage
 
-NC='\033[0m'
-RED='\033[0;31m'
 while true; do
 	COLUMNS=1
 	PS3=$'\n'"${CHAIN_NAME} ${NETWORK_TYPE} | Select option: "
 	select item in "${items[@]}"
-		case $REPLY in
-			1) clear -x; run_validation | tee -a ${LOG_FILE}; break;;
-			2) clear -x; print_account_range; break;;
-			3) clear -x; list_addreses; break;;
-			4) clear -x; list_volume_sizes; break;;
-			5) printf "Closing.\n\n"; exit 0;;
+		case $item in
+			"General health") clear -x; run_validation | tee -a ${LOG_FILE}; break;;
+			"Show genesis") clear -x; show_genesis | tee -a ${LOG_FILE}; break;;
+			"List addresses") clear -x; list_addreses; break;;
+			"List volume sizes") clear -x; list_volume_sizes; break;;
+			"Print chain accounts") clear -x; print_account_range; break;;
+			"Show startup config") clear -x; show_startup_config | tee -a ${LOG_FILE}; break;;
+			"Validate genesis") clear -x; validate_genesis | tee -a ${LOG_FILE}; break;;
+			"Test distribution") clear -x; test_distribution; break;;
+			"Test vote") clear -x; test_vote; break;;
+			"Test create contract") clear -x; test_create_contract; break;;
+			"Test lockup setPaused") clear -x; test_lockup_set_paused; break;;
+			"Test lockup setDailyLimit") clear -x; test_lockup_set_daily_limit; break;;
+			"Test lockup setIssuer") clear -x; test_lockup_set_issuer; break;;
+			"Test distribution setIssuer") clear -x; test_distribution_set_issuer; break;;
+			"Exit") printf "Closing.\n\n"; exit 0;;
 			*)
 				printf "\n\nOoops, ${RED}${REPLY}${NC} is an unknown option\n\n";
 				usage

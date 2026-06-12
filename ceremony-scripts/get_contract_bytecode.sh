@@ -74,19 +74,27 @@ download_dao_release () {
 	unzip $DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME -d ${DAO_DIR}/ &>> ${LOG_FILE}
 }
 
+download_safe_release () {
+	download_release ${GITHUB_SAFE_ORG} ${GITHUB_SAFE_REPO} $SAFE_VERSION $SAFE_RELEASE_ARCHIVE_FILENAME "$SAFE_DIR/$SAFE_RELEASE_ARCHIVE_FILENAME"
+	tar -xvf ${SAFE_DIR}/$SAFE_RELEASE_ARCHIVE_FILENAME -C ${SAFE_DIR}/ &>> ${LOG_FILE}
+}
+
 DAO_DIR=${CONTRACTS_DIR}/${GITHUB_DAO_REPO}/${DAO_VERSION}
 LOCKUP_DIR=${CONTRACTS_DIR}/${GITHUB_LOCKUP_REPO}/${LOCKUP_VERSION}
+SAFE_DIR=${CONTRACTS_DIR}/${GITHUB_SAFE_REPO}/${SAFE_VERSION}
 
 DAO_RELEASE_ARCHIVE_FILENAME=$DAO_VERSION.zip
 LOCKUP_RELEASE_ARCHIVE_FILENAME=contracts_$LOCKUP_VERSION.tar.gz
+SAFE_RELEASE_ARCHIVE_FILENAME=contracts_$SAFE_VERSION.tar.gz
 
-if [ -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && [ -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] 
+if [ -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && [ -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] && [ -f "$SAFE_DIR/$SAFE_RELEASE_ARCHIVE_FILENAME" ]
 then
 	printer -n "Smart contract bytecode present, skipping"
 else
 	printer -t "Downloading smart contract bytecode"
 	[ ! -f "$LOCKUP_DIR/$LOCKUP_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${LOCKUP_DIR} && download_lockup_release
 	[ ! -f "$DAO_DIR/$DAO_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${DAO_DIR} && download_dao_release
+	[ ! -f "$SAFE_DIR/$SAFE_RELEASE_ARCHIVE_FILENAME" ] && mkdir -p ${SAFE_DIR} && download_safe_release
 
 	printer -s "Retrieved contract bytecode"
 fi

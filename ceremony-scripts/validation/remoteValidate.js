@@ -19,7 +19,7 @@ function chainBalance() {
 }
 
 function daysSinceUnlock(lockupTimestamp) {
-	return Math.floor(((Date.now()/1000) - parseInt(lockupTimestamp,16))/60/60/24)
+	return Math.ceil(((Date.now()/1000) - parseInt(lockupTimestamp,16))/60/60/24)
 }
 
 function currentUnlocked(lockupTimestamp, lockupDailyUnlock) {

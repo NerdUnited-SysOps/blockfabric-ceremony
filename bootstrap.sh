@@ -183,6 +183,18 @@ function get_env_files()   #combine the Type and the Shared .env files into sing
 
   curl -s https://blockfabric-ceremony:$pat@raw.githubusercontent.com/$gh_enterprise_env/$ceremonyenv_repo/$ceremonyenv_repo_tag/envs/shared/$local_type.env >> $repo_dir/$local_type.env
   tail -n 1 $repo_dir/$local_type.env  | tee -a "$bootstrap_log"
+
+  ## Guard: a missing path on either repo/tag returns a "404: Not Found" body,
+  ## which would silently corrupt the combined env file.
+  if grep -q "404: Not Found" $repo_dir/$local_type.env; then
+    echo | tee -a "$bootstrap_log"
+    echo "WARNING: $local_type.env contains '404: Not Found'." | tee -a "$bootstrap_log"
+    echo "  One of these paths does not exist:" | tee -a "$bootstrap_log"
+    echo "    $ansible_repo/$ansible_repo_tag/$network/$local_type/.env" | tee -a "$bootstrap_log"
+    echo "    $ceremonyenv_repo/$ceremonyenv_repo_tag/envs/shared/$local_type.env" | tee -a "$bootstrap_log"
+    echo "  Check the repo tags at the top of this script and that the env files are committed." | tee -a "$bootstrap_log"
+    echo | tee -a "$bootstrap_log"
+  fi
 } ## end of env function
 
 ######################## bridge_x secrets: fetch all AWS secrets and persist into env file

@@ -65,7 +65,8 @@ write_key() {
 		echo -e "${value}" > "${file_path}"
 		chmod 0600 "${file_path}"
 
-		printer -s "Wrote to ${file_path}."
+		local display_name=$(basename "${file_path}" | sed 's/id_rsa/id_ed25519/')
+		printer -s "Wrote to ${display_name}."
 	else
 		printer -e "Missing value to write to file: ${file_path}."
 	fi

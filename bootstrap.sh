@@ -3,11 +3,11 @@
 
 # set -x
 
-version="2.3.8"
-chain_repo_tag="2.3.2"
-additions_repo_tag="2.10.6"
+version="2.3.3"
+chain_repo_tag="2.1.1"
+additions_repo_tag="2.11.2"
 ansible_repo_tag="main"
-ceremonyenv_repo_tag="2.10.6"
+ceremonyenv_repo_tag="2.11.2"
 ceremony_os_version=$(cat ${HOME}/version | tail -2)
 export network=$1
 export chain=$2

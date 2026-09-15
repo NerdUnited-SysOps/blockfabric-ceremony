@@ -29,7 +29,7 @@ if (( $# < 3 )); then
     echo "Required: (1)  network     [ mainnet | testnet ] "
     echo "          (2)  chain name  "
     echo "          (3)  additional ceremony types. 1 required, multiple allowed separated by a space "
-    echo "               [ admin_fix | auto_halving_migration | binance_bridge | bridge_optionb | bridge_x | chain | halvening | lockup_swap | multisig | reset_decimal | timelock | voting ]"    echo
+    echo "               [ admin_fix | auto_halving_migration | binance_bridge | bridge_optionb | bridge_x | bridge_x_migration | chain | halvening | lockup_swap | multisig | reset_decimal | timelock | voting ]"    echo
     exit 1
 fi
 
@@ -198,10 +198,13 @@ function get_env_files()   #combine the Type and the Shared .env files into sing
 } ## end of env function
 
 ######################## bridge_x secrets: fetch all AWS secrets and persist into env file
-## This replaces the need to run "Get Secrets" from the bridge_x.sh menu
+## This replaces the need to run "Get Secrets" from the bridge_x.sh menu.
+## Takes the ceremony type as $1 (bridge_x or bridge_x_migration) so both
+## ceremonies share the same secret set in their own env file.
 function fetch_bridge_x_secrets()
 {
-  local env_file="$repo_dir/bridge_x.env"
+  local secrets_type="${1:-bridge_x}"
+  local env_file="$repo_dir/${secrets_type}.env"
   local aws_profile="blockfabric"
 
   echo;echo;echo;echo "========== Fetching bridge_x secrets from AWS and persisting ==========" | tee -a "$bootstrap_log"
@@ -327,9 +330,10 @@ do
     clone_repos $type
     get_env_files $type
 
-    ## For bridge_x, also fetch and persist all secrets so the menu can skip "Get Secrets"
-    if [ "$type" = "bridge_x" ]; then
-      fetch_bridge_x_secrets
+    ## For bridge_x and bridge_x_migration, also fetch and persist all secrets
+    ## so those menus can skip "Get Secrets"
+    if [ "$type" = "bridge_x" ] || [ "$type" = "bridge_x_migration" ]; then
+      fetch_bridge_x_secrets "$type"
     fi
 
     ## For auto_halving_migration, also fetch and persist all secrets so the menu can skip "Get Secrets"

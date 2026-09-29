@@ -78,9 +78,6 @@ sed -i "s/chain/$chain/g"     ${HOME}/.ssh/config > /dev/null 2>&1
 sed -i "s/brand/$chain/g"     ${HOME}/.ssh/config > /dev/null 2>&1
 sed -i "s/network/$network/g" ${HOME}/.ssh/config > /dev/null 2>&1
 
-########################## Other Utility files
-scp $chain@$bootstrap:~/clean.sh ${HOME}/ > /dev/null 2>&1
-
 ########################## AWS credentials
 echo
 echo "========== Creating local AWS configuration and verifying S3 bucket ==========" | tee -a "$bootstrap_log"

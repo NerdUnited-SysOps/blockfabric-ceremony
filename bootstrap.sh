@@ -351,10 +351,7 @@ do
 done
 
 ###### Add-on utilities
-scp $chain@$genesis:~/cplog.sh $base/ > /dev/null 2>&1
-scp $chain@$genesis:~/mountusb.sh $base/ > /dev/null 2>&1
-scp $chain@$genesis:~/wallets.url $base/ > /dev/null 2>&1
-scp $chain@$genesis:~/clean.sh $base/ > /dev/null 2>&1
+scp $chain@$genesis:~/{cplog.sh,mountusb.sh,wallets.url,clean.sh} $base/ > /dev/null 2>&1
 #######################
 
 
@@ -371,11 +368,11 @@ echo | tee -a "$bootstrap_log"
 echo | tee -a "$bootstrap_log"
 
 #########################  Testnet Tools
-if [ "$network" != "mainnet" ]; then
-  scp -pr $chain@$genesis:~/testnettools $base/testnettools > /dev/null 2>&1
-  echo "Run ~/testnettools/labtop_config.sh $network $chain <labtop_port> type(s)"
-  echo "see ~/testnettools/labtop.instructions for more lab details"
-fi
+#if [ "$network" != "mainnet" ]; then
+#  scp -pr $chain@$genesis:~/testnettools $base/testnettools > /dev/null 2>&1
+#  echo "Run ~/testnettools/labtop_config.sh $network $chain <labtop_port> type(s)"
+#  echo "see ~/testnettools/labtop.instructions for more lab details"
+#fi
 
 ######################## Create a bootstrap.log file for each "type" of ceremony requested
 for type in $types; do

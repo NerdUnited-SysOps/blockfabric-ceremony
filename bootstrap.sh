@@ -87,10 +87,28 @@ echo "========== Creating local AWS configuration and verifying S3 bucket ======
 
 mkdir -p "${HOME}/.aws"
 
-if ! scp "${chain}@${bootstrap}:~/credentials.${network}.${chain}" "${HOME}/.aws/credentials" | tee -a "$bootstrap_log"; then
+## No pipe to tee here: a pipeline would report tee's exit status and let an
+## scp failure through silently. scp prints nothing useful on success anyway.
+if ! scp "${chain}@${bootstrap}:~/credentials.${network}.${chain}" "${HOME}/.aws/credentials"; then
     echo "ERROR: Failed to copy AWS credentials from ${bootstrap}" | tee -a "$bootstrap_log"
     exit 1
 fi
+
+## Validate the copy: a missing or truncated source file transfers "cleanly"
+## as zero bytes and only surfaces much later as a confusing profile error.
+if [ ! -s "${HOME}/.aws/credentials" ]; then
+    echo "ERROR: credentials.${network}.${chain} copied EMPTY from ${bootstrap}." | tee -a "$bootstrap_log"
+    echo "       Check the file in the ${chain} user's home on the bootstrap server." | tee -a "$bootstrap_log"
+    exit 1
+fi
+if ! grep -q "^\[blockfabric\]" "${HOME}/.aws/credentials"; then
+    echo "ERROR: copied credentials file has no [blockfabric] profile." | tee -a "$bootstrap_log"
+    exit 1
+fi
+if ! grep -q "^\[core\]" "${HOME}/.aws/credentials"; then
+    echo "WARNING: copied credentials file has no [core] profile; relayer 3/4 persistence will fail." | tee -a "$bootstrap_log"
+fi
+echo "AWS credentials copied: $(wc -c < "${HOME}/.aws/credentials") bytes, profiles: $(grep -c '^\[' "${HOME}/.aws/credentials")" | tee -a "$bootstrap_log"
 
 expected_bucket="${network}-${chain}"
 

